@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}- Verify Film{% endblock %}
+
+{% block content %}
+<h2>Verify Film Information</h2>
+
+Actors:
+{% for actor in actors %}
+    <div class="actor-card">
+        <ul>
+            <li><img src="https://www.themoviedb.org/t/p/w300_and_h450_bestv2/{{ actors[actor]['profile_path'] }}" alt="{{actors[actor]['name']}} photograph">
+            <li>Character: {{actors[actor]["character"]}}</li>
+            <li>Actor: {{actors[actor]["name"]}}</li>
+            {% if actors[actor]["gender"] == 2 %}
+                <li>Gender: Male</li>
+            {% elif actors[actor]["gender"] == 1 %}
+                <li>Gender: Female</li>
+            {% endif %}
+            <li>Birthday: {{actors[actor].get("birthday", "")}}</li>
+        </ul>
+    </div>
+{% endfor %}
+
+{% endblock %}
