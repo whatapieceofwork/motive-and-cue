@@ -40,6 +40,8 @@ class Film(db.Model):
 class Actor(db.Model):
     """A single actor. May be cast in multiple parts and multiple movies."""
 
+    __tablename__ = "actors"
+
     actor_id = db.Column(db.Integer,
                         autoincrement=True,
                         primary_key=True,
@@ -62,6 +64,8 @@ class Actor(db.Model):
 class Scene(db.Model):
     """A scene from the play."""
 
+    __tablename__ = "scenes"
+
     scene_id = db.Column(db.Integer,
                     autoincrement=True,
                     primary_key=True,
@@ -77,8 +81,30 @@ class Scene(db.Model):
         return f"<SCENE id={self.scene_id} {self.act_num} {self.scene_num}>"
 
 
+
+class Character(db.Model):
+    """A character from the play."""
+
+    __tablename__ = "characters"
+
+    character_id = db.Column(db.Integer,
+                    autoincrement=True,
+                    primary_key=True,
+                    )
+    name = db.Column(db.String(25),
+                    nullable=False,
+                    )
+    dies_in_play = db.Column(db.Boolean,
+                    )
+
+    def __repr__(self):
+        return f"<CHARACTER id={self.character_id} {self.character_name}>"
+
+        
 class ChoicePoint(db.Model):
     """A point in the play where multiple interpretations could be made."""
+
+    __tablename__ = "choicepoints"
 
     choicepoint_id = db.Column(db.Integer,
                         autoincrement=True,
@@ -98,6 +124,8 @@ class ChoicePoint(db.Model):
 class Interpretation(db.Model):
     """A film's specific interpretation of a choice point."""
 
+    __tablename__ = "interpretations"
+
     interpretation_id = db.Column(db.Integer,
                         autoincrement=True,
                         primary_key=True,
@@ -105,21 +133,4 @@ class Interpretation(db.Model):
     # film_id = # FOREIGN KEY
 
    def __repr__(self):
-        return f"<INTERPRETATION id={self.interpretation_id} {self.interpretation_title} #DIRECTORLNAME>"
-
-
-class Character(db.Model):
-    """A character from the play."""
-
-    character_id = db.Column(db.Integer,
-                    autoincrement=True,
-                    primary_key=True,
-                    )
-    name = db.Column(db.String(25),
-                    nullable=False,
-                    )
-    dies_in_play = db.Column(db.Boolean,
-                    )
-
-    def __repr__(self):
-        return f"<CHARACTER id={self.character_id} {self.character_name}>"
+        return f"<INTERPRETATION id={self.interpretation_id} {self.interpretation_title} DIRECTORLNAME>"
