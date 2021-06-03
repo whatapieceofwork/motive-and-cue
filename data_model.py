@@ -74,7 +74,7 @@ class Scene(db.Model):
                     )
 
     def __repr__(self):
-        return f"<SCENE id={self.scene_id} {self.act_num} {self.scene_num}}>"
+        return f"<SCENE id={self.scene_id} {self.act_num} {self.scene_num}>"
 
 
 class ChoicePoint(db.Model):
@@ -105,7 +105,7 @@ class Interpretation(db.Model):
     # film_id = # FOREIGN KEY
 
    def __repr__(self):
-        return f"<INTERPRETATION id={self.interpretation_id} {self.interpretation_title} {#DIRECTORLNAME}}>"
+        return f"<INTERPRETATION id={self.interpretation_id} {self.interpretation_title} #DIRECTORLNAME>"
 
 
 class Character(db.Model):
