@@ -1,24 +1,20 @@
 from flask import Flask, render_template, redirect, flash, session, request
+from flash_sqlalchemy import SQLAlchemy
 import jinja2
 import os
-from bs4 import BeautifulSoup
-import urllib3
 import requests
-import re
-import pprint
+import re #regex
 import json
 
 FLASK_KEY = os.environ["FLASK_KEY"]
 MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
 
 app = Flask(__name__)
-
 app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = True
 app.secret_key = FLASK_KEY
 
-plays = {
-    "hamlet": "Hamlet",
-}
+db = SQLAlchemy()
+
 
 @app.route("/")
 def index():
