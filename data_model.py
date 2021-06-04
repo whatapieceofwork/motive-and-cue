@@ -15,6 +15,8 @@ class Film(db.Model):
                         )
     film_moviedb_id = db.Column(db.Integer,
                         )
+    film_imdb_id = db.Column.(db.Integer,
+                        )
     title = db.Column(db.String(50),
                         nullable=False,
                         default="English",
@@ -47,6 +49,8 @@ class Actor(db.Model):
                         primary_key=True,
                         )
     actor_moviedb_id = db.Column(db.Integer,
+                        )
+    actor_imdb_id = db.Column(db.Integer,
                         )
     fname = db.Column(db.String(30),
                         )

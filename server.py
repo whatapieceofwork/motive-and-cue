@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, flash, session, request
-from flash_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 import jinja2
 import os
 import requests
@@ -15,6 +15,7 @@ app.secret_key = FLASK_KEY
 
 db = SQLAlchemy()
 
+plays = {"Hamlet": "Hamlet"}
 
 @app.route("/")
 def index():
@@ -25,7 +26,7 @@ def index():
 
 @app.route("/add-film")
 def add_film():
-    """Prompts user for play and IMDB ID."""
+    """Prompts user for play and MovieDB ID."""
 
     return render_template("add-film.html",
                             plays = plays)
@@ -33,7 +34,7 @@ def add_film():
 
 @app.route("/process-film")
 def process_film():
-    """Processes user input, scrapes IMDB for information."""
+    """Processes user input, scrapes MovieDB for information."""
 
     play = request.args.get("play")
     film_url = request.args.get("film-url")
@@ -43,21 +44,43 @@ def process_film():
     moviedb_credits = "https://api.themoviedb.org/3/movie/" + moviedb_id + "/credits?api_key=" + MOVIEDB_API_KEY
     credits = requests.get(moviedb_credits)
     credits = credits.json()
+    print(credits)
     cast = credits["cast"]
+    crew = credits["crew"]
+
+    for member in crew:
+        if crew[member]["job"] == "Director":
+            moviedb_id = crew[member]["id"]
+            full_name = crew[member]["name"].split()
+            fname, lname = full_name[0], full_name[-1]
+
+            # director = crud.add_new_director(moviedb_id, fname, lname)
+            # crud.add_director_film(director, film)
 
     actors = {}
     for actor in cast:
         actor_lname = actor["name"].split()[1].lower()
         actors[actor_lname] = actor
-        print(actors[actor_lname])
 
     for actor in actors:
-        id = actors[actor]["id"]
-        actor_profile = requests.get("https://api.themoviedb.org/3/person/" + str(id) + "?api_key=" + str(MOVIEDB_API_KEY))
+        moviedb_id = actors[actor]["id"]
+        actor_profile = requests.get("https://api.themoviedb.org/3/person/" + str(moviedb_id) + "?api_key=" + MOVIEDB_API_KEY)
         actor_profile = actor_profile.json()
-        actors[actor].update(actor_profile)
-        print(actors[actor])
+        actors[actor].update(actor_profile) #add entire JSON actor profile to actor dictionary
 
+        parts_played = actors[actor]["character"].split(" / ")
+        # for part in parts_played,
+            # add a row to casting table
+        
+        full_name = actors[actor]["name"].split()
+        fname, lname = full_name[0], full_name[-1]
+
+        if actors[actor]["gender"] == 2:
+            gender = "Male"
+        elif actors[actor]["gender"] == 1:
+            gender = "Female"
+        else:
+            gender = "Other or N/A"
 
     return render_template("verify-film.html",
                             cast = cast,
