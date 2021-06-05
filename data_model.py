@@ -21,7 +21,7 @@ class Film(db.Model):
                         nullable=False,
                         default="English",
                         )
-    year = db.Column(db.Date,
+    release_date = db.Column(db.Date,
                         nullable=False,
                         )
     language = db.Column(db.String(15),
@@ -30,13 +30,12 @@ class Film(db.Model):
                         )
     length = db.Column(db.Interval,
                         )
-    director_fname = db.Column(db.String(30),
+    poster_path = db.Column(db.String(100),
                         )
-    director_lname = db.Column(db.String(30),
-                        )
+    # director_id = FOREIGNKEY
 
     def __repr__(self):
-        return f"<FILM id={self.film_id} {self.year} {self.director_lname}>"
+        return f"<FILM id={self.film_id} {self.title} {self.year} {self.director_id}>"
 
 
 class Actor(db.Model):
@@ -59,6 +58,8 @@ class Actor(db.Model):
     birthday = db.Column(db.Date
                         )
     gender = db.Column(db.string(10)
+                        )
+    photo_path = db.Column(db.string(100)
                         )
 
     def __repr__(self):
