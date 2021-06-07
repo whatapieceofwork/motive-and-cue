@@ -8,7 +8,7 @@ import os
 import requests
 import re #regex
 import json
-import crud
+from crud import *
 from data_model import *
 
 FLASK_KEY = os.environ["FLASK_KEY"]
@@ -44,11 +44,9 @@ def add_film():
 def process_film():
     """Given MovieDB URL by user, queries MovieDB API for film information and adds information to database."""
 
-    shortname = request.args.get("play")
-    # play = crud.add_play(plays[shortname], shortname)
-    play = crud.add_play("Hamlet", "Ham")
-    play_id = play.play_id
-
+    play_shortname = request.args.get("plays")
+    play = get_play_by_shortname(play_shortname)
+    
     film_url = request.args.get("film-url")
     moviedb_regx = ("(?<=https:\/\/www\.themoviedb\.org\/movie\/)[0-9]*") #MovieDB film ID format
     moviedb_id = re.search(moviedb_regx, film_url)[0] #first result of regex search for MovieDB film ID format in URL
@@ -57,9 +55,9 @@ def process_film():
     credits = requests.get(moviedb_credits).json()
     cast_credits, crew_credits = credits["cast"], credits["crew"]
 
-    film = crud.process_moviedb_film_details(moviedb_id, play) #process MovieDB film details and create Film database object
-    crud.process_moviedb_cast(moviedb_id, cast_credits, play) #process MovieDB actor details and create Actor database objects
-    crud.process_moviedb_crew(moviedb_id, crew_credits, play) #process MovieDB crew details and create various crew database objects
+    process_moviedb_film_details(moviedb_id, play) #process MovieDB film details and create Film database object
+    process_moviedb_cast(moviedb_id, cast_credits, play) #process MovieDB actor details and create Actor database objects
+    process_moviedb_crew(moviedb_id, crew_credits, play) #process MovieDB crew details and create various crew database objects
 
     return render_template("verify-film.html")
 

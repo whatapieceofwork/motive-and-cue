@@ -10,7 +10,6 @@ import os
 import requests
 import re #regex
 import json
-import crud
 from data_model import *
 
 FLASK_KEY = os.environ["FLASK_KEY"]
@@ -18,13 +17,13 @@ MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
 db = SQLAlchemy()
 
 plays = {
-	"Ham": "Hamlet",
+	"Ham": "Hamlet"
 }
 
-def add_character(name, play_id):
+def add_character(name, play):
     """Create and return a new Character database record."""
 
-    character = Character(name=name, play_id=play_id)
+    character = Character(name=name, play_id=play.id)
 
     db.session.add(character)
     db.session.commit()
@@ -33,10 +32,11 @@ def add_character(name, play_id):
     return character
 
 
-def add_film(play_id, moviedb_id, imdb_id, title, release_date, language, length, poster_path):
+def add_film(play, moviedb_id, imdb_id, title, release_date, language, length, poster_path):
     """Create and return a new Film database record."""
 
-    film = Film(play_id=play_id, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, language=language, length=length, poster_path=poster_path)
+    print(f"******************** THIS FILM'S PLAY IS {play}")
+    film = Film(play_id=play.id, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, language=language, length=length, poster_path=poster_path)
 
     db.session.add(film)
     db.session.commit()
@@ -57,10 +57,10 @@ def add_job(title):
     return job
 
 
-def add_job_held(film_id, job_id, person_id):
+def add_job_held(film, job, person):
     """Create and returned a JobHeld database record."""
 
-    jobheld = JobHeld(film_id=film_id, job_id=job_id, person_id=person_id)
+    jobheld = JobHeld(film_id=film.id, job_id=job.id, person_id=person.id)
     
     db.session.add(jobheld)
     db.session.commit()
@@ -69,10 +69,13 @@ def add_job_held(film_id, job_id, person_id):
     return jobheld
 
 
-def add_part_played(person_id, character_id, film_id):
+def add_part_played(person, character, film):
     """Create and return a PartPlayed database relationship record."""
 
-    part_played=PartPlayed(person_id=person_id, character_id=character_id, film_id=film_id)
+    # if not character:
+    #     play = get_play_by_film(film)
+    #     character = add_character(character, play)
+    part_played=PartPlayed(person_id=person.id, character_id=character.id, film_id=film.id)
 
     db.session.add(part_played)
     db.session.commit()
@@ -81,10 +84,10 @@ def add_part_played(person_id, character_id, film_id):
     return part_played
     
 
-def add_person(person_moviedb_id, person_imdb_id, fname, lname, birthday, gender, photo_path):
+def add_person(moviedb_id, imdb_id, fname, lname, birthday, gender, photo_path):
     """Create and a return a new Person database record."""
 
-    person = Person(person_moviedb_id=person_moviedb_id, person_imdb_id=person_imdb_id, fname=fname, lname=lname,
+    person = Person(moviedb_id=moviedb_id, imdb_id=imdb_id, fname=fname, lname=lname,
                     birthday=birthday, gender=gender, photo_path=photo_path)
 
     db.session.add(person)
@@ -105,10 +108,10 @@ def add_play(title, shortname):
     return play
 
 
-def add_scene(act_num, scene_num, title):
+def add_scene(act, scene, title):
     """Create and return a new Scene database record."""
 
-    scene = Scene(act_num=act_num, scene_num=scene_num, title=title)
+    scene = Scene(act=act, scene=scene, title=title)
     db.session.add(scene)
     db.session.commit()
 
@@ -116,10 +119,10 @@ def add_scene(act_num, scene_num, title):
     return scene
 
 
-def add_topic(topic_id, title, desc, quote):
+def add_topic(title, desc, quote):
     """Create and return a new Topic database record."""
 
-    topic = Topic(topic_id=topic_id, title=title, desc=desc, quote=quote)
+    topic = Topic(title=title, desc=desc, quote=quote)
 
     db.session.add(topic)
     db.session.commit()
@@ -128,44 +131,23 @@ def add_topic(topic_id, title, desc, quote):
     return topic
 
 
-def process_folger_characters(play):
-    """Given a play shortname, import the Folger list of characters by line count."""
+# def process_folger_characters(play):
+#     """Given a play shortname, import the Folger list of characters by line count."""
 
-    from bs4 import BeautifulSoup
-    import requests
+#     from bs4 import BeautifulSoup
+#     import requests
 
-    parts_page_url = f"https://folgerdigitaltexts.org/{play}/parts/"
-    page = requests.get(parts_page_url)
-    soup = BeautifulSoup(page.content, 'html.parser')
-    character_list = soup.find("a")
+#     parts_page_url = f"https://folgerdigitaltexts.org/{play}/parts/"
+#     page = requests.get(parts_page_url)
+#     soup = BeautifulSoup(page.content, 'html.parser')
+#     character_list = soup.find("a")
 
-    for line in character_list:
-        character = add_character(character.text)
-        if character.istitle():
-            db.session.add(character)
+#     for line in character_list:
+#         character = add_character(character.text)
+#         if character.istitle():
+#             db.session.add(character)
 
-    db.session.commit()
-
-
-def get_person_by_moviedb_id(person_moviedb_id):
-    """Given a person's MovieDB ID, return (or create and return) a matching Person object."""
-
-    existing_record = db.session.query(exists().where(Person.person_moviedb_id == person_moviedb_id));
-
-    if existing_record == "t":
-        return Person.query.filter(Person.person_moviedb_id == person_moviedb_id).one()
-    else:
-        person_profile = requests.get("https://api.themoviedb.org/3/person/" + str(person_moviedb_id) + "?api_key=" + MOVIEDB_API_KEY)
-        person_profile = person_profile.json()
-        person_imdb_id = person_profile["imdb_id"]
-        full_name = person_profile["name"].split()
-        fname, lname = full_name[0], full_name[-1]
-        birthday = person_profile["birthday"]
-        gender = person_profile["gender"]
-        photo_path = person_profile["profile_path"]
-
-        person = add_person(person_moviedb_id, person_imdb_id, fname, lname, birthday, gender, photo_path)
-        return person
+#     db.session.commit()
 
 
 def process_moviedb_cast(moviedb_id, cast_credits, play):
@@ -180,7 +162,8 @@ def process_moviedb_cast(moviedb_id, cast_credits, play):
         
             for part in parts_played:
                 character = get_character_by_name(part, play)
-                part_played = add_part_played(person.person_id, character.character_id, film.film_id)
+                print(f"********IN PROCESS: part={part}, play={play}, person={person}, character={character}, film={film}")
+                part_played = add_part_played(person, character, film)
                 db.session.add(part_played)
 
     db.session.commit() 
@@ -194,10 +177,10 @@ def process_moviedb_crew(moviedb_id, crew_credits, play):
 
     for crewmember in crew_credits:
         if crewmember["job"] in important_crew:
-            person_moviedb_id = crewmember["id"]
-            person = get_person_by_moviedb_id(person_moviedb_id)
+            crew_moviedb_id = crewmember["id"]
+            person = get_person_by_moviedb_id(crew_moviedb_id)
             job = get_job_by_title(crewmember["job"])
-            jobheld = add_job_held(film.film_id, job.job_id, person.person_id)
+            jobheld = add_job_held(film, job, person)
 
             db.session.add(jobheld)
     
@@ -208,7 +191,6 @@ def process_moviedb_film_details(moviedb_id, play):
     """Given a MovieDB ID, query film information from MovieDB and create a Film database record."""
 
     film_details = "https://api.themoviedb.org/3/movie/" + str(moviedb_id) + "?api_key=" + MOVIEDB_API_KEY + "&language=en-US"
-    play_id = play.play_id
     details = requests.get(film_details).json()
     imdb_id = details["imdb_id"]
     title = details["title"]
@@ -218,55 +200,96 @@ def process_moviedb_film_details(moviedb_id, play):
     language = details["original_language"]
     length = details["runtime"]
     poster_path = details["poster_path"]
+    play_id = play.id
 
-    film = add_film(play_id=play_id, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, language=language, length=length, poster_path=poster_path)
+    print(f"******************** IN PROCESS. THIS FILM'S PLAY IS {play}")
+    film = add_film(play=play, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, language=language, length=length, poster_path=poster_path)
     return film
 
 
 def get_character_by_name(name, play):
     """Given a character name and play, return the Character object."""
 
-    existing_record = db.session.query(exists().where(Character.query.filter((Character.name == name) | (Character.play_id == play.play_id))));
- 
-    if existing_record == "t":
-        return Character.query.filter((Character.name == name) | (Character.play_id == play.play_id)).one()
+    existing_record = db.session.query(exists().where((Character.name == name) & (Character.play_id == play.id))).scalar()
+    if existing_record:
+        return Character.query.filter((Character.name == name) & (Character.play_id == play.id)).first()
     else:
-        character = add_character(name=name, play_id=play.play_id)
+        character = add_character(name=name, play=play)
         return character
 
-
-def get_job_by_title(job_title):
+def get_job_by_title(title):
     """Given a job title, return the Job object."""
 
-    existing_record = db.session.query(exists().where(Job.title == job_title));
+    existing_record = db.session.query(exists().where(Job.title == title)).scalar()
 
-    if existing_record == "t":
-        return Job.query.filter(Job.title == job_title).one()
+    if existing_record:
+        return Job.query.filter(Job.title == title).first()
     else:
-        job = add_job(job_title)
+        job = add_job(title)
     return job
 
 
 def get_film_by_moviedb_id(moviedb_id, play):
     """Given a film's MovieDB ID, return the Film object."""
 
-    existing_record = db.session.query(exists().where(Film.moviedb_id == moviedb_id));
+    existing_record = db.session.query(exists().where(Film.moviedb_id == moviedb_id)).scalar()
     
-    if existing_record == "t":
-        return Film.query.filter(Film.moviedb_id == moviedb_id).one()
+    if existing_record:
+        return Film.query.filter(Film.moviedb_id == moviedb_id).first()
     else:
         film = process_moviedb_film_details(moviedb_id, play)
         return film
 
 
+def get_person_by_moviedb_id(moviedb_id):
+    """Given a person's MovieDB ID, return (or create and return) a matching Person object."""
+
+    existing_record = db.session.query(exists().where(Person.moviedb_id == moviedb_id)).scalar()
+
+    if existing_record:
+        return Person.query.filter(Person.moviedb_id == moviedb_id).first()
+    else:
+        person_profile = requests.get("https://api.themoviedb.org/3/person/" + str(moviedb_id) + "?api_key=" + MOVIEDB_API_KEY)
+        person_profile = person_profile.json()
+        imdb_id = person_profile["imdb_id"]
+        full_name = person_profile["name"].split()
+        fname, lname = full_name[0], full_name[-1]
+        birthday = person_profile["birthday"]
+        gender = person_profile["gender"]
+        photo_path = person_profile["profile_path"]
+
+        person = add_person(moviedb_id, imdb_id, fname, lname, birthday, gender, photo_path)
+        return person
+
+
 def get_play_by_shortname(shortname):
     """Given a play's shortname, return the play."""
 
-    existing_record = db.session.query(exists().where(Play.shortname == shortname));
-    
-    if existing_record == "t":
-        return Play.query.filter(Play.shortname == shortname).one() 
+    existing_record = db.session.query(exists().where(Play.shortname == shortname)).scalar()
+    print(f"***************************** {existing_record}")
+    if existing_record:
+        return Play.query.filter(Play.shortname == shortname).one()
+    else:
+        play = add_play(plays[shortname], shortname)
+        return play
 
+
+def get_play_by_title(title):
+    """Given a play's complete title, return the play."""
+
+    existing_record = db.session.query(exists().where(Play.title == title)).scalar()
+
+    if existing_record:
+        return Play.query.filter(Play.title == title).first()
+    else:
+        add_play(title, plays[title])
+
+
+def get_play_by_film(film):
+    """Given a film, return the associated play."""
+
+    play_id = film.play_id
+    return Play.query.get(play_id)
 
 # def get_hamlet_cast():
 #     """Return all actor objects associated with Hamlet."""

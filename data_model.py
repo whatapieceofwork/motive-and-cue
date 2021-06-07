@@ -27,7 +27,7 @@ class Play(db.Model):
 
     __tablename__ = "plays"
 
-    play_id = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                         autoincrement=True,
                         primary_key=True,
                         )
@@ -37,7 +37,7 @@ class Play(db.Model):
                         )
 
     def __repr__(self):
-        return f"<PLAY id={self.play_id} {self.title}>"
+        return f"<PLAY id={self.id} {self.title}>"
 
 
 class Character(db.Model):
@@ -45,21 +45,21 @@ class Character(db.Model):
 
     __tablename__ = "characters"
 
-    character_id = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                     autoincrement=True,
                     primary_key=True,
                     )
-    name = db.Column(db.String(25),
+    name = db.Column(db.String(100),
                     nullable=False,
                     unique=True,
                     )
     play_id = db.Column(db.Integer,
-                    db.ForeignKey("plays.play_id"),
+                    db.ForeignKey("plays.id"),
                     )
     # actors = relationship
 
     def __repr__(self):
-        return f"<CHARACTER id={self.character_id} {self.name} {self.play_id}>"
+        return f"<CHARACTER id={self.id} {self.name} {self.play_id}>"
 
         
 class ChoicePoint(db.Model):
@@ -67,7 +67,7 @@ class ChoicePoint(db.Model):
 
     __tablename__ = "choicepoints"
 
-    choicepoint_id = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                         autoincrement=True,
                         primary_key=True,
                         )
@@ -80,7 +80,7 @@ class ChoicePoint(db.Model):
     # choicechars - relationship
 
     def __repr__(self):
-        return f"<CHOICEPOINT id={self.choicepoint_id} {self.title}>"
+        return f"<CHOICEPOINT id={self.id} {self.title}>"
 
 
 class Film(db.Model):
@@ -88,7 +88,7 @@ class Film(db.Model):
 
     __tablename__ = "films"
 
-    film_id = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                         autoincrement=True,
                         primary_key=True,
                         )
@@ -108,7 +108,7 @@ class Film(db.Model):
                         )
     #person_id for director (FOREIGNKEY) (add to repr)
     play_id = db.Column(db.Integer,
-                    db.ForeignKey("plays.play_id"),
+                    db.ForeignKey("plays.id"),
                     )
     poster_path = db.Column(db.String(100),
                         )
@@ -117,7 +117,7 @@ class Film(db.Model):
                         )
 
     def __repr__(self):
-        return f"<FILM id={self.film_id} {self.title} {self.release_date}>"
+        return f"<FILM id={self.id} {self.title} {self.release_date}>"
 
 
 class Interpretation(db.Model):
@@ -125,7 +125,7 @@ class Interpretation(db.Model):
 
     __tablename__ = "interpretations"
 
-    interpretation_id = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                         autoincrement=True,
                         primary_key=True,
                         )
@@ -135,7 +135,7 @@ class Interpretation(db.Model):
                     )
 
     def __repr__(self):
-        return f"<INTERPRETATION id={self.interpretation_id} {self.title} DIRECTORLNAME>"
+        return f"<INTERPRETATION id={self.id} {self.title} DIRECTORLNAME>"
 
 
 class Job(db.Model):
@@ -143,7 +143,7 @@ class Job(db.Model):
 
     __tablename__ = "jobs"
 
-    job_id = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                     autoincrement=True,
                     primary_key=True,
                     )
@@ -154,7 +154,7 @@ class Job(db.Model):
     # job_havers = relationship
 
     def __repr__(self):
-        return f"<JOB id={self.job_id} {self.title}>"
+        return f"<JOB id={self.id} {self.title}>"
 
 
 class Person(db.Model):
@@ -162,13 +162,13 @@ class Person(db.Model):
 
     __tablename__ = "people"
 
-    person_id = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                         autoincrement=True,
                         primary_key=True,
                         )
-    person_moviedb_id = db.Column(db.Integer,
+    moviedb_id = db.Column(db.Integer,
                         )
-    person_imdb_id = db.Column(db.String,
+    imdb_id = db.Column(db.String,
                         )
     fname = db.Column(db.String(30),
                         )
@@ -184,7 +184,7 @@ class Person(db.Model):
     # parts = relationship
 
     def __repr__(self):
-        return f"<PERSON id={self.person_id} {self.fname} {self.lname}>"
+        return f"<PERSON id={self.id} {self.fname} {self.lname}>"
 
 
 class Scene(db.Model):
@@ -192,21 +192,21 @@ class Scene(db.Model):
 
     __tablename__ = "scenes"
 
-    scene_id = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                     autoincrement=True,
                     primary_key=True,
                     )
+    act = db.Column(db.Integer,
+                    nullable=False,
+                    )
+    scene = db.Column(db.Integer,
+                    nullable=False,
+                    )
     title = db.Column(db.String(100),
-                    )
-    act_num = db.Column(db.Integer,
-                    nullable=False,
-                    )
-    scene_num = db.Column(db.Integer,
-                    nullable=False,
                     )
 
     def __repr__(self):
-        return f"<SCENE id={self.scene_id} {self.act_num}.{self.scene_num}>"
+        return f"<SCENE id={self.scene} {self.act}.{self.scene}>"
 
 # -- END Primary data objects --
 
@@ -217,37 +217,37 @@ class JobHeld(db.Model):
 
     __tablename__ = "jobs_held"
 
-    jobheld_id = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                     autoincrement=True,
                     primary_key=True,
                     )
     film_id = db.Column(db.Integer,
-                    db.ForeignKey("films.film_id"),
+                    db.ForeignKey("films.id"),
                     )
     job_id = db.Column(db.Integer,
-                    db.ForeignKey("jobs.job_id"),
+                    db.ForeignKey("jobs.id"),
                     )
     person_id = db.Column(db.Integer,
-                    db.ForeignKey("people.person_id"),
+                    db.ForeignKey("people.id"),
                     )
 
     def __repr__(self):
-        return f"<JOBHELD id={self.jobheld_id} {self.person_id} {self.job_id}>"
+        return f"<JOBHELD id={self.id} {self.person_id} {self.job_id}>"
 
 
 class InterpretationFilms(db.Model):
     """Relationships between interpretations and films. Interpretations may be used by multiple films.."""
 
     __tablename__ = "interpretation_films"
-    interpretation_film = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                     autoincrement=True,
                     primary_key=True,
                     )
     interpretation_id = (db.Integer,
-                        db.ForeignKey("interpretations.interpretation_id"),
+                        db.ForeignKey("interpretations.id"),
                         )
     film_id = db.Column(db.Integer,
-                        db.ForeignKey("films.film_id"),
+                        db.ForeignKey("films.id"),
                         )
 
 
@@ -256,22 +256,22 @@ class PartPlayed(db.Model):
 
     __tablename__ = "parts_played"
 
-    partplayed_id = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                     autoincrement=True,
                     primary_key=True,
                     )
     person_id = db.Column(db.Integer,
-                    db.ForeignKey("people.person_id"),
+                    db.ForeignKey("people.id"),
                     )
     character_id = db.Column(db.Integer,
-                    db.ForeignKey("characters.character_id"),
+                    db.ForeignKey("characters.id"),
                     )
     film_id = db.Column(db.Integer,
-                    db.ForeignKey("films.film_id"),
+                    db.ForeignKey("films.id"),
                     )
 
     def __repr__(self):
-        return f"<PARTPLAYED id={self.partplayed_id} {self.person_id} {self.character_id}>"
+        return f"<PARTPLAYED id={self.id} {self.person_id} {self.character_id}>"
 
 
 class Topic(db.Model):
@@ -279,7 +279,7 @@ class Topic(db.Model):
 
     __tablename__ = "topics"
 
-    topic_id = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                     autoincrement=True,
                     primary_key=True,
                     )
@@ -302,19 +302,19 @@ class TopicScene(db.Model):
 
     __tablename__ = "topic_scenes"
 
-    topicscene_id = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                     autoincrement=True,
                     primary_key=True,
                     )
     topic_id = db.Column(db.Integer,
-                    db.ForeignKey("topics.topic_id"),
+                    db.ForeignKey("topics.id"),
                     )
     scene_id = db.Column(db.Integer,
-                db.ForeignKey("scenes.scene_id"),
+                db.ForeignKey("scenes.id"),
                 )
 
     def __repr__(self):
-            return f"<TOPICSCENE id={self.topicscene_id} {self.scene_id} {self.topic_id.topic_title}>"
+            return f"<TOPICSCENE id={self.id} {self.scene_id} {self.topic_id.topic_title}>"
 
 
 class TopicCharacter(db.Model):
@@ -322,19 +322,19 @@ class TopicCharacter(db.Model):
 
     __tablename__ = "topic_characters"
 
-    topiccharacter_id = db.Column(db.Integer,
+    id = db.Column(db.Integer,
                     autoincrement=True,
                     primary_key=True,
                     )
     topic_id = db.Column(db.Integer,
-                db.ForeignKey("topics.topic_id"),
+                db.ForeignKey("topics.id"),
                 )
     character_id = db.Column(db.Integer,
-                db.ForeignKey("characters.character_id"),
+                db.ForeignKey("characters.id"),
                 )
 
     def __repr__(self):
-            return f"<TOPICCHARACTER id={self.topiccharacter_id} {self.topic_id.topic_title} {self.character_id.name}>"
+            return f"<TOPICCHARACTER id={self.id} {self.topic_id.topic_title} {self.character_id.name}>"
 
 
 # -- END Relationship objects --
