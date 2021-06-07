@@ -16,9 +16,8 @@ FLASK_KEY = os.environ["FLASK_KEY"]
 MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
 db = SQLAlchemy()
 
-plays = {
-	"Ham": "Hamlet"
-}
+plays = {"AWW": "All's Well That Ends Well", "Ant": "Antony and Cleopatra", "AYL": "As You Like It", "Err": "The Comedy of Errors", "Cor": "Coriolanus", "Cym": "Cymbeline", "Ham": "Hamlet", "1H4": "Henry IV, Part 1", "2H4": "Henry IV, Part 2", "H5": "Henry V", "1H6": "Henry VI, Part 1", "2H6": "Henry VI, Part 2", "3H6": "Henry VI, Part 3", "H8": "Henry VIII", "JC": "Julius Caesar", "Jn": "King John", "Lr": "King Lear", "LLL": "Love's Labor's Lost", "Mac": "Macbeth", "MM": "Measure for Measure", "MV": "The Merchant of Venice", "Wiv": "The Merry Wives of Windsor", "MND": "A Midsummer Night's Dream", "Ado": "Much Ado About Nothing", "Oth": "Othello", "Per": "Pericles", "R2": "Richard II", "R3": "Richard III", "Rom": "Romeo and Juliet", "Shr": "The Taming of the Shrew", "Tmp": "The Tempest", "Tim": "Timon of Athens", "Tit": "Titus Andronicus", "Tro": "Troilus and Cressida", "TN": "Twelfth Night", "TGV": "Two Gentlemen of Verona", "TNK": "Two Noble Kinsmen", "WT": "The Winter's Tale"}
+
 
 def add_character(name, play):
     """Create and return a new Character database record."""
@@ -28,20 +27,19 @@ def add_character(name, play):
     db.session.add(character)
     db.session.commit()
 
-    print(f"********* Created {character}")
+    print(f"********* Created {character} *********")
     return character
 
 
 def add_film(play, moviedb_id, imdb_id, title, release_date, language, length, poster_path):
     """Create and return a new Film database record."""
 
-    print(f"******************** THIS FILM'S PLAY IS {play}")
     film = Film(play_id=play.id, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, language=language, length=length, poster_path=poster_path)
 
     db.session.add(film)
     db.session.commit()
 
-    print(f"Created {film}")
+    print(f"Created {film} *********")
     return film
 
 
@@ -53,7 +51,7 @@ def add_job(title):
     db.session.add(job)
     db.session.commit()
 
-    print(f"********* Created {job}")
+    print(f"********* Created {job} *********")
     return job
 
 
@@ -65,7 +63,7 @@ def add_job_held(film, job, person):
     db.session.add(jobheld)
     db.session.commit()
 
-    print(f"********* Created {jobheld}")
+    print(f"********* Created {jobheld} *********")
     return jobheld
 
 
@@ -80,7 +78,7 @@ def add_part_played(person, character, film):
     db.session.add(part_played)
     db.session.commit()
 
-    print(f"********* Created {part_played}")
+    print(f"********* Created {part_played} *********")
     return part_played
     
 
@@ -93,7 +91,7 @@ def add_person(moviedb_id, imdb_id, fname, lname, birthday, gender, photo_path):
     db.session.add(person)
     db.session.commit()
 
-    print(f"********* Created {person}")
+    print(f"********* Created {person} *********")
     return person
 
 
@@ -104,7 +102,7 @@ def add_play(title, shortname):
     db.session.add(play)
     db.session.commit()
 
-    print(f"********* Created {play}")
+    print(f"********* Created {play} *********")
     return play
 
 
@@ -115,7 +113,7 @@ def add_scene(act, scene, title):
     db.session.add(scene)
     db.session.commit()
 
-    print(f"********* Created {scene}")
+    print(f"********* Created {scene} *********")
     return scene
 
 
@@ -127,27 +125,28 @@ def add_topic(title, desc, quote):
     db.session.add(topic)
     db.session.commit()
 
-    print(f"********* Created {topic}")
+    print(f"********* Created {topic} *********")
     return topic
 
 
-# def process_folger_characters(play):
-#     """Given a play shortname, import the Folger list of characters by line count."""
+def process_folger_characters(play):
+    """Given a play shortname, import the Folger list of characters by line count."""
 
-#     from bs4 import BeautifulSoup
-#     import requests
+    from bs4 import BeautifulSoup
+    import requests
 
-#     parts_page_url = f"https://folgerdigitaltexts.org/{play}/parts/"
-#     page = requests.get(parts_page_url)
-#     soup = BeautifulSoup(page.content, 'html.parser')
-#     character_list = soup.find("a")
+    shortname = play.shortname
+    parts_page_url = f"https://folgerdigitaltexts.org/{shortname}/parts/"
+    page = requests.get(parts_page_url)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    character_link_list = soup.find("a")
 
-#     for line in character_list:
-#         character = add_character(character.text)
-#         if character.istitle():
-#             db.session.add(character)
+    for link in character_link_list:
+        name = link.text
+        if name.istitle():
+          character = get_character_by_name(name, play.id)
 
-#     db.session.commit()
+    db.session.commit()
 
 
 def process_moviedb_cast(moviedb_id, cast_credits, play):
@@ -162,7 +161,6 @@ def process_moviedb_cast(moviedb_id, cast_credits, play):
         
             for part in parts_played:
                 character = get_character_by_name(part, play)
-                print(f"********IN PROCESS: part={part}, play={play}, person={person}, character={character}, film={film}")
                 part_played = add_part_played(person, character, film)
                 db.session.add(part_played)
 
@@ -202,7 +200,6 @@ def process_moviedb_film_details(moviedb_id, play):
     poster_path = details["poster_path"]
     play_id = play.id
 
-    print(f"******************** IN PROCESS. THIS FILM'S PLAY IS {play}")
     film = add_film(play=play, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, language=language, length=length, poster_path=poster_path)
     return film
 
@@ -289,7 +286,7 @@ def get_play_by_film(film):
     """Given a film, return the associated play."""
 
     play_id = film.play_id
-    return Play.query.get(play_id)
+    return Play.query.get(play_id).first()
 
 # def get_hamlet_cast():
 #     """Return all actor objects associated with Hamlet."""
