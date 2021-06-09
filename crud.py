@@ -158,6 +158,7 @@ def process_moviedb_cast(moviedb_id, cast_credits, play):
             person_moviedb_id = castmember["id"]
             person = get_person_by_moviedb_id(person_moviedb_id)
             parts_played = castmember["character"].split(" / ")
+            job_held = get_job_held(person, film, "Actor")
         
             for part in parts_played:
                 character = get_character_by_name(part, play)
@@ -178,9 +179,7 @@ def process_moviedb_crew(moviedb_id, crew_credits, play):
             crew_moviedb_id = crewmember["id"]
             person = get_person_by_moviedb_id(crew_moviedb_id)
             job = get_job_by_title(crewmember["job"])
-            jobheld = add_job_held(film, job, person)
-
-            db.session.add(jobheld)
+            job_held = get_job_held(person, film, job.title)
     
     db.session.commit()
 
@@ -214,6 +213,7 @@ def get_character_by_name(name, play):
         character = add_character(name=name, play=play)
         return character
 
+
 def get_job_by_title(title):
     """Given a job title, return the Job object."""
 
@@ -224,6 +224,19 @@ def get_job_by_title(title):
     else:
         job = add_job(title)
     return job
+
+
+def get_job_held(person, film, job_title):
+    """Given a person, film and job title, return (or create and return) a JobHeld object."""
+
+    job = get_job_by_title(job_title)
+
+    existing_job_held = db.session.query(exists().where((JobHeld.person_id == person.id) & (JobHeld.film_id == film.id) & (JobHeld.job_id == job.id))).scalar()
+    
+    if existing_job_held:
+        return JobHeld.query.filter((JobHeld.person_id == person.id) & (JobHeld.film_id == film.id) & (JobHeld.job_id == job.id)).scalar()
+    else:
+        add_job_held(film, job, person)
 
 
 def get_film_by_moviedb_id(moviedb_id, play):
@@ -287,6 +300,8 @@ def get_play_by_film(film):
 
     play_id = film.play_id
     return Play.query.get(play_id).first()
+
+
 
 # def get_hamlet_cast():
 #     """Return all actor objects associated with Hamlet."""
