@@ -2,14 +2,42 @@
 
 from flask import Flask, render_template, redirect, flash, session, request
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.sql import exists
+from sqlalchemy import *
+from sqlalchemy.ext.declarative import declarative_base
 from bs4 import BeautifulSoup
 from datetime import datetime
 import json
 from crud import *
-from server import plays
+from server import play_titles
 
 db = SQLAlchemy()
+Base = declarative_base()
+
+# jobs_held = Table("jobs_held", db.Model.metadata,
+#     Column("film_id", Integer, ForeignKey("films.id")),
+#     Column("job_id", Integer, ForeignKey("jobs.id")),
+#     Column("person_id", Integer, ForeignKey("people.id"))
+# )
+
+# parts_played = Table("parts_played", db.Model.metadata,
+#     Column("character_id", Integer, ForeignKey("characters.id")),
+#     Column("film_id", Integer, ForeignKey("films.id")),
+#     Column("person_id", Integer, ForeignKey("people.id"))
+# )
+
+class Job(db.Model):
+    """A role a person might play in a film: actor, director, etc. People can have many jobs."""
+
+    __tablename__ = "jobs"
+
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    title = db.Column(db.String(50), nullable=False, unique=True)
+    people = db.relationship("Person", secondary="jobs_held", back_populates="jobs")
+    jobs_held = db.relationship("JobHeld", back_populates="job")
+
+    def __repr__(self):
+        return f"<JOB id={self.id} {self.title}>"
+            
 
 class Play(db.Model):
     """A single play."""
@@ -19,8 +47,10 @@ class Play(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.String(50))
     shortname = db.Column(db.String(10))
-    characters = db.relationship('Character')
-    scenes = db.relationship('Scene')
+    characters = db.relationship("Character", back_populates="play")
+    scenes = db.relationship("Scene", back_populates="play")
+    films = db.relationship("Film", back_populates="plays")
+    # jobs_held = db.relationship("JobHeld", back_populates="play")
 
     def __repr__(self):
         return f"<PLAY id={self.id} {self.title}>"
@@ -34,7 +64,8 @@ class Character(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
-    play = db.relationship('Play')
+    play = db.relationship("Play", back_populates="characters")
+    actors = db.relationship("Person", secondary="parts_played", back_populates="parts")
 
     def __repr__(self):
         return f"<CHARACTER id={self.id} {self.name} {self.play_id}>"
@@ -50,7 +81,7 @@ class Scene(db.Model):
     scene = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(100))
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
-    play = db.relationship("Play")
+    play = db.relationship("Play", back_populates="scenes")
 
     def __repr__(self):
         return f"<SCENE id={self.scene} {self.act}.{self.scene}>"
@@ -69,8 +100,10 @@ class Person(db.Model):
     birthday = db.Column(db.Date)
     gender = db.Column(db.String(10))
     photo_path = db.Column(db.String(100))
-    jobs = db.relationship('JobHeld', backref="people")
-    parts = db.relationship('PartPlayed', backref="parts")
+    jobs_held = db.relationship("JobHeld", back_populates="people")
+    jobs = db.relationship("Job", secondary="jobs_held", back_populates="people")
+    parts = db.relationship("Character", secondary="parts_played", back_populates="actors")
+    films = db.relationship("Film", secondary="jobs_held", back_populates="actors")
 
     def __repr__(self):
         return f"<PERSON id={self.id} {self.fname} {self.lname}>"
@@ -88,25 +121,14 @@ class Film(db.Model):
     language = db.Column(db.String(15), nullable=False, default="English")
     length = db.Column(db.Integer)
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
-    play = db.relationship("Play")
     poster_path = db.Column(db.String(100))
     release_date = db.Column(db.Date, nullable=False)
+    actors = db.relationship("Person", secondary="parts_played", back_populates="films")
+    plays = db.relationship("Play", back_populates="films")
+    jobs_held = db.relationship("JobHeld", back_populates="film")
 
     def __repr__(self):
         return f"<FILM id={self.id} {self.title} {self.release_date}>"
-
-
-class Job(db.Model):
-    """A role a person might play in a film: actor, director, etc. People can have many jobs."""
-
-    __tablename__ = "jobs"
-
-    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    title = db.Column(db.String(50), nullable=False, unique=True)
-    # job_havers = relationship
-
-    def __repr__(self):
-        return f"<JOB id={self.id} {self.title}>"
 
 
 class ChoicePoint(db.Model):
@@ -141,6 +163,7 @@ class Interpretation(db.Model):
 
 # -- BEGIN Relationship objects --
 
+
 class JobHeld(db.Model):
     """Relationships between people and the film jobs they've held."""
 
@@ -148,8 +171,11 @@ class JobHeld(db.Model):
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     film_id = db.Column(db.Integer, db.ForeignKey("films.id"))
+    film = db.relationship("Film", back_populates="jobs_held")
     job_id = db.Column(db.Integer, db.ForeignKey("jobs.id"))
+    job = db.relationship("Job", back_populates="jobs_held")
     person_id = db.Column(db.Integer, db.ForeignKey("people.id"))
+    people = db.relationship("Person", back_populates="jobs_held")
 
     def __repr__(self):
         return f"<JOBHELD id={self.id} {self.person_id} {self.job_id}>"
@@ -176,11 +202,6 @@ class PartPlayed(db.Model):
     character = db.relationship("Character")
     film_id = db.Column(db.Integer, db.ForeignKey("films.id"))
     film = db.relationship("Film")
-    # play = db.relationship("Play",
-    #     secondary="join(Film, PartPlayed, Film.id==PartPlayed.ilm_id)."
-    #                     "join(Character, PartPlayed.character_id == Character.id)",
-    #     primaryjoin="and_(Character.play_id == Play.id)",
-    #                 uselist = False)
 
     def __repr__(self):
         return f"<PARTPLAYED id={self.id} {self.person_id} {self.character_id}>"
@@ -257,24 +278,24 @@ class ChoiceCharacter(db.Model):
 # -- END Relationship objects --
 
 
-def connect_to_db(flask_app, db_uri='postgresql:///motiveandcuedb', echo=True):
-    flask_app.config['SQLALCHEMY_DATABASE_URI'] = db_uri #URI: Uniform Resource Identify-er
-    flask_app.config['SQLALCHEMY_ECHO'] = echo #Gives output for us to look at (that the computer is doing/has done)
-    flask_app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False #this is sometimes buggy when true
+def connect_to_db(flask_app, db_uri="postgresql:///motiveandcuedb", echo=True):
+    flask_app.config["SQLALCHEMY_DATABASE_URI"] = db_uri #URI: Uniform Resource Identify-er
+    flask_app.config["SQLALCHEMY_ECHO"] = echo #Gives output for us to look at (that the computer is doing/has done)
+    flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False #this is sometimes buggy when true
 
     db.app = flask_app
     db.init_app(flask_app)
 
-    print('Connected to the db!')
+    print("Connected to the db!")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from server import app
     connect_to_db(app)
 
-    # os.system('dropdb motiveandcuedb')
-    # print("Table dropped.")
-    # os.system('createdb motiveandcuedb')
-    # print("Table created.")
+    os.system("dropdb motiveandcuedb")
+    print("Table dropped.")
+    os.system("createdb motiveandcuedb")
+    print("Table created.")
     db.create_all()
 
