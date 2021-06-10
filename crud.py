@@ -11,6 +11,8 @@ import requests
 import re #regex
 import json
 from data_model import *
+from folger_parser import *
+from moviedb_parser import *
 
 FLASK_KEY = os.environ["FLASK_KEY"]
 MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
@@ -149,60 +151,6 @@ def process_folger_characters(play):
     db.session.commit()
 
 
-def process_moviedb_cast(moviedb_id, cast_credits, play):
-    """Given a MovieDB ID and cast credits JSON object, process cast info and create Person database records."""
-
-    film = get_film_by_moviedb_id(moviedb_id, play)
-
-    for castmember in cast_credits:
-            person_moviedb_id = castmember["id"]
-            person = get_person_by_moviedb_id(person_moviedb_id)
-            parts_played = castmember["character"].split(" / ")
-            job_held = get_job_held(person, film, "Actor")
-        
-            for part in parts_played:
-                character = get_character_by_name(part, play)
-                part_played = add_part_played(person, character, film)
-                db.session.add(part_played)
-
-    db.session.commit() 
-
-
-def process_moviedb_crew(moviedb_id, crew_credits, play):
-    """Given a Movie record and crew credits JSON object, process crew info and create important crew database records."""
-
-    important_crew = {"Director", "Cinematographer", "Executive Producer", "Writer"}
-    film = get_film_by_moviedb_id(moviedb_id, play)
-
-    for crewmember in crew_credits:
-        if crewmember["job"] in important_crew:
-            crew_moviedb_id = crewmember["id"]
-            person = get_person_by_moviedb_id(crew_moviedb_id)
-            job = get_job_by_title(crewmember["job"])
-            job_held = get_job_held(person, film, job.title)
-    
-    db.session.commit()
-
-
-def process_moviedb_film_details(moviedb_id, play):
-    """Given a MovieDB ID, query film information from MovieDB and create a Film database record."""
-
-    film_details = "https://api.themoviedb.org/3/movie/" + str(moviedb_id) + "?api_key=" + MOVIEDB_API_KEY + "&language=en-US"
-    details = requests.get(film_details).json()
-    imdb_id = details["imdb_id"]
-    title = details["title"]
-    release_date = details["release_date"]
-    format = "%Y-%m-%d"
-    release_date = datetime.strptime(release_date, format)
-    language = details["original_language"]
-    length = details["runtime"]
-    poster_path = details["poster_path"]
-    play_id = play.id
-
-    film = add_film(play=play, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, language=language, length=length, poster_path=poster_path)
-    return film
-
-
 def get_character_by_name(name, play):
     """Given a character name and play, return the Character object."""
 
@@ -249,27 +197,6 @@ def get_film_by_moviedb_id(moviedb_id, play):
     else:
         film = process_moviedb_film_details(moviedb_id, play)
         return film
-
-
-def get_person_by_moviedb_id(moviedb_id):
-    """Given a person's MovieDB ID, return (or create and return) a matching Person object."""
-
-    existing_record = db.session.query(exists().where(Person.moviedb_id == moviedb_id)).scalar()
-
-    if existing_record:
-        return Person.query.filter(Person.moviedb_id == moviedb_id).first()
-    else:
-        person_profile = requests.get("https://api.themoviedb.org/3/person/" + str(moviedb_id) + "?api_key=" + MOVIEDB_API_KEY)
-        person_profile = person_profile.json()
-        imdb_id = person_profile["imdb_id"]
-        full_name = person_profile["name"].split()
-        fname, lname = full_name[0], full_name[-1]
-        birthday = person_profile["birthday"]
-        gender = person_profile["gender"]
-        photo_path = person_profile["profile_path"]
-
-        person = add_person(moviedb_id, imdb_id, fname, lname, birthday, gender, photo_path)
-        return person
 
 
 def get_play_by_shortname(shortname):

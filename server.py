@@ -10,6 +10,8 @@ import re #regex
 import json
 from crud import *
 from data_model import *
+from folger_parser import *
+from moviedb_parser import *
 
 FLASK_KEY = os.environ["FLASK_KEY"]
 MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
@@ -40,24 +42,20 @@ def add_film():
 
 @app.route("/process-film")
 def process_film():
-    """Given MovieDB URL by user, queries MovieDB API for film information and adds information to database."""
+    """Given a MovieDB film URL by the user, query the MovieDB API for film info and pass to verification page."""
 
     play_shortname = request.args.get("plays")
     play = get_play_by_shortname(play_shortname)
-    
     film_url = request.args.get("film-url")
-    moviedb_regx = ("(?<=https:\/\/www\.themoviedb\.org\/movie\/)[0-9]*") #MovieDB film ID format
-    moviedb_id = re.search(moviedb_regx, film_url)[0] #first result of regex search for MovieDB film ID format in URL
-    moviedb_id = int(moviedb_id)
-    moviedb_credits = "https://api.themoviedb.org/3/movie/" + str(moviedb_id) + "/credits?api_key=" + MOVIEDB_API_KEY
-    credits = requests.get(moviedb_credits).json()
-    cast_credits, crew_credits = credits["cast"], credits["crew"]
 
-    process_moviedb_film_details(moviedb_id, play) #process MovieDB film details and create Film database object
-    process_moviedb_cast(moviedb_id, cast_credits, play) #process MovieDB actor details and create Actor database objects
-    process_moviedb_crew(moviedb_id, crew_credits, play) #process MovieDB crew details and create various crew database objects
+    film_id = get_moviedb_film_id(film_url)
+    details, cast, crew = parse_moviedb_film(film_id, play)
 
-    return render_template("verify-film.html")
+    return render_template("verify-film.html",
+                            details=details,
+                            cast=cast,
+                            crew=crew,
+                            play=play)
 
 
 if __name__ == '__main__':

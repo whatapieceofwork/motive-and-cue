@@ -5,8 +5,32 @@
 {% block content %}
 <h2>Verify Film Information</h2>
 
-<p>Film successfully processed and added to database..</p>
+<img class="poster" src="{{details['poster_path']}}" />
 
-<p>To be added here: Review of all film information, interface to confirm information.</p>
+<h3>Film Title: {{details["title"]}}</h3>
+<ul>
+    <li>MovieDB ID: {{details["moviedb_id"]}}</li>
+    <li>IMDB ID: {{details["imdb_id"]}}</li>
+    <li>Release Date: {{details["release_date"]}}</li>
+    <li>Language: {{details["language"]}}</li>
+    <li>Length: {{details["length"]}}
+</ul>
+
+{% for person in cast %}
+    <img class="portrait" src="{{cast[person]['photo_path']}}" />
+    <h4>Full Name: {{cast[person]["fname"]}} {{cast[person]["lname"]}}</h4>
+    <ul>
+        <li>Birthday: {{cast[person]["birthday"]}}</li>
+        <li>Gender: {{cast[person]["gender"]}}</li>
+        {% for part in cast[person]["parts_played"] %}
+            <li>Part: {{part}}</li>
+        {% endfor %}
+    </ul>
+{% endfor %}
+
+{{ details }}
+{{ cast }}
+{{ crew }}
+{{ play }}
 
 {% endblock %}

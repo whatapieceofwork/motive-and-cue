@@ -1,4 +1,12 @@
-.actor-card img {
+/* .actor-card img {
     max-height: 250px;
     border: 1px solid darkgray;
+} */
+
+img.portrait {
+    max-height: 250px;
+}
+
+img.poster {
+    max-height: 300px;
 }

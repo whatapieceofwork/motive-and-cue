@@ -9,7 +9,11 @@
     <label for="plays">Select a play:</label>
     <select name="plays" id="plays">
         {% for key, value in plays.items() %}
+            {% if key == "Ham" %}
+                <option selected value="{{ key }}">{{ value }}</option>
+            {% else %}
             <option value="{{ key }}">{{ value }}</option>
+            {% endif %}
         {% endfor %}
     </select>
 
