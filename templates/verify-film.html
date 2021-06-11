@@ -5,28 +5,75 @@
 {% block content %}
 <h2>Verify Film Information</h2>
 
-<img class="poster" src="{{details['poster_path']}}" />
+<div id="film-metadata">
+    <form action="/add-film-to-db" method="post">
+{% if details['poster_path'] %}
+    <div><img class="poster" src="{{details['poster_path']}}" /></div>
+{% else %}
+    <p>[NO FILM POSTER AVAILABLE.]</p>
+{% endif %}
 
-<h3>Film Title: {{details["title"]}}</h3>
+<h3>{{details['title']}}</h3>
 <ul>
-    <li>MovieDB ID: {{details["moviedb_id"]}}</li>
-    <li>IMDB ID: {{details["imdb_id"]}}</li>
-    <li>Release Date: {{details["release_date"]}}</li>
-    <li>Language: {{details["language"]}}</li>
-    <li>Length: {{details["length"]}}
+    <li><label for "title">Film Title</label>
+        <input type="text" name="title" id="title" placeholder="{{details['title']}}" value="{{details['title']}}" required></li>
+    <li><label for "poster_path">Poster Path</label>
+        <input type="text" name="poster_path" id="poster_path" value="{{details['poster_path']}}"></li>
+    <li><label for "release_date">Release Date</label>
+        <input type="date" name="release_date" id="release_date" placeholder="{{details['release_date'].strftime('%Y-%m-%d')}}" value="{{details['release_date'].strftime('%Y-%m-%d')}}" required></li>
+    <li><label for "language">Language</label>
+        <input type="text" name="language" id="language" placeholder="{{details['language']}}" value="{{details['language']}}" required></li>
+    <li><label for "length">Length in minutes</label>
+        <input type="text" name="length" id="length" placeholder="{{details['length']}}" value="{{details['length']}}" required></li>
+    <li><label for "film_moviedb_id">MovieDB ID</label>
+        <input type="text" name="film_moviedb_id" id="moviedb_id" placeholder="{{details['moviedb_id']}}" value="{{details['moviedb_id']}}" required></li>
+    <li><label for "film_imdb_id">IMDB ID</label>
+        <input type="text" name="film_imdb_id" id="imdb_id" placeholder="{{details['imdb_id']}}" value="{{details['imdb_id']}}" required></li>
 </ul>
+</div>
 
 {% for person in cast %}
-    <img class="portrait" src="{{cast[person]['photo_path']}}" />
-    <h4>Full Name: {{cast[person]["fname"]}} {{cast[person]["lname"]}}</h4>
+<div id="person-metadata">
+    {% if cast[person]['photo_path'] %}
+        <img class="portrait" src="{{cast[person]['photo_path']}}" /><br/>
+    {% else %}
+        <p>[NO PROFILE IMAGE AVAILABLE.]</p>
+    {% endif %}
+
+    <h3>{{cast[person]['full_name']|join(' ')}}</h3>
     <ul>
-        <li>Birthday: {{cast[person]["birthday"]}}</li>
-        <li>Gender: {{cast[person]["gender"]}}</li>
+        <li><label for "fname">Full Name</label> 
+            <input type="text" name="fname" id="fname" placeholder="{{cast[person]['fname']}}" value="{{cast[person]['fname']}}">
+            <label for "lname">Last Name</label> 
+            <input type="text" id="lname" placeholder="{{cast[person]['lname']}}" value="{{cast[person]['lname']}}"></li>
+        <li><label for "photo_path">Photo Path</label>
+            <input type="text" name="photo_path" id="photo_path" placeholder="{{cast[person]['photo_path']}}" value="{{cast[person]['photo_path']}}"></li>
+        <li><label for "birthday">Birthday</label>
+            <input type="date" name="birthday" id="birthday" {% if cast[person]['birthday'] %}value="{{cast[person]['birthday'].strftime('%Y-%m-%d')}}{% endif %}" required></li>
+        <li><label for "gender">Gender</label>
+            <select name="gender" id="gender">
+                {% for key, value in genders.items() %}
+                    {% if key == cast[person]['gender'] %}
+                        <option selected value="{{ key }}">{{ value }}</option>
+                    {% else %}
+                        <option value="{{ key }}">{{ value }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        <li><label for "person_moviedb_id">MovieDB ID</label>
+            <input type="text" name="person_moviedb_id" id="moviedb_id" placeholder="{{details['moviedb_id']}}" value="{{details['moviedb_id']}}" required></li>
+        <li><label for "person_imdb_id">IMDB ID</label>
+            <input type="text" name="person_imdb_id" id="imdb_id" placeholder="{{details['imdb_id']}}" value="{{details['imdb_id']}}" required></li>
+        </li>
         {% for part in cast[person]["parts_played"] %}
-            <li>Part: {{part}}</li>
+            <li><label for "part">Part</label>
+                <input type="text" name="part" id="part{{loop.index}}" value="{{part}}" required></li>
         {% endfor %}
     </ul>
+    </form>
+</div>
 {% endfor %}
+
 
 {{ details }}
 {{ cast }}

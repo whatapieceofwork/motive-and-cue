@@ -55,8 +55,35 @@ def process_film():
                             details=details,
                             cast=cast,
                             crew=crew,
-                            play=play)
+                            play=play,
+                            genders=GENDERS)
 
+
+@app.route("/add-film-to-db", methods = ["POST"])
+def add_film_to_db()
+    """Use the form data from /process-film to add film information to the database."""
+
+    film = {}
+    film["title"] = request.form.get("title")
+    film["poster_path"] = request.form.get("poster_path")
+    film["release_date"] = request.form.get("release_date")
+    film["language"] = request.form.get("language")
+    film["length"] = request.form.get("length")
+    film["film_moviedb_id"] = request.form.get("film_moviedb_id")
+    film["film_imdb_id"] = request.form.get("film_imdb_id")
+
+    # ...oh wait oh no how do I do this for each person???
+    # person = {}
+    # person["fname"] = request.form.get("fname")
+    # person["lname"] = request.form.get("lname")
+    # person[request.form.get("photo_path")
+    # request.form.get("birthday")
+    # request.form.get("gender")
+    # request.form.get("person_moviedb_id")
+    # request.form.get("person_imdb_id")
+
+
+    
 
 if __name__ == '__main__':
     app.debug = True

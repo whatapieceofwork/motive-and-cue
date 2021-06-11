@@ -12,6 +12,11 @@ import re #regex
 import json
 
 MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
+GENDERS = {
+    0: "Other/NA",
+    1: "Female",
+    2: "Male",
+}
 
 def get_moviedb_film_id(film_url):
     """Given the URL of a film on MovieDB, return the film's MovieDB ID."""
@@ -54,7 +59,7 @@ def parse_moviedb_film_details(moviedb_id, play):
     film["length"] = details["runtime"]
     film["play_id"] = play.id
     if details["poster_path"]:
-        film["poster_path"] = "https://www.themoviedb.org/t/p/original/" + details["poster_path"]
+        film["poster_path"] = "https://www.themoviedb.org/t/p/original/" + details.get("poster_path")
 
 
     return film

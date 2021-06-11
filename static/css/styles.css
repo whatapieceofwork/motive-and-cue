@@ -3,10 +3,15 @@
     border: 1px solid darkgray;
 } */
 
-img.portrait {
-    max-height: 250px;
+#film-metadata,
+#person-metadata {
+    padding: 15px;
 }
 
-img.poster {
+#film-metadata img.poster {
     max-height: 300px;
+}
+
+#person-metadata img.portrait {
+    max-height: 250px;
 }
