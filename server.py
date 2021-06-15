@@ -79,8 +79,8 @@ def add_film_to_db():
     film["release_date"] = request.form.get("release_date")
     film["language"] = request.form.get("language")
     film["length"] = request.form.get("length")
-    film["moviedb_id"] = request.form.get("film_moviedb_id")
-    film["imdb_id"] = request.form.get("film_imdb_id")
+    film["film_moviedb_id"] = request.form.get("film_moviedb_id")
+    film["film_imdb_id"] = request.form.get("film_imdb_id")
 
     people = []
     person_count = request.form.get("person_count")
@@ -92,8 +92,8 @@ def add_film_to_db():
         person["photo_path"] = request.form.get(f"photo_path-{i}")
         person["birthday"] = request.form.get(f"birthday-{i}")
         person["gender"] = request.form.get(f"gender-{i}")
-        person["moviedb_id"] = request.form.get(f"person_moviedb_id-{i}")
-        person["imdb_id"] = request.form.get(f"person_imdb_id-{i}")
+        person["person_moviedb_id"] = request.form.get(f"person_moviedb_id-{i}")
+        person["person_imdb_id"] = request.form.get(f"person_imdb_id-{i}")
 
         person["parts"] = []
         part_count = request.form.get(f"part_count-{i}")

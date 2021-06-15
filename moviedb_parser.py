@@ -50,8 +50,8 @@ def parse_moviedb_film_details(moviedb_id, play):
     details_request_url = "https://api.themoviedb.org/3/movie/" + str(moviedb_id) + "?api_key=" + MOVIEDB_API_KEY + "&language=en-US"
     details = requests.get(details_request_url).json()
 
-    film["moviedb_id"] = moviedb_id
-    film["imdb_id"] = details["imdb_id"]
+    film["film_moviedb_id"] = moviedb_id
+    film["film_imdb_id"] = details["imdb_id"]
     film["title"] = details["title"]
     film["release_date"] = details["release_date"]
     film["release_date"] = datetime.strptime(film["release_date"], date_format)
@@ -74,8 +74,8 @@ def parse_moviedb_person(moviedb_id):
     profile_request_url = "https://api.themoviedb.org/3/person/" + str(moviedb_id) + "?api_key=" + MOVIEDB_API_KEY
     profile = requests.get(profile_request_url).json()
 
-    person["moviedb_id"] = moviedb_id
-    person["imdb_id"] = profile["imdb_id"]
+    person["person_moviedb_id"] = profile["id"]
+    person["person_imdb_id"] = profile["imdb_id"]
     person["full_name"] = profile["name"].split()
     person["fname"] = person["full_name"][0]
     person["lname"] = person["full_name"][-1]
