@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}- Add Characters{% endblock %}
+
+{% block content %}
+<h2>Add a List of Characters</h2>
+
+<form method="GET" action="/process-characters">
+    <label for="plays">Select a play:</label>
+    <select name="plays" id="plays">
+        {% for key, value in plays.items() %}
+            {% if key == "Ham" %}
+                <option selected value="{{ key }}">{{ value }}</option>
+            {% else %}
+            <option value="{{ key }}">{{ value }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+
+    <input type="submit" value="Submit">
+</form>
+{% endblock %}

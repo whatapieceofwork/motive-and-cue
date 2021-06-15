@@ -36,10 +36,49 @@ def index():
 
     return render_template("index.html")
 
+@app.route("/add-characters")
+def add_characters():
+    """Prompts user for play name to add play characters via API."""
+
+    return render_template("add-characters.html",
+                            plays = plays)
+
+
+@app.route("/process-characters")
+def process_characters():
+    """Given a Shakespeare play by the user, query the Folger Shakespeare API for a list of characters."""
+
+    play_shortname = request.args.get("plays")
+    play = get_play_by_shortname(play_shortname)
+
+    characters = parse_folger_characters(play)
+
+    return render_template("verify-characters.html",
+                            play=play,
+                            characters=characters,
+                            genders=GENDERS)
+
+
+@app.route("/add-characters-to-db", methods = ["POST"])
+def add_characters_to_db():
+    """Use the form data from /process-characters to add character information to the database."""
+
+    characters = []
+    character_count = request.form.get("character_count")
+    character_count = int(character_count) + 1
+    for i in range(character_count):
+        character = {}
+        character["name"] = request.form.get(f"name-{i}")
+        character["gender"] = request.form.get(f"gender-{i}")
+
+        characters.append(character)
+
+    return f"<div>{characters}</div>"
+
 
 @app.route("/add-film")
 def add_film():
-    """Prompts user for play and MovieDB ID."""
+    """Prompts user for play and MovieDB ID to add film information via API."""
 
     return render_template("add-film.html",
                             plays = plays)
@@ -55,11 +94,6 @@ def process_film():
 
     film_id = get_moviedb_film_id(film_url)
     details, cast, crew = parse_moviedb_film(film_id, play)
-
-    # # form = ValidateMovieDBInfo(details, cast, crew)
-
-    # return render_template("test-form.html",
-    #                         form=form)
 
     return render_template("verify-film.html",
                             details=details,
@@ -107,23 +141,6 @@ def add_film_to_db():
                             film=film,
                             people=people)
 
-
-
-# @app.route("/test-form", methods=["GET", "POST"])
-# def contact():
-#    form = ValidateMovieDBInfo()
-#    return render_template('test-form.html', form=form)
-
-# @app.route('/test-submit', methods=['GET', 'POST'])
-# def test_submit():
-#     form = ValidateMovieDBInfo()
-#     if form.validate_on_submit():
-#         title = form.title.data
-#         release_date = form.release_date.data  
-#         flash(f"{title}, {release_date}, {date2}")
-#         return redirect("/")
-#     else:
-#         return render_template('test-submit.html', form=form)
     
 if __name__ == '__main__':
     app.debug = True
