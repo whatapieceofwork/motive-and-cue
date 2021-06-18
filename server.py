@@ -66,7 +66,8 @@ def process_characters():
 def add_characters_to_db():
     """Use the form data from /process-characters to add character information to the database."""
 
-    play = get_play_by_title(request.form.get("play"))
+    play_title = request.form.get("play")
+    play = get_play_by_title(play_title)
     characters = []
     character_count = request.form.get("character_count")
     character_count = int(character_count) + 1
@@ -75,7 +76,7 @@ def add_characters_to_db():
         character["name"] = request.form.get(f"name-{i}")
         character["gender"] = request.form.get(f"gender-{i}")
 
-        get_character(character["name"], character["gender"],  play)
+        db_character = get_character(name=character["name"], gender=character["gender"], play=play)
         characters.append(character)
 
     return f"<div>{characters}</div>"
@@ -86,7 +87,7 @@ def add_characters_to_db():
 # ----- BEGIN: PROCESS FILM ----- #
 
 @app.route("/add-film")
-def add_film():
+def add_new_film():
     """Prompts user for play and MovieDB ID to add film information via API."""
 
     return render_template("add-film.html",
@@ -113,7 +114,8 @@ def process_film():
                             crew=crew,
                             play=play,
                             genders=GENDERS,
-                            character_names=character_names)
+                            character_names=character_names,
+                            )
 
 
 @app.route("/add-film-to-db", methods = ["POST"])
@@ -121,6 +123,7 @@ def add_film_to_db():
     """Use the form data from /process-film to add film information to the database."""
 
     film = {}
+    film["play"] = request.form.get("play")
     film["title"] = request.form.get("title")
     film["poster_path"] = request.form.get("poster_path")
     film["release_date"] = request.form.get("release_date")
@@ -129,26 +132,38 @@ def add_film_to_db():
     film["film_moviedb_id"] = request.form.get("film_moviedb_id")
     film["film_imdb_id"] = request.form.get("film_imdb_id")
 
+    play = get_play_by_title(film["play"])
+    db_film = get_film(play=play, moviedb_id=film["film_moviedb_id"], imdb_id=film["film_imdb_id"], title=film["title"], release_date=film["release_date"], language=film["language"], length=film["length"], poster_path=film["poster_path"])
+    
     people = []
     person_count = request.form.get("person_count")
     person_count = int(person_count) + 1
     for i in range(person_count):
         person = {}
-        person["fname"] = request.form.get(f"fname-{i}")
-        person["lname"] = request.form.get(f"lname-{i}")
-        person["photo_path"] = request.form.get(f"photo_path-{i}")
-        person["birthday"] = request.form.get(f"birthday-{i}")
-        person["gender"] = request.form.get(f"gender-{i}")
-        person["person_moviedb_id"] = request.form.get(f"person_moviedb_id-{i}")
-        person["person_imdb_id"] = request.form.get(f"person_imdb_id-{i}")
+        person["exclude"] = request.form.get(f"exclude-{i}")
 
-        person["parts"] = []
-        part_count = request.form.get(f"part_count-{i}")
-        part_count = int(part_count) + 1
-        for j in range(part_count):
-            person["parts"].append(request.form.get(f"part-{i}-{j}"))
+        if not person["exclude"]:
+            person["fname"] = request.form.get(f"fname-{i}")
+            person["lname"] = request.form.get(f"lname-{i}")
+            person["photo_path"] = request.form.get(f"photo_path-{i}")
+            person["birthday"] = request.form.get(f"birthday-{i}")
+            if not person["birthday"]:
+                person["birthday"] = None
+            person["gender"] = request.form.get(f"gender-{i}")
+            person["moviedb_id"] = request.form.get(f"person_moviedb_id-{i}")
+            person["imdb_id"] = request.form.get(f"person_imdb_id-{i}")
 
-        people.append(person)
+            person["parts"] = []
+            part_count = request.form.get(f"part_count-{i}")
+            part_count = int(part_count) + 1
+            for j in range(part_count):
+                person["parts"].append(request.form.get(f"part-{i}-{j}"))
+
+            db_person = get_person(person["moviedb_id"], person["imdb_id"], person["fname"], person["lname"], person["birthday"], person["gender"], person["photo_path"])
+            for part_name in person["parts"]:
+                get_part_played(person=db_person, character_name=part_name, film=db_film)
+
+            people.append(person)
 
     return render_template("submit-form.html",
                             film=film,

@@ -20,7 +20,7 @@ db = SQLAlchemy()
 
 plays = {"AWW": "All's Well That Ends Well", "Ant": "Antony and Cleopatra", "AYL": "As You Like It", "Err": "The Comedy of Errors", "Cor": "Coriolanus", "Cym": "Cymbeline", "Ham": "Hamlet", "1H4": "Henry IV, Part 1", "2H4": "Henry IV, Part 2", "H5": "Henry V", "1H6": "Henry VI, Part 1", "2H6": "Henry VI, Part 2", "3H6": "Henry VI, Part 3", "H8": "Henry VIII", "JC": "Julius Caesar", "Jn": "King John", "Lr": "King Lear", "LLL": "Love's Labor's Lost", "Mac": "Macbeth", "MM": "Measure for Measure", "MV": "The Merchant of Venice", "Wiv": "The Merry Wives of Windsor", "MND": "A Midsummer Night's Dream", "Ado": "Much Ado About Nothing", "Oth": "Othello", "Per": "Pericles", "R2": "Richard II", "R3": "Richard III", "Rom": "Romeo and Juliet", "Shr": "The Taming of the Shrew", "Tmp": "The Tempest", "Tim": "Timon of Athens", "Tit": "Titus Andronicus", "Tro": "Troilus and Cressida", "TN": "Twelfth Night", "TGV": "Two Gentlemen of Verona", "TNK": "Two Noble Kinsmen", "WT": "The Winter's Tale"}
 
-def add_character(name, gender, play):
+def add_character(name, play, gender=None):
     """Create and return a new Character database record."""
 
     character = Character(name=name, gender=gender, play_id=play.id)
@@ -68,12 +68,14 @@ def add_job_held(film, job, person):
     return jobheld
 
 
-def add_part_played(person, character, film):
+def add_part_played(person, character_name, film):
     """Create and return a PartPlayed database relationship record."""
 
-    # if not character:
-    #     play = get_play_by_film(film)
-    #     character = add_character(character, play)
+    play = get_play_by_film(film)
+    character = get_character(name=character_name, play=play)
+
+    print(f"**** IN ADD_PART_PLAYED, play = {play}, person={person}, character_name={character_name}")
+
     part_played=PartPlayed(person_id=person.id, character_id=character.id, film_id=film.id)
 
     db.session.add(part_played)
@@ -130,26 +132,29 @@ def add_topic(title, desc, quote):
     return topic
 
 
-def get_character(name, gender, play):
+def get_character(name, play, gender=None):
     """Given a character name, gender, and play, return the Character object."""
 
-    existing_record = db.session.query(exists().where((Character.name == name) & (Character.gender == gender) & (Character.play_id == play.id))).scalar()
-    if existing_record:
-        return Character.query.filter((Character.name == name) & (Character.gender == gender) & (Character.play_id == play.id)).first()
+    existing_character = db.session.query(exists().where((Character.name == name) & (Character.play_id == play.id))).scalar()
+    
+    if existing_character:
+        character = Character.query.filter((Character.name == name) & (Character.play_id == play.id)).first()
     else:
-        character = add_character(name=name, gender=gender, play=play)
-        return character
+        character = add_character(name=name, play=play, gender=gender)
+    
+    return character
 
 
 def get_job_by_title(title):
     """Given a job title, return the Job object."""
 
-    existing_record = db.session.query(exists().where(Job.title == title)).scalar()
+    existing_job = db.session.query(exists().where(Job.title == title)).scalar()
 
-    if existing_record:
-        return Job.query.filter(Job.title == title).first()
+    if existing_job:
+        job = Job.query.filter(Job.title == title).first()
     else:
         job = add_job(title)
+    
     return job
 
 
@@ -161,53 +166,97 @@ def get_job_held(person, film, job_title):
     existing_job_held = db.session.query(exists().where((JobHeld.person_id == person.id) & (JobHeld.film_id == film.id) & (JobHeld.job_id == job.id))).scalar()
     
     if existing_job_held:
-        return JobHeld.query.filter((JobHeld.person_id == person.id) & (JobHeld.film_id == film.id) & (JobHeld.job_id == job.id)).scalar()
+        job_held = JobHeld.query.filter((JobHeld.person_id == person.id) & (JobHeld.film_id == film.id) & (JobHeld.job_id == job.id)).first()
     else:
-        add_job_held(film, job, person)
+        job_held = add_job_held(film, job, person)
+    
+    return job_held
+
+
+def get_film(play, moviedb_id, imdb_id, title, release_date, language, length, poster_path):
+
+    existing_film = db.session.query(exists().where(Film.moviedb_id == moviedb_id)).scalar()
+    
+    if existing_film:
+        film = Film.query.filter(Film.moviedb_id == moviedb_id).first()
+    else:
+        film = add_film(play, moviedb_id, imdb_id, title, release_date, language, length, poster_path)
+    
+    return film
 
 
 def get_film_by_moviedb_id(moviedb_id, play):
     """Given a film's MovieDB ID, return the Film object."""
 
-    existing_record = db.session.query(exists().where(Film.moviedb_id == moviedb_id)).scalar()
+    existing_film = db.session.query(exists().where(Film.moviedb_id == moviedb_id)).scalar()
     
-    if existing_record:
-        return Film.query.filter(Film.moviedb_id == moviedb_id).first()
+    if existing_film:
+        film = Film.query.filter(Film.moviedb_id == moviedb_id).first()
     else:
-        film = process_moviedb_film_details(moviedb_id, play)
-        return film
+        film = parse_moviedb_film_details(moviedb_id, play)
+    
+    return film
+
+
+def get_person(moviedb_id, imdb_id, fname, lname, birthday, gender, photo_path):
+    """Given a person's information, create (or return) a Person object."""
+
+    existing_person = db.session.query(exists().where((Person.moviedb_id == moviedb_id) & (Person.fname == fname) & (Person.lname == lname))).scalar()
+
+    if existing_person:
+        person = Person.query.filter((Person.moviedb_id == moviedb_id) & (Person.fname == fname) & (Person.lname == lname)).first()
+    else:
+        person = add_person(moviedb_id=moviedb_id, imdb_id=imdb_id, fname=fname, lname=lname,
+                    birthday=birthday, gender=gender, photo_path=photo_path)
+    
+    return person
+
+
+def get_part_played(person, character_name, film):
+    """Given a person's information, create (or return) a Person object."""
+
+    play = get_play_by_film(film)
+    character = get_character(character_name, play)
+
+    existing_part_played = db.session.query(exists().where((PartPlayed.person_id == person.id) & (PartPlayed.character_id == character.id) & (PartPlayed.film_id == film.id))).scalar()
+
+    if existing_part_played:
+        part_played = PartPlayed.query.filter((PartPlayed.person_id == person.id) & (PartPlayed.character_id == character.id) & (PartPlayed.film_id == film.id)).first()
+    else:
+        part_played = add_part_played(person=person, character_name=character_name, film=film)
+    
+    return part_played
 
 
 def get_play_by_shortname(shortname):
     """Given a play's shortname, return the play."""
 
-    existing_record = db.session.query(exists().where(Play.shortname == shortname)).scalar()
-    print(f"***************************** {existing_record}")
-    if existing_record:
-        return Play.query.filter(Play.shortname == shortname).one()
+    existing_play = db.session.query(exists().where(Play.shortname == shortname)).scalar()
+
+    if existing_play:
+        play = Play.query.filter(Play.shortname == shortname).one()
     else:
         play = add_play(plays[shortname], shortname)
-        return play
+    
+    return play
 
 
 def get_play_by_title(title):
     """Given a play's complete title, return the play."""
 
-    existing_record = db.session.query(exists().where(Play.title == title)).scalar()
+    existing_play = db.session.query(exists().where(Play.title == title)).scalar()
 
-    if existing_record:
-        return Play.query.filter(Play.title == title).first()
+    if existing_play:
+        play = Play.query.filter(Play.title == title).first()
     else:
-        add_play(title, plays[title])
+        play = add_play(title, plays[title])
+    
+    return play
 
 
 def get_play_by_film(film):
     """Given a film, return the associated play."""
 
     play_id = film.play_id
-    return Play.query.get(play_id).first()
-
-
-
-# def get_hamlet_cast():
-#     """Return all actor objects associated with Hamlet."""
+    play = Play.query.filter(Play.id == play_id).first()
+    return play
