@@ -48,6 +48,7 @@ class Character(db.Model):
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
+    gender = db.Column(db.String(10))
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="characters")
     played_by = db.relationship("Person", secondary="parts_played", back_populates="parts")

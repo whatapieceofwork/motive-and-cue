@@ -13,9 +13,9 @@ import json
 
 MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
 GENDERS = {
-    0: "Other/NA",
-    1: "Female",
     2: "Male",
+    1: "Female",
+    0: "Other/NA"
 }
 
 def get_moviedb_film_id(film_url):
@@ -60,7 +60,6 @@ def parse_moviedb_film_details(moviedb_id, play):
     film["play_id"] = play.id
     if details["poster_path"]:
         film["poster_path"] = "https://www.themoviedb.org/t/p/original/" + details.get("poster_path")
-
 
     return film
 

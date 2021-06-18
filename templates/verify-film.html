@@ -13,6 +13,12 @@
     <p>[NO FILM POSTER AVAILABLE.]</p>
 {% endif %}
 
+<datalist id="parts">
+    {% for name in character_names %}
+        <option value="{{name}}"></option>
+    {% endfor %}
+</datalist>
+
 <h3>{{details['title']}}</h3>
 <ul>
     <li><label for "title">Film Title</label>
@@ -42,15 +48,15 @@
 
     <h3>{{cast[person]['full_name']|join(' ')}}</h3>
     <ul>
-        <li><label for "fname">Full Name</label> 
+        <li><label for "fname-{{loop.index0}}">Full Name</label> 
             <input type="text" name="fname-{{loop.index0}}" id="fname-{{loop.index0}}" placeholder="{{cast[person]['fname']}}" value="{{cast[person]['fname']}}">
-            <label for "lname">Last Name</label> 
+            <label for "lname-{{loop.index0}}">Last Name</label> 
             <input type="text" name="lname-{{loop.index0}}" id="lname-{{loop.index0}}" placeholder="{{cast[person]['lname']}}" value="{{cast[person]['lname']}}">
-        <li><label for "photo_path">Photo Path</label>
+        <li><label for "photo_path-{{loop.index0}}">Photo Path</label>
             <input type="text" name="photo_path-{{loop.index0}}" id="photo_path-{{loop.index0}}" placeholder="{{cast[person]['photo_path']}}" value="{{cast[person]['photo_path']}}"></li>
-        <li><label for "birthday">Birthday</label>
+        <li><label for "birthday-{{loop.index0}}">Birthday</label>
             <input type="date" name="birthday-{{loop.index0}}" id="birthday-{{loop.index0}}" {% if cast[person]['birthday'] %} placeholder="{{cast[person]['birthday'].strftime('%Y-%m-%d')}}" value="{{cast[person]['birthday'].strftime('%Y-%m-%d')}}" {% endif %}></li>
-        <li><label for "gender">Gender</label>
+        <li><label for "gender-{{loop.index0}}">Gender</label>
             <select name="gender-{{loop.index0}}" id="gender-{{loop.index0}}">
                 {% for key, value in genders.items() %}
                     {% if key == cast[person]['gender'] %}
@@ -60,15 +66,19 @@
                     {% endif %}
                 {% endfor %}
             </select>
-        <li><label for "person_moviedb_id"><a href="https://www.themoviedb.org/person/{{cast[person]['person_moviedb_id']}}">MovieDB ID</a></label>
+        <li><label for "person_moviedb_id-{{loop.index0}}"><a href="https://www.themoviedb.org/person/{{cast[person]['person_moviedb_id']}}">MovieDB ID</a></label>
             <input type="text" name="person_moviedb_id-{{loop.index0}}" id="person_moviedb_id-{{loop.index0}}" placeholder="{{cast[person]['person_moviedb_id']}}" value="{{cast[person]['person_moviedb_id']}}" required></li>
-        <li><label for "person_imdb_id"><a href="https://www.imdb.com/name/{{cast[person]['person_imdb_id']}}">IMDB ID</a></label>
+        <li><label for "person_imdb_id-{{loop.index0}}"><a href="https://www.imdb.com/name/{{cast[person]['person_imdb_id']}}">IMDB ID</a></label>
             <input type="text" name="person_imdb_id-{{loop.index0}}" id="person_imdb_id-{{loop.index0}}" placeholder="{{cast[person]['person_imdb_id']}}" value="{{cast[person]['person_imdb_id']}}" required></li>
         </li>
         {% set parent_loop = loop %}
         {% for part in cast[person]["parts_played"] %}
-            <li><label for "part">Part</label>
-                <input type="text" name="part-{{parent_loop.index0}}-{{loop.index0}}" id="part-{{parent_loop.index0}}-{{loop.index0}}" value="{{part}}" required></li>
+        <li><label for "part-{{loop.index0}}">Part</label>
+            {% if part in character_names %}
+                <input type="search" list="parts" name="part-{{parent_loop.index0}}-{{loop.index0}}" id="part-{{parent_loop.index0}}-{{loop.index0}}" placeholder="{{part}} "value="{{part}}">    
+            {% else %} 
+                <input type="search" list="parts" name="part-{{parent_loop.index0}}-{{loop.index0}}" id="part-{{parent_loop.index0}}-{{loop.index0}}" placeholder="{{part}}">                     
+            {% endif %}
             {% if loop.last %}
                 <input type="hidden" id="part_count-{{parent_loop.index0}}" name="part_count-{{parent_loop.index0}}" value="{{loop.index0}}">
             {% endif %}
@@ -83,10 +93,5 @@
 <input type="submit" value="Submit">
 </form>
 
-
-{{ details }}
-{{ cast }}
-{{ crew }}
-{{ play }}
 
 {% endblock %}

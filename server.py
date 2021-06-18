@@ -36,6 +36,9 @@ def index():
 
     return render_template("index.html")
 
+
+# ----- BEGIN: PROCESS CHARACTERS ----- #
+
 @app.route("/add-characters")
 def add_characters():
     """Prompts user for play name to add play characters via API."""
@@ -63,6 +66,7 @@ def process_characters():
 def add_characters_to_db():
     """Use the form data from /process-characters to add character information to the database."""
 
+    play = get_play_by_title(request.form.get("play"))
     characters = []
     character_count = request.form.get("character_count")
     character_count = int(character_count) + 1
@@ -71,10 +75,15 @@ def add_characters_to_db():
         character["name"] = request.form.get(f"name-{i}")
         character["gender"] = request.form.get(f"gender-{i}")
 
+        get_character(character["name"], character["gender"],  play)
         characters.append(character)
 
     return f"<div>{characters}</div>"
 
+# ----- END: PROCESS CHARACTERS ----- #
+
+
+# ----- BEGIN: PROCESS FILM ----- #
 
 @app.route("/add-film")
 def add_film():
@@ -95,12 +104,16 @@ def process_film():
     film_id = get_moviedb_film_id(film_url)
     details, cast, crew = parse_moviedb_film(film_id, play)
 
+    character_names = [character.name for character in play.characters]
+    character_names.sort()
+
     return render_template("verify-film.html",
                             details=details,
                             cast=cast,
                             crew=crew,
                             play=play,
-                            genders=GENDERS)
+                            genders=GENDERS,
+                            character_names=character_names)
 
 
 @app.route("/add-film-to-db", methods = ["POST"])
@@ -140,6 +153,8 @@ def add_film_to_db():
     return render_template("submit-form.html",
                             film=film,
                             people=people)
+
+# ----- END: PROCESS FILM ----- #
 
     
 if __name__ == '__main__':

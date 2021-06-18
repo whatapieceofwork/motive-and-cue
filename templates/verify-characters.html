@@ -3,7 +3,7 @@
 {% block title %}- Verify Characters{% endblock %}
 
 {% block content %}
-<h2>Verify Character List</h2>
+<h2>Verify Character List for {{play.title}}</h2>
 
 <div id="characters-metadata">
     <form action="/add-characters-to-db" method="post">
@@ -11,18 +11,21 @@
 {% for character in characters %}
 <div id="character-metadata">
     <ul>
+        <input type="hidden" id="play" name="play" value="{{play.title}}">
         <li><label for "name">Name</label> 
             <input type="text" name="name-{{loop.index0}}" id="name-{{loop.index0}}" placeholder="{{character}}" value="{{character}}">
-        <li><label for "gender">Canonical Gender</label>
-            <select name="gender-{{loop.index0}}" id="gender-{{loop.index0}}">
+        <li><label for "gender">Canonical Gender</label><br />
+                {% set character_loop = loop %}
                 {% for key, value in genders.items() %}
                     {% if key == 2 %}
-                        <option selected value="{{ key }}">{{ value }}</option>
+                        <input type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}} checked>
                     {% else %}
-                        <option value="{{ key }}">{{ value }}</option>
+                        <input type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}}>
                     {% endif %}
+                    
+                    <label for="{{key}}">{{value}}</label><br>
                 {% endfor %}
-            </select></li>
+            </li>
     </ul>
     {% if loop.last %}
         <input type="hidden" id="character_count" name="character_count" value="{{loop.index0}}">
