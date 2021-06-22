@@ -50,6 +50,7 @@ class Character(db.Model):
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="characters")
     played_by = db.relationship("Person", secondary="parts_played", back_populates="parts")
+    choices = db.relationship("Choice", secondary="choice_characters", back_populates="characters")
 
     def __repr__(self):
         return f"<CHARACTER id={self.id} {self.name} {self.play_id}>"
@@ -64,11 +65,13 @@ class Scene(db.Model):
     act = db.Column(db.Integer, nullable=False)
     scene = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(100))
+    description = db.Column(db.Text)
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="scenes")
+    choices = db.relationship("Choice", secondary="choice_scenes", back_populates="scenes")
 
     def __repr__(self):
-        return f"<SCENE id={self.scene} {self.act}.{self.scene} {self.play.title}>"
+        return f"<SCENE id={self.id} {self.act}.{self.scene} {self.play.title}>"
 
 
 class Person(db.Model):
@@ -116,19 +119,20 @@ class Film(db.Model):
         return f"<FILM id={self.id} {self.title} {self.release_date}>"
 
 
-class ChoicePoint(db.Model):
+class Choice(db.Model):
     """A point in the play where multiple interpretations could be made."""
 
-    __tablename__ = "choicepoints"
+    __tablename__ = "choices"
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.String(50), nullable=False)
     desc = db.Column(db.Text)
-    # choicescenes - relationship
-    # choicechars - relationship
+    quote = db.Column(db.Text)
+    scenes = db.relationship("Scene", secondary="choice_scenes", back_populates="choices")
+    characters = db.relationship("Character", secondary="choice_characters", back_populates="choices")
 
     def __repr__(self):
-        return f"<CHOICEPOINT id={self.id} {self.title}>"
+        return f"<CHOICE id={self.id} {self.title}>"
 
 
 class Interpretation(db.Model):
@@ -138,8 +142,11 @@ class Interpretation(db.Model):
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.String(100))
-    start_time = db.Column(db.Integer)
+    time_start = db.Column(db.Integer)
+    time_end = db.Column(db.Integer)
     desc = db.Column(db.Text)
+    film_id = db.Column(db.Integer, db.ForeignKey("films.id"))
+    choice_id = db.Column(db.Integer, db.ForeignKey("choices.id"))
 
     def __repr__(self):
         return f"<INTERPRETATION id={self.id} {self.title}>"
@@ -241,12 +248,12 @@ class ChoiceScene(db.Model):
     __tablename__ = "choice_scenes"
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    choice_id = db.Column(db.Integer, db.ForeignKey("choicepoints.id"))
+    choice_id = db.Column(db.Integer, db.ForeignKey("choices.id"))
     scene_id = db.Column(db.Integer, db.ForeignKey("scenes.id"))
 
 
     def __repr__(self):
-            return f"<TOPICSCENE id={self.id} {self.choice_id} {self.scene_id}>"
+            return f"<CHOICESCENE id={self.id} {self.choice_id} {self.scene_id}>"
 
 
 class ChoiceCharacter(db.Model):
@@ -255,11 +262,11 @@ class ChoiceCharacter(db.Model):
     __tablename__ = "choice_characters"
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    choice_id = db.Column(db.Integer, db.ForeignKey("choicepoints.id"))
+    choice_id = db.Column(db.Integer, db.ForeignKey("choices.id"))
     character_id = db.Column(db.Integer, db.ForeignKey("characters.id"))
 
     def __repr__(self):
-            return f"<TOPICCHARACTER id={self.id} {self.choice_id} {self.character_id}>"
+            return f"<CHOICECHARACTER id={self.id} {self.choice_id} {self.character_id}>"
 
 # -- END Relationship objects --
 

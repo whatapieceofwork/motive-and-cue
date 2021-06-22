@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}- Edit Scenes{% endblock %}
+
+{% block content %}
+<h2>Edit Scene List for {{play.title}}</h2>
+
+<div id="scenes-metadata">
+    <form action="/edit-scenes-in-db" method="post">
+    <input type="hidden" id="play" name="play" value="{{play.title}}">
+
+{% for scene in scenes %}
+<div id="scene-metadata">
+    <ul>
+        <input type="hidden" id="id-{{loop.index0}}" name="id-{{loop.index0}}" value="{{scene['id']}}">
+        <li><label for "act-{{loop.index0}}">Act</label> 
+            <input type="text" name="act-{{loop.index0}}" id="act-{{loop.index0}}" placeholder="{{scene['act']}}" value="{{scene['act']}}">
+        <label for "scene-{{loop.index0}}">Scene</label> 
+            <input type="text" name="scene-{{loop.index0}}" id="scene-{{loop.index0}}" placeholder="{{scene['scene']}}" value="{{scene['scene']}}">
+        </li>
+        <br />
+        <label for "title-{{loop.index0}}">Title</label>
+            <input type="text" name="title-{{loop.index0}}" id="title-{{loop.index0}}" placeholder="{{scene['title']}}" value="{{scene['title']}}">
+        <br />
+        <label for "description-{{loop.index0}}">Description</label> 
+            <textarea name="description-{{loop.index0}}" id="description-{{loop.index0}}" placeholder="{{scene['description']}}" value="{{scene['description']}}"></textarea>
+        <br />
+        </li>
+    </ul>
+    {% if loop.last %}
+        <input type="hidden" id="scene_count" name="scene_count" value="{{loop.index0}}">
+    {% endif %}
+</div>
+{% endfor %}
+
+<input type="submit" value="Submit">
+</form>
+
+{% endblock %}

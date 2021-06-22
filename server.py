@@ -12,6 +12,7 @@ from crud import *
 from data_model import *
 from folger_parser import *
 from moviedb_parser import *
+from seed import *
 
 FLASK_KEY = os.environ["FLASK_KEY"]
 MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
@@ -30,6 +31,131 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/choose-play")
+def choose_play():
+    """Prompts user for play name, passes to appropriate function."""
+
+    return render_template("choose-play.html",
+                            play_titles = play_titles)
+
+
+# ----- BEGIN: PROCESS SCENES ----- #
+
+@app.route("/add-scenes")
+def add_scenes():
+    """Prompts user for play name to add scenes via the Folger page of that play."""
+
+    return render_template("choose-play.html",
+                            function="add_scenes",
+                            play_titles = play_titles)
+
+
+@app.route("/process-scenes-by-play")
+def process_scenes():
+    """Given a Shakespeare play by the user, query the Folger website and scrape a list of scenes."""
+
+    play_shortname = request.args.get("play_titles")
+    play = get_play_by_shortname(play_shortname)
+
+    scenes = parse_folger_scenes(play)
+
+    return render_template("scenes-verify.html",
+                            play=play,
+                            scenes=scenes)
+
+
+@app.route("/add-scenes-to-db", methods = ["POST"])
+def add_scenes_to_db():
+    """Use the form data from /process-scenes to add scene information to the database."""
+
+    play_title = request.form.get("play")
+    play = get_play_by_title(play_title)
+    scene_count = request.form.get("scene_count")
+    scene_count = int(scene_count) + 1
+
+    scenes = {}
+    for i in range(scene_count):
+        scene = {}
+        scene["act"] = request.form.get(f"act-{i}")
+        scene["scene"] = request.form.get(f"scene-{i}")
+        scene["title"] = request.form.get(f"title-{i}")
+        scene["description"] = request.form.get(f"description-{i}")
+        scenes[i] = scene
+
+        db_scene = get_scene(act=scene["act"], scene=scene["scene"], play=play, title=scene["title"], description=scene["description"])
+
+    return f"<div>{scenes}</div>"
+
+
+@app.route("/edit-scenes")
+def edit_scenes():
+    """Prompts user for play name to edit scenes via the Folger page of that play."""
+
+    return render_template("choose-play.html",
+                            function="edit_scenes",
+                            play_titles = play_titles)
+
+
+@app.route("/edit-scenes-by-play")
+def edit_scenes_by_play():
+    """Given a Shakespeare play by the user, edit the existing scenes in the database."""
+
+    play_shortname = request.args.get("play_titles")
+    play = get_play_by_shortname(play_shortname)
+
+    scenes = get_all_scenes_by_play(play)
+
+    return render_template("scenes-edit.html",
+                            play=play,
+                            scenes=scenes)
+
+
+@app.route("/edit-scenes-in-db", methods = ["POST"])
+def edit_scenes_in_db():
+    """Use the form data from /edit-scenes to edit scene information to the database."""
+
+    play_title = request.form.get("play")
+    play = get_play_by_title(play_title)
+    scene_count = request.form.get("scene_count")
+    scene_count = int(scene_count) + 1
+
+    scenes = {}
+    for i in range(scene_count):
+        scene_id = request.form.get(f"id-{i}")
+        scene = Scene.query.get(scene_id)
+        title = request.form.get(f"title-{i}")
+        description = request.form.get(f"description-{i}")
+        if title or description:
+            update_scene(scene, title, description)
+
+    return f"<div>{scenes}</div>"
+
+
+@app.route("/view-scenes")
+def view_scenes():
+    """Prompts user for play name to view a list of associated scenes."""
+
+    return render_template("choose-play.html",
+                            function = "view_scenes",
+                            play_titles = play_titles)
+
+
+@app.route("/view-scenes-by-play", methods = ["GET"])
+def view_scenes_by_play():
+    """Given a Shakespeare play by the user, view a list of associated scenes."""
+
+    play_shortname = request.args.get("play_titles")
+    play = get_play_by_shortname(play_shortname)
+
+    scenes = get_all_scenes_by_play(play)
+
+    return render_template("scenes-all.html",
+                            play=play,
+                            scenes=scenes)
+
+# ----- END: PROCESS SCENES ----- #
+
+
 # ----- BEGIN: PROCESS CHARACTERS ----- #
 
 @app.route("/add-characters")
@@ -37,14 +163,14 @@ def add_characters():
     """Prompts user for play name to add play characters via API."""
 
     return render_template("characters-add.html",
-                            plays = play_titles)
+                            play_titles = play_titles)
 
 
 @app.route("/process-characters")
 def process_characters():
     """Given a Shakespeare play by the user, query the Folger Shakespeare API for a list of characters."""
 
-    play_shortname = request.args.get("plays")
+    play_shortname = request.args.get("play_titles")
     play = get_play_by_shortname(play_shortname)
 
     characters = parse_folger_characters(play)
@@ -84,14 +210,14 @@ def add_new_film():
     """Prompts user for play and MovieDB ID to add film information via API."""
 
     return render_template("film-add.html",
-                            plays = play_titles)
+                            play_titles = play_titles)
 
 
 @app.route("/process-film")
 def process_film():
     """Given a MovieDB film URL by the user, query the MovieDB API for film info and pass to verification page."""
 
-    play_shortname = request.args.get("plays")
+    play_shortname = request.args.get("play_titles")
     play = get_play_by_shortname(play_shortname)
     film_url = request.args.get("film-url")
 

@@ -19,7 +19,6 @@ FLASK_KEY = os.environ["FLASK_KEY"]
 MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
 db = SQLAlchemy()
 
-# plays = {"AWW": "All's Well That Ends Well", "Ant": "Antony and Cleopatra", "AYL": "As You Like It", "Err": "The Comedy of Errors", "Cor": "Coriolanus", "Cym": "Cymbeline", "Ham": "Hamlet", "1H4": "Henry IV, Part 1", "2H4": "Henry IV, Part 2", "H5": "Henry V", "1H6": "Henry VI, Part 1", "2H6": "Henry VI, Part 2", "3H6": "Henry VI, Part 3", "H8": "Henry VIII", "JC": "Julius Caesar", "Jn": "King John", "Lr": "King Lear", "LLL": "Love's Labor's Lost", "Mac": "Macbeth", "MM": "Measure for Measure", "MV": "The Merchant of Venice", "Wiv": "The Merry Wives of Windsor", "MND": "A Midsummer Night's Dream", "Ado": "Much Ado About Nothing", "Oth": "Othello", "Per": "Pericles", "R2": "Richard II", "R3": "Richard III", "Rom": "Romeo and Juliet", "Shr": "The Taming of the Shrew", "Tmp": "The Tempest", "Tim": "Timon of Athens", "Tit": "Titus Andronicus", "Tro": "Troilus and Cressida", "TN": "Twelfth Night", "TGV": "Two Gentlemen of Verona", "TNK": "Two Noble Kinsmen", "WT": "The Winter's Tale"}
 
 play_titles = {"AWW": "All's Well That Ends Well", "Ant": "Antony and Cleopatra", "AYL": "As You Like It", "Err": "The Comedy of Errors", "Cor": "Coriolanus", "Cym": "Cymbeline", "Ham": "Hamlet", "1H4": "Henry IV, Part 1", "2H4": "Henry IV, Part 2", "H5": "Henry V", "1H6": "Henry VI, Part 1", "2H6": "Henry VI, Part 2", "3H6": "Henry VI, Part 3", "H8": "Henry VIII", "JC": "Julius Caesar", "Jn": "King John", "Lr": "King Lear", "LLL": "Love's Labor's Lost", "Mac": "Macbeth", "MM": "Measure for Measure", "MV": "The Merchant of Venice", "Wiv": "The Merry Wives of Windsor", "MND": "A Midsummer Night's Dream", "Ado": "Much Ado About Nothing", "Oth": "Othello", "Per": "Pericles", "R2": "Richard II", "R3": "Richard III", "Rom": "Romeo and Juliet", "Shr": "The Taming of the Shrew", "Tmp": "The Tempest", "Tim": "Timon of Athens", "Tit": "Titus Andronicus", "Tro": "Troilus and Cressida", "TN": "Twelfth Night", "TGV": "Two Gentlemen of Verona", "TNK": "Two Noble Kinsmen", "WT": "The Winter's Tale"}
 
@@ -36,6 +35,18 @@ def add_character(name, play, gender=None):
     return character
 
 
+def add_choice(title, desc, quote):
+    """Create and return a new Choice database record."""
+
+    choice = Choice(title=title, desc=desc, quote=quote)
+
+    db.session.add(choice)
+    db.session.commit()
+
+    print(f"********* Created {choice} *********")
+    return choice
+
+
 def add_film(play, moviedb_id, imdb_id, title, release_date, language, length, poster_path):
     """Create and return a new Film database record."""
 
@@ -49,7 +60,7 @@ def add_film(play, moviedb_id, imdb_id, title, release_date, language, length, p
 
 
 def add_job(title):
-    """Create and returned a Job database record."""
+    """Create and return a new Job database record."""
 
     job = Job(title=title)
 
@@ -61,7 +72,7 @@ def add_job(title):
 
 
 def add_job_held(film, job, person):
-    """Create and returned a JobHeld database record."""
+    """Create and return a new JobHeld database record."""
 
     jobheld = JobHeld(film_id=film.id, job_id=job.id, person_id=person.id)
     
@@ -72,8 +83,20 @@ def add_job_held(film, job, person):
     return jobheld
 
 
+def add_interpretation(choice, film, time_start, time_end):
+    """Create and return a new Interpretation database record."""
+
+    interpretation = Interpretation(choice_id=choice.id, film_id=film.id, time_start=time_start, time_end=time_end)
+
+    db.session.add(interpretation)
+    db.session.commit()
+
+    print(f"********* Created {interpretation} *********")
+    return interpretation
+
+
 def add_part_played(person, character_name, film):
-    """Create and return a PartPlayed database relationship record."""
+    """Create and return a new PartPlayed database relationship record."""
 
     play = get_play_by_film(film)
     character = get_character(name=character_name, play=play)
@@ -113,15 +136,29 @@ def add_play(title, shortname):
     return play
 
 
-def add_scene(act, scene, title):
+def add_scene(act, scene, play, title, description):
     """Create and return a new Scene database record."""
 
-    scene = Scene(act=act, scene=scene, title=title)
+    scene = Scene(act=act, scene=scene, title=title, description=description, play_id=play.id)
     db.session.add(scene)
     db.session.commit()
 
     print(f"********* Created {scene} *********")
     return scene
+
+
+def add_all_scenes(play):
+    """Given a play, create and return new Scene database records."""
+
+    scenes = parse_folger_scenes(play)
+
+    for scene in scenes:
+        scene = get_scene(act=scene["act"], scene=scene["scene"], play=play)
+        db.session.add(scene)
+    
+    db.session.commit()
+
+    return Scene.query.filter(Scene.play_id == play.id).all()
 
 
 def add_topic(title, desc, quote):
@@ -202,6 +239,14 @@ def get_film_by_moviedb_id(moviedb_id, play):
     return film
 
 
+def get_interpretation(choice, film):
+    """Given a choice and film, return the related Interpretation object."""
+
+    interpretation = db.query.session(exists().where((Interpretation.choice_id == choice.id) & (Interpretation.film_id == film.id)))
+
+    return interpretation
+
+
 def get_person(moviedb_id, imdb_id, fname, lname, birthday, gender, photo_path):
     """Given a person's information, create (or return) a Person object."""
 
@@ -264,3 +309,44 @@ def get_play_by_film(film):
     play_id = film.play_id
     play = Play.query.filter(Play.id == play_id).first()
     return play
+
+
+def get_scene(act, scene, play, title=None, description=None):
+    """Given an act, scene, and play, return the appropriate Scene object."""
+
+    existing_scene = db.session.query(exists().where((Scene.act == act) & (Scene.scene == scene) & (Scene.play_id == play.id))).scalar()
+
+    if existing_scene:
+        scene = Scene.query.filter((Scene.act == act) & (Scene.scene == scene) & (Scene.play_id == play.id)).first()
+    else:
+        scene = add_scene(act=act, scene=scene, play=play, title=title, description=description)
+    
+    return scene
+
+
+def get_all_scenes_by_play(play):
+    """Given a play, return any existing related Scene objects in the database."""
+
+    existing_scenes = db.session.query(exists().where(Scene.play_id == play.id)).scalar()
+
+    if existing_scenes:
+        scenes = Scene.query.filter(Scene.play_id == play.id).all()
+    else:
+        scenes = add_all_scenes(play)
+    
+    return scenes
+
+
+def update_scene(scene, title=None, description=None):
+    """Given a scene, update the existing values."""
+
+    db_scene = Scene.query.get(scene.id)
+
+    if title != None:
+        db_scene.title = title
+    if description != None:
+        db_scene.description = description
+    
+    db.session.merge(db_scene)
+    db.session.commit()
+    return db_scene

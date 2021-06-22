@@ -1,11 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}- Add Characters{% endblock %}
+{% block title %}- Choose Play{% endblock %}
 
 {% block content %}
-<h2>Add a List of Characters</h2>
+<h2>Choose a Play</h2>
 
-<form method="GET" action="/process-characters">
+{% if function == "add_scenes" %}
+    <form method="GET" action="/process-scenes-by-play">
+{% elif function == "edit_scenes" %}
+    <form method="GET" action="/edit-scenes-by-play">
+{% elif function == "view_scenes" %}
+    <form method="GET" action="/view-scenes-by-play">
+{% endif %}
     <label for="play_titles">Select a play:</label>
     <select name="play_titles" id="play_titles">
         {% for key, value in play_titles.items() %}

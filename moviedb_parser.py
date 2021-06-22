@@ -5,7 +5,6 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import exists
 from bs4 import BeautifulSoup
 from datetime import datetime
-import jinja2
 import os
 import requests
 import re #regex
