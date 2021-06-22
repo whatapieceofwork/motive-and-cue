@@ -7,16 +7,11 @@ from datetime import datetime
 import jinja2
 import os
 import requests
-import re #regex
 import json
-from flask_wtf import FlaskForm
-from wtforms import StringField
-from wtforms.validators import DataRequired
 from crud import *
 from data_model import *
 from folger_parser import *
 from moviedb_parser import *
-from forms import *
 
 FLASK_KEY = os.environ["FLASK_KEY"]
 MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
@@ -27,8 +22,6 @@ app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = True
 app.secret_key = FLASK_KEY
 
 Bootstrap(app)
-
-play_titles = {"AWW": "All's Well That Ends Well", "Ant": "Antony and Cleopatra", "AYL": "As You Like It", "Err": "The Comedy of Errors", "Cor": "Coriolanus", "Cym": "Cymbeline", "Ham": "Hamlet", "1H4": "Henry IV, Part 1", "2H4": "Henry IV, Part 2", "H5": "Henry V", "1H6": "Henry VI, Part 1", "2H6": "Henry VI, Part 2", "3H6": "Henry VI, Part 3", "H8": "Henry VIII", "JC": "Julius Caesar", "Jn": "King John", "Lr": "King Lear", "LLL": "Love's Labor's Lost", "Mac": "Macbeth", "MM": "Measure for Measure", "MV": "The Merchant of Venice", "Wiv": "The Merry Wives of Windsor", "MND": "A Midsummer Night's Dream", "Ado": "Much Ado About Nothing", "Oth": "Othello", "Per": "Pericles", "R2": "Richard II", "R3": "Richard III", "Rom": "Romeo and Juliet", "Shr": "The Taming of the Shrew", "Tmp": "The Tempest", "Tim": "Timon of Athens", "Tit": "Titus Andronicus", "Tro": "Troilus and Cressida", "TN": "Twelfth Night", "TGV": "Two Gentlemen of Verona", "TNK": "Two Noble Kinsmen", "WT": "The Winter's Tale"}
 
 @app.route("/")
 def index():
@@ -43,8 +36,8 @@ def index():
 def add_characters():
     """Prompts user for play name to add play characters via API."""
 
-    return render_template("add-characters.html",
-                            plays = plays)
+    return render_template("characters-add.html",
+                            plays = play_titles)
 
 
 @app.route("/process-characters")
@@ -56,7 +49,7 @@ def process_characters():
 
     characters = parse_folger_characters(play)
 
-    return render_template("verify-characters.html",
+    return render_template("characters-verify.html",
                             play=play,
                             characters=characters,
                             genders=GENDERS)
@@ -90,8 +83,8 @@ def add_characters_to_db():
 def add_new_film():
     """Prompts user for play and MovieDB ID to add film information via API."""
 
-    return render_template("add-film.html",
-                            plays = plays)
+    return render_template("film-add.html",
+                            plays = play_titles)
 
 
 @app.route("/process-film")
@@ -108,7 +101,7 @@ def process_film():
     character_names = [character.name for character in play.characters]
     character_names.sort()
 
-    return render_template("verify-film.html",
+    return render_template("film-verify.html",
                             details=details,
                             cast=cast,
                             crew=crew,
@@ -160,6 +153,8 @@ def add_film_to_db():
                 person["parts"].append(request.form.get(f"part-{i}-{j}"))
 
             db_person = get_person(person["moviedb_id"], person["imdb_id"], person["fname"], person["lname"], person["birthday"], person["gender"], person["photo_path"])
+            if person["parts"]:
+                get_job_held(db_person, db_film, "Actor")
             for part_name in person["parts"]:
                 get_part_played(person=db_person, character_name=part_name, film=db_film)
 

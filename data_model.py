@@ -3,11 +3,9 @@
 from flask import Flask, render_template, redirect, flash, session, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import *
-from bs4 import BeautifulSoup
 from datetime import datetime
-import json
-from crud import *
-from server import play_titles
+from server import *
+# from server import play_titles
 
 db = SQLAlchemy()
 
@@ -140,6 +138,7 @@ class Interpretation(db.Model):
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.String(100))
+    start_time = db.Column(db.Integer)
     desc = db.Column(db.Text)
 
     def __repr__(self):
