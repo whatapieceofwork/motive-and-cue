@@ -35,6 +35,20 @@ def add_character(name, play, gender=None):
     return character
 
 
+def add_all_characters(play):
+    """Given a play, create and return a group of new Character database records."""
+
+    characters = parse_folger_characters(play)
+
+    for character_name in characters:
+        character = get_character(character_name, play)
+        db.session.add(character)
+    
+    db.session.commit()
+
+    return Character.query.filter(Character.play_id == play.id).all()
+
+
 def add_choice(title, desc, quote):
     """Create and return a new Choice database record."""
 
@@ -136,10 +150,10 @@ def add_play(title, shortname):
     return play
 
 
-def add_scene(act, scene, play, title, description):
+def add_scene(act, scene, play, title, description=None, quote=None):
     """Create and return a new Scene database record."""
 
-    scene = Scene(act=act, scene=scene, title=title, description=description, play_id=play.id)
+    scene = Scene(act=act, scene=scene, title=title, description=description, quote=quote, play_id=play.id)
     db.session.add(scene)
     db.session.commit()
 
@@ -151,10 +165,11 @@ def add_all_scenes(play):
     """Given a play, create and return new Scene database records."""
 
     scenes = parse_folger_scenes(play)
+    print(f"*******IN ADD_ALL_SCENES. SCENES = {scenes}")
 
-    for scene in scenes:
-        scene = get_scene(act=scene["act"], scene=scene["scene"], play=play)
-        db.session.add(scene)
+    for scene in scenes.values():
+        db_scene = get_scene(act=scene["act"], scene=scene["scene"], play=play)
+        db.session.add(db_scene)
     
     db.session.commit()
 
@@ -311,7 +326,7 @@ def get_play_by_film(film):
     return play
 
 
-def get_scene(act, scene, play, title=None, description=None):
+def get_scene(act, scene, play, title=None, description=None, quote=None):
     """Given an act, scene, and play, return the appropriate Scene object."""
 
     existing_scene = db.session.query(exists().where((Scene.act == act) & (Scene.scene == scene) & (Scene.play_id == play.id))).scalar()
@@ -319,25 +334,26 @@ def get_scene(act, scene, play, title=None, description=None):
     if existing_scene:
         scene = Scene.query.filter((Scene.act == act) & (Scene.scene == scene) & (Scene.play_id == play.id)).first()
     else:
-        scene = add_scene(act=act, scene=scene, play=play, title=title, description=description)
+        scene = add_scene(act=act, scene=scene, play=play, title=title, description=description, quote=quote)
     
     return scene
 
 
 def get_all_scenes_by_play(play):
-    """Given a play, return any existing related Scene objects in the database."""
+    """Given a play, return any existing related Scene objects in the database in order of act/scene."""
 
     existing_scenes = db.session.query(exists().where(Scene.play_id == play.id)).scalar()
 
     if existing_scenes:
-        scenes = Scene.query.filter(Scene.play_id == play.id).all()
+        scenes = Scene.query.filter(Scene.play_id == play.id).order_by(Scene.act, Scene.scene).all()
     else:
-        scenes = add_all_scenes(play)
-    
+        add_all_scenes(play)
+        scenes = Scene.query.filter(Scene.play_id == play.id).order_by(Scene.act, Scene.scene).all()
+
     return scenes
 
 
-def update_scene(scene, title=None, description=None):
+def update_scene(scene, title=None, description=None, quote=None):
     """Given a scene, update the existing values."""
 
     db_scene = Scene.query.get(scene.id)
@@ -346,6 +362,8 @@ def update_scene(scene, title=None, description=None):
         db_scene.title = title
     if description != None:
         db_scene.description = description
+    if quote != None:
+        db_scene.quote = quote
     
     db.session.merge(db_scene)
     db.session.commit()

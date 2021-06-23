@@ -23,7 +23,7 @@
             <input type="text" name="title-{{loop.index0}}" id="title-{{loop.index0}}" placeholder="{{scene['title']}}" value="{{scene['title']}}">
         <br />
         <label for "description-{{loop.index0}}">Description</label> 
-            <textarea name="description-{{loop.index0}}" id="description-{{loop.index0}}" placeholder="{{scene['description']}}" value="{{scene['description']}}"></textarea>
+            <textarea name="description-{{loop.index0}}" id="description-{{loop.index0}}" placeholder="{{scene['description']}}" value="{{scene['description']}}">{{scene['description']}}</textarea>
         <br />
         </li>
     </ul>

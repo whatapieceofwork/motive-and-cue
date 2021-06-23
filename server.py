@@ -57,7 +57,7 @@ def process_scenes():
     play_shortname = request.args.get("play_titles")
     play = get_play_by_shortname(play_shortname)
 
-    scenes = parse_folger_scenes(play)
+    scenes = parse_folger_scene_descriptions(play)
 
     return render_template("scenes-verify.html",
                             play=play,
@@ -80,9 +80,10 @@ def add_scenes_to_db():
         scene["scene"] = request.form.get(f"scene-{i}")
         scene["title"] = request.form.get(f"title-{i}")
         scene["description"] = request.form.get(f"description-{i}")
+        scene["quote"] = request.form.get(f"quote-{i}")
         scenes[i] = scene
 
-        db_scene = get_scene(act=scene["act"], scene=scene["scene"], play=play, title=scene["title"], description=scene["description"])
+        db_scene = get_scene(act=scene["act"], scene=scene["scene"], play=play, title=scene["title"], description=scene["description"], quote=scene["quote"])
 
     return f"<div>{scenes}</div>"
 
@@ -297,3 +298,4 @@ if __name__ == '__main__':
     app.debug = True
     connect_to_db(app)
     app.run(host='0.0.0.0')
+    seed_hamlet()

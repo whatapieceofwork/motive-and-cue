@@ -15,3 +15,8 @@
 #person-metadata img.portrait {
     max-height: 250px;
 }
+
+#scene-metadata textarea {
+    width: 600px;
+    height: 100px;
+}

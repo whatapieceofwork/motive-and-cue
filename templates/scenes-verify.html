@@ -9,7 +9,7 @@
     <form action="/add-scenes-to-db" method="post">
     <input type="hidden" id="play" name="play" value="{{play.title}}">
 
-{% for scene in scenes.values() %}
+{% for scene in scenes %}
 <div id="scene-metadata">
     <ul>
         <li><label for "act-{{loop.index0}}">Act</label> 
@@ -19,11 +19,14 @@
         </li>
         <br />
         <label for "title-{{loop.index0}}">Title</label>
-            <input type="text" name="title-{{loop.index0}}" id="title-{{loop.index0}}" placeholder="{{scene['title']}}" value="{{scene['title']}}">
+                <input type="text" name="title-{{loop.index0}}" id="title-{{loop.index0}}" {% if scene['title'] %}placeholder="{{scene['title']}}" value="{{scene['title']}}{% endif %}">
         <br />
-        <label for "description-{{loop.index0}}">descriptionription</label> 
-            <textarea name="description-{{loop.index0}}" id="descriptionription-{{loop.index0}}" placeholder="{{scene['descriptionription']}}" value="{{scene['description']}}"></textarea>
+        <label for "description-{{loop.index0}}">Description</label> 
+            <textarea name="description-{{loop.index0}}" id="description-{{loop.index0}}" {% if scene['description'] %}placeholder="{{scene['description']}}">{{scene['description']}}{% else %}>{% endif %}</textarea>
         <br />
+        <label for "quote-{{loop.index0}}">Quote</label> 
+            <textarea name="quote-{{loop.index0}}" id="quote-{{loop.index0}}" {% if scene['quote'] %}placeholder="{{scene['quote']}}">{{scene['quote']}}{% else %}>{% endif %}</textarea>
+    <br />
         </li>
     </ul>
     {% if loop.last %}

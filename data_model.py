@@ -66,6 +66,7 @@ class Scene(db.Model):
     scene = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(100))
     description = db.Column(db.Text)
+    quote = db.Column(db.Text)
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="scenes")
     choices = db.relationship("Choice", secondary="choice_scenes", back_populates="scenes")
