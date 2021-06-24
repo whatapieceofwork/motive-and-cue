@@ -11,6 +11,12 @@
     <form method="GET" action="/edit-scenes-by-play">
 {% elif function == "view_scenes" %}
     <form method="GET" action="/view-scenes-by-play">
+{% elif function == "add_characters" %}
+    <form method="GET" action="/process-characters">
+{% elif function == "edit_characters" %}
+    <form method="GET" action="/edit-characters-by-play">
+{% elif function == "view_characters" %}
+    <form method="GET" action="/view-characters-by-play">
 {% endif %}
     <label for="play_titles">Select a play:</label>
     <select name="play_titles" id="play_titles">

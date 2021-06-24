@@ -49,10 +49,10 @@ def add_all_characters(play):
     return Character.query.filter(Character.play_id == play.id).all()
 
 
-def add_choice(title, desc, quote):
+def add_choice(title, desc, timestamp=None, quote=None):
     """Create and return a new Choice database record."""
 
-    choice = Choice(title=title, desc=desc, quote=quote)
+    choice = Choice(title=title, desc=desc, timestamp=timestamp, quote=quote)
 
     db.session.add(choice)
     db.session.commit()
@@ -201,6 +201,27 @@ def get_character(name, play, gender=None):
     return character
 
 
+def get_all_characters_by_play(play):
+    """Given a play, return any existing related Character objects in the database."""
+
+    existing_characters = db.session.query(exists().where(Character.play_id == play.id)).scalar()
+
+    if existing_characters:
+        characters = Character.query.filter(Character.play_id == play.id).all()
+    else:
+        add_all_characters(play)
+        characters = Character.query.filter(Character.play_id == play.id).all()
+    return characters
+
+
+def get_interpretation(choice, film):
+    """Given a choice and film, return the related Interpretation object."""
+
+    interpretation = db.query.session(exists().where((Interpretation.choice_id == choice.id) & (Interpretation.film_id == film.id)))
+
+    return interpretation
+
+
 def get_job_by_title(title):
     """Given a job title, return the Job object."""
 
@@ -252,14 +273,6 @@ def get_film_by_moviedb_id(moviedb_id, play):
         film = parse_moviedb_film_details(moviedb_id, play)
     
     return film
-
-
-def get_interpretation(choice, film):
-    """Given a choice and film, return the related Interpretation object."""
-
-    interpretation = db.query.session(exists().where((Interpretation.choice_id == choice.id) & (Interpretation.film_id == film.id)))
-
-    return interpretation
 
 
 def get_person(moviedb_id, imdb_id, fname, lname, birthday, gender, photo_path):
@@ -368,3 +381,18 @@ def update_scene(scene, title=None, description=None, quote=None):
     db.session.merge(db_scene)
     db.session.commit()
     return db_scene
+
+
+def update_character(character, name=None, gender=None):
+    """Given a character, update the existing values."""
+
+    db_character = Character.query.get(character.id)
+
+    if name != None:
+        db_character.name = name
+    if gender != None:
+        db_character.gender = gender
+    
+    db.session.merge(db_character)
+    db.session.commit()
+    return db_character

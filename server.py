@@ -129,7 +129,7 @@ def edit_scenes_in_db():
         if title or description:
             update_scene(scene, title, description)
 
-    return f"<div>{scenes}</div>"
+    return redirect(f"/view-scenes-by-play?play_titles={play.shortname}")
 
 
 @app.route("/view-scenes")
@@ -200,6 +200,74 @@ def add_characters_to_db():
         characters.append(character)
 
     return f"<div>{characters}</div>"
+
+
+@app.route("/edit-characters")
+def edit_characters():
+    """Prompts user for play name to edit characters."""
+
+    return render_template("choose-play.html",
+                            function="edit_characters",
+                            play_titles = play_titles)
+
+
+@app.route("/edit-characters-by-play")
+def edit_characters_by_play():
+    """Given a Shakespeare play by the user, edit the existing characters in the database."""
+
+    play_shortname = request.args.get("play_titles")
+    play = get_play_by_shortname(play_shortname)
+
+    characters = get_all_characters_by_play(play)
+
+    return render_template("characters-edit.html",
+                            play=play,
+                            characters=characters,
+                            genders=GENDERS)
+
+
+@app.route("/edit-characters-in-db", methods = ["POST"])
+def edit_characters_in_db():
+    """Use the form data from /edit-characters to edit character information to the database."""
+
+    play_title = request.form.get("play")
+    play = get_play_by_title(play_title)
+    character_count = request.form.get("character_count")
+    character_count = int(character_count) + 1
+
+    characters = {}
+    for i in range(character_count):
+        character_id = request.form.get(f"id-{i}")
+        character = Character.query.get(character_id)
+        name = request.form.get(f"name-{i}")
+        gender = request.form.get(f"gender-{i}")
+        if name or gender:
+            update_character(character, name, gender)
+
+    return redirect(f"/view-characters-by-play?play_titles={play.shortname}")
+
+
+@app.route("/view-characters-by-play", methods = ["GET"])
+def view_characters_by_play():
+    """Given a Shakespeare play by the user, view a list of associated characters."""
+
+    play_shortname = request.args.get("play_titles")
+    play = get_play_by_shortname(play_shortname)
+
+    characters = get_all_characters_by_play(play)
+
+    return render_template("characters-all.html",
+                            play=play,
+                            characters=characters)
+
+
+@app.route("/view-characters")
+def view_characters():
+    """Prompts user for play name to view a list of associated characters."""
+
+    return render_template("choose-play.html",
+                            function = "view_characters",
+                            play_titles = play_titles)
 
 # ----- END: PROCESS CHARACTERS ----- #
 

@@ -63,9 +63,6 @@ def parse_folger_scene_descriptions(play):
     page = requests.get(scene_page_url)
     soup = BeautifulSoup(page.content, "html.parser")
     synopsis = soup.find("div", attrs={"id": "modal-ready"}).find("p", recursive=False).string
-    print(f"*************** SYNOPSIS: {synopsis}")
-    # print(f"*************SYNOP STRING: {synopsis.string}")
-    print(f"************DB SCENE = {db_scene}")
     db_scene.description = synopsis
     db.session.merge(db_scene)
 

@@ -51,6 +51,8 @@ class Character(db.Model):
     play = db.relationship("Play", back_populates="characters")
     played_by = db.relationship("Person", secondary="parts_played", back_populates="parts")
     choices = db.relationship("Choice", secondary="choice_characters", back_populates="characters")
+    topics = db.relationship("Topic", secondary="topic_characters", back_populates="characters")
+
 
     def __repr__(self):
         return f"<CHARACTER id={self.id} {self.name} {self.play_id}>"
@@ -70,6 +72,8 @@ class Scene(db.Model):
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="scenes")
     choices = db.relationship("Choice", secondary="choice_scenes", back_populates="scenes")
+    topics = db.relationship("Topic", secondary="topic_scenes", back_populates="scenes")
+
 
     def __repr__(self):
         return f"<SCENE id={self.id} {self.act}.{self.scene} {self.play.title}>"
@@ -210,8 +214,8 @@ class Topic(db.Model):
     title = db.Column(db.String(100), nullable=False)
     desc = db.Column(db.Text)
     quote = db.Column(db.Text)
-    # topic_scene = relationship
-    # topic_character = oh god I need another relationship table for this
+    scenes = db.relationship("Scene", secondary="topic_scenes", back_populates="topics")
+    characters = db.relationship("Character", secondary="topic_characters", back_populates="topics")
 
     def __repr__(self):
         return f"<TOPIC id={self.topic_id} {self.title}>"
