@@ -2,12 +2,61 @@
 
 from flask import Flask, render_template, redirect, flash, session, request
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin, LoginManager
 from sqlalchemy import *
 from datetime import datetime
 from server import *
+from werkzeug.security import generate_password_hash, check_password_hash
+
 # from server import play_titles
 
 db = SQLAlchemy()
+
+# -- BEGIN User authentication objects --
+
+class User(UserMixin, db.Model):
+    """A user on the Motive and Cue website."""
+
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    email = db.Column(db.String(70), unique=True, index=True)
+    username = db.Column(db.String(50), nullable=False, unique=True)
+    password_hash = db.Column(db.String(100))
+    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
+    # roles = db.relationship("Role", back_populates="users")
+
+    @property
+    def password(self):
+        raise AttributeError("Password is not a readable attribute.")
+
+    @password.setter
+    def password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def __repr__(self):
+        return f"<USER id={self.id} {self.name}>"
+
+
+class Role(db.Model):
+    """User roles on the Motive and Cue website."""
+
+    __tablename__ = "roles"
+
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    title = db.Column(db.String(50), nullable=False, unique=True)
+    # users = db.relationship("User", back_populates="roles")
+
+    def __repr__(self):
+        return f"<USER id={self.id} {self.name}>"
+
+# -- END User authentication objects --
+
+
+# -- BEGIN Primary data objects --
 
 class Job(db.Model):
     """A role a person might play in a film: actor, director, etc. People can have many jobs."""
@@ -156,11 +205,10 @@ class Interpretation(db.Model):
     def __repr__(self):
         return f"<INTERPRETATION id={self.id} {self.title}>"
 
-
 # -- END Primary data objects --
 
-# -- BEGIN Relationship objects --
 
+# -- BEGIN Relationship objects --
 
 class JobHeld(db.Model):
     """Relationships between people and the film jobs they've held."""
@@ -274,6 +322,7 @@ class ChoiceCharacter(db.Model):
             return f"<CHOICECHARACTER id={self.id} {self.choice_id} {self.character_id}>"
 
 # -- END Relationship objects --
+
 
 
 def connect_to_db(flask_app, db_uri="postgresql:///motiveandcuedb", echo=True):

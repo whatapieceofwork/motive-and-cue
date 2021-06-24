@@ -5,6 +5,17 @@
 {% block content %}
 
 <div>
+    <h2>Account</h2>
+    <ul>
+        {% if current_user.is_authenticated %}
+            <li><a href="/my-account">My Account</a></li>
+            <li><a href="/logout">Log Out</a></li>
+        {% else %}
+            <li><a href="/login">Log In</a></li>
+        {% endif %}
+    </ul>
+</div>
+<div>
     <h2>Films</h2>
     <ul>
         <li><a href="/add-film">Add Film (via MovieDB)</a></li>

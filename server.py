@@ -1,9 +1,12 @@
-from flask import Flask, render_template, redirect, flash, session, request
+from flask import Flask, render_template, redirect, flash, session, request, url_for
+from flask_login.utils import login_user, current_user, logout_user, login_required
 from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
+from flask_login import LoginManager, login_required, set_login_view
 from sqlalchemy.sql import exists
 from bs4 import BeautifulSoup
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 import jinja2
 import os
 import requests
@@ -13,6 +16,7 @@ from data_model import *
 from folger_parser import *
 from moviedb_parser import *
 from seed import *
+from forms import *
 
 FLASK_KEY = os.environ["FLASK_KEY"]
 MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
@@ -21,6 +25,15 @@ db = SQLAlchemy()
 app = Flask(__name__)
 app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = True
 app.secret_key = FLASK_KEY
+
+login_manager = LoginManager(app)
+login_manager.login_view = "login"
+login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
 
 Bootstrap(app)
 
@@ -31,9 +44,64 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Prompt the user to log in."""
+
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and user.verify_password(form.password.data):
+            login_user(user, form.remember_me.data)
+            next = request.args.get("next")
+            if not next or not next.startswith("/"):
+                next = ("/")
+            return redirect(next)
+        else:
+            flash("Invalid username or password. Please try again.")
+            return render_template("login.html", form=form)
+
+    return render_template("login.html",
+                            form=form)
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    """Log out a logged-in user."""
+
+    logout_user()
+    flash("You have been logged out. Thanks for visiting!")
+    return redirect("/")
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        user = User(email=form.email.data,
+                    username=form.username.data,
+                    password=form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash("Thank you for registering! Please log in.")
+        return redirect("/login")
+    return render_template("register.html",
+                            form=form)
+
+
+@app.route("/my-account")
+@login_required
+def my_account():
+    """Display account information for logged-in users."""
+
+    return render_template("my-account.html",
+                            user=current_user)
+
+
 @app.route("/choose-play")
 def choose_play():
-    """Prompts user for play name, passes to appropriate function."""
+    """Prompts user for play name, passes play name to appropriate function."""
 
     return render_template("choose-play.html",
                             play_titles = play_titles)
