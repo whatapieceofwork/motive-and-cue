@@ -18,7 +18,7 @@
         <li><label for "gender">Canonical Gender</label><br />
                 {% set character_loop = loop %}
                 {% for key, value in genders.items() %}
-                    {% if key == (character['gender']|int) %}
+                    {% if character.gender != None and key == (character['gender']|int) %}
                         <input checked type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}}>
                     {% elif key == 2 %}
                         <input checked type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}}>

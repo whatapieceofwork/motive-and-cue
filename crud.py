@@ -37,7 +37,7 @@ def username_taken(username):
     existing_username = db.session.query(exists().where(User.username == username)).scalar()
     
     return existing_username
-    
+
 
 def add_character(name, play, gender=None):
     """Create and return a new Character database record."""
@@ -328,8 +328,10 @@ def get_play_by_shortname(shortname):
 
     if existing_play:
         play = Play.query.filter(Play.shortname == shortname).one()
-    else:
+    elif play_titles.get(shortname):
         play = add_play(play_titles[shortname], shortname)
+    else:
+        return ValidationError("No known Shakespeare play with that shortname.")
     
     return play
 

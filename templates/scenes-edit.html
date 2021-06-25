@@ -20,12 +20,13 @@
         </li>
         <br />
         <label for "title-{{loop.index0}}">Title</label>
-            <input type="text" name="title-{{loop.index0}}" id="title-{{loop.index0}}" placeholder="{{scene['title']}}" value="{{scene['title']}}">
+                <input type="text" name="title-{{loop.index0}}" id="title-{{loop.index0}}" {% if scene['title'] %}placeholder="{{scene['title']}}" value="{{scene['title']}}{% endif %}">
         <br />
         <label for "description-{{loop.index0}}">Description</label> 
-            <textarea name="description-{{loop.index0}}" id="description-{{loop.index0}}" placeholder="{{scene['description']}}" value="{{scene['description']}}">{{scene['description']}}</textarea>
+            <textarea name="description-{{loop.index0}}" id="description-{{loop.index0}}" {% if scene['description'] %}placeholder="{{scene['description']}}">{{scene['description']}}{% else %}>{% endif %}</textarea>
         <br />
-        </li>
+        <label for "quote-{{loop.index0}}">Quote</label> 
+            <textarea name="quote-{{loop.index0}}" id="quote-{{loop.index0}}" {% if scene['quote'] %}placeholder="{{scene['quote']}}">{{scene['quote']}}{% else %}>{% endif %}</textarea>        </li>
     </ul>
     {% if loop.last %}
         <input type="hidden" id="scene_count" name="scene_count" value="{{loop.index0}}">

@@ -1,23 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}- View Scenes{% endblock %}
+{% block title %}- All Scenes{% endblock %}
 
 {% block content %}
-<h2>View a List of Scenes</h2>
+<h2>Scene List for {{play.title}}</h2>
 
-<form method="GET" action="/view-scenes-by-play">
-    <label for="play_titles">Select a play:</label>
-    <select name="play_titles" id="play_titles">
-        {% for key, value in play_titles.items() %}
-            {% if key == "Ham" %}
-                <option selected value="{{ key }}">{{ value }}</option>
-            {% else %}
-                <option value="{{ key }}">{{ value }}</option>
-            {% endif %}
-        {% endfor %}
-    </select>
+<div id="scenes-metadata">
+
+{% for scene in scenes %}
+<div id="scene-metadata">
+    <ul>
+        <li>Act {{scene.act}}: Scene {{scene.scene}}</li>
+        {% if scene.title %}
+            <li>Title: {{scene.title}}<li>
+        {% endif %}
+        {% if scene.description %}
+            <li>Description: {{scene.description}}</li>
+        {% endif %}
+    </ul>
+</div>
+{% endfor %}
 
 
-    <input type="submit" value="Submit">
-</form>
 {% endblock %}

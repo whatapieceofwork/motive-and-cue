@@ -102,35 +102,32 @@ def my_account():
 @app.route("/choose-play")
 def choose_play():
     """Prompts user for play name, passes play name to appropriate function."""
+    form = ChoosePlayForm()
 
     return render_template("choose-play.html",
+                            form=form,
                             play_titles = play_titles)
 
 
 # ----- BEGIN: PROCESS SCENES ----- #
 
-@app.route("/add-scenes")
+@app.route("/add-scenes", methods=["GET", "POST"])
 def add_scenes():
-    """Prompts user for play name to add scenes via the Folger page of that play."""
+    """Prompts user for play, then scrapes the Folger scene number and descriptions for that play and passes the data to verify_scenes()."""
+
+    form = ChoosePlayForm()
+    if form.validate_on_submit():
+        play_shortname = form.play.data
+        play = get_play_by_shortname(play_shortname)
+        scenes = parse_folger_scene_descriptions(play)
+
+        return render_template("scenes-verify.html",
+                                play=play,
+                                scenes=scenes)
 
     return render_template("choose-play.html",
-                            function="add_scenes",
-                            play_titles = play_titles)
-
-
-@app.route("/process-scenes-by-play")
-def process_scenes():
-    """Given a Shakespeare play by the user, query the Folger website and scrape a list of scenes."""
-
-    play_shortname = request.args.get("play_titles")
-    play = get_play_by_shortname(play_shortname)
-
-    scenes = parse_folger_scene_descriptions(play)
-
-    return render_template("scenes-verify.html",
-                            play=play,
-                            scenes=scenes)
-
+                            form=form)
+    
 
 @app.route("/add-scenes-to-db", methods = ["POST"])
 def add_scenes_to_db():
@@ -156,27 +153,24 @@ def add_scenes_to_db():
     return f"<div>{scenes}</div>"
 
 
-@app.route("/edit-scenes")
+@app.route("/edit-scenes", methods=["GET", "POST"])
 def edit_scenes():
-    """Prompts user for play name to edit scenes via the Folger page of that play."""
-
-    return render_template("choose-play.html",
-                            function="edit_scenes",
-                            play_titles = play_titles)
-
-
-@app.route("/edit-scenes-by-play")
-def edit_scenes_by_play():
     """Given a Shakespeare play by the user, edit the existing scenes in the database."""
 
-    play_shortname = request.args.get("play_titles")
-    play = get_play_by_shortname(play_shortname)
+    form = ChoosePlayForm()
+    page_title = "Edit Scenes"
+    if form.validate_on_submit():
+        play_shortname = form.play.data
+        play = get_play_by_shortname(play_shortname)
+        scenes = get_all_scenes_by_play(play)
 
-    scenes = get_all_scenes_by_play(play)
+        return render_template("scenes-edit.html",
+                                play=play,
+                                scenes=scenes)
 
-    return render_template("scenes-edit.html",
-                            play=play,
-                            scenes=scenes)
+    return render_template("choose-play.html",
+                            page_title = page_title,
+                            form=form)
 
 
 @app.route("/edit-scenes-in-db", methods = ["POST"])
@@ -185,6 +179,7 @@ def edit_scenes_in_db():
 
     play_title = request.form.get("play")
     play = get_play_by_title(play_title)
+    shortname = play.shortname
     scene_count = request.form.get("scene_count")
     scene_count = int(scene_count) + 1
 
@@ -194,60 +189,69 @@ def edit_scenes_in_db():
         scene = Scene.query.get(scene_id)
         title = request.form.get(f"title-{i}")
         description = request.form.get(f"description-{i}")
-        if title or description:
+        if title != None or description != None:
             update_scene(scene, title, description)
 
-    return redirect(f"/view-scenes-by-play?play_titles={play.shortname}")
+    print(f"*********************** REDIRECT: /view-scenes-{play.shortname}")
+    return redirect(f"/view-scenes-{play.shortname}")
 
 
-@app.route("/view-scenes")
+@app.route("/view-scenes", methods=["GET", "POST"])
 def view_scenes():
-    """Prompts user for play name to view a list of associated scenes."""
+    """Display a form for the user to choose a play, then displays the list of associated scenes."""
+
+    form = ChoosePlayForm()
+    page_title = "View Scenes"
+    if form.validate_on_submit():
+        play_shortname = form.play.data
+        play = get_play_by_shortname(play_shortname)
+        scenes = get_all_scenes_by_play(play)
+
+        return render_template("scenes-view.html",
+                                play=play,
+                                scenes=scenes)
 
     return render_template("choose-play.html",
-                            function = "view_scenes",
-                            play_titles = play_titles)
+                            page_title = page_title,
+                            form=form)
 
 
-@app.route("/view-scenes-by-play", methods = ["GET"])
-def view_scenes_by_play():
-    """Given a Shakespeare play by the user, view a list of associated scenes."""
+@app.route("/view-scenes-<shortname>", methods=["GET", "POST"])
+def view_scenes_by_play(shortname):
+    """Given a /view-scenes URL including a play shortname, display that play's associated scenes."""
 
-    play_shortname = request.args.get("play_titles")
-    play = get_play_by_shortname(play_shortname)
+    play = get_play_by_shortname(shortname)
+    if not type(play) == Play: # if get_play_by_shortname returns error, send user to main view_scenes function
+        return redirect("/view-scenes")
 
     scenes = get_all_scenes_by_play(play)
 
-    return render_template("scenes-all.html",
-                            play=play,
-                            scenes=scenes)
+    return render_template("scenes-view.html",
+                        play=play,
+                        scenes=scenes)
 
 # ----- END: PROCESS SCENES ----- #
 
 
 # ----- BEGIN: PROCESS CHARACTERS ----- #
 
-@app.route("/add-characters")
+@app.route("/add-characters", methods=["GET", "POST"])
 def add_characters():
-    """Prompts user for play name to add play characters via API."""
+    """Prompts user for play, then scrapes the Folger character information and passes the data to verify_characters()."""
 
-    return render_template("characters-add.html",
-                            play_titles = play_titles)
+    form = ChoosePlayForm()
+    if form.validate_on_submit():
+        play_shortname = form.play.data
+        play = get_play_by_shortname(play_shortname)
+        characters = parse_folger_characters(play)
 
+        return render_template("characters-verify.html",
+                                play=play,
+                                characters=characters,
+                                genders=GENDERS)
 
-@app.route("/process-characters")
-def process_characters():
-    """Given a Shakespeare play by the user, query the Folger Shakespeare API for a list of characters."""
-
-    play_shortname = request.args.get("play_titles")
-    play = get_play_by_shortname(play_shortname)
-
-    characters = parse_folger_characters(play)
-
-    return render_template("characters-verify.html",
-                            play=play,
-                            characters=characters,
-                            genders=GENDERS)
+    return render_template("choose-play.html",
+                            form=form)
 
 
 @app.route("/add-characters-to-db", methods = ["POST"])
@@ -270,28 +274,25 @@ def add_characters_to_db():
     return f"<div>{characters}</div>"
 
 
-@app.route("/edit-characters")
+@app.route("/edit-characters", methods=["GET", "POST"])
 def edit_characters():
-    """Prompts user for play name to edit characters."""
-
-    return render_template("choose-play.html",
-                            function="edit_characters",
-                            play_titles = play_titles)
-
-
-@app.route("/edit-characters-by-play")
-def edit_characters_by_play():
     """Given a Shakespeare play by the user, edit the existing characters in the database."""
 
-    play_shortname = request.args.get("play_titles")
-    play = get_play_by_shortname(play_shortname)
+    form = ChoosePlayForm()
+    page_title = "Edit Characters"
+    if form.validate_on_submit():
+        play_shortname = form.play.data
+        play = get_play_by_shortname(play_shortname)
+        characters = get_all_characters_by_play(play)
 
-    characters = get_all_characters_by_play(play)
+        return render_template("characters-edit.html",
+                                play=play,
+                                characters=characters,
+                                genders=GENDERS)
 
-    return render_template("characters-edit.html",
-                            play=play,
-                            characters=characters,
-                            genders=GENDERS)
+    return render_template("choose-play.html",
+                            page_title = page_title,
+                            form=form)
 
 
 @app.route("/edit-characters-in-db", methods = ["POST"])
@@ -312,30 +313,44 @@ def edit_characters_in_db():
         if name or gender:
             update_character(character, name, gender)
 
-    return redirect(f"/view-characters-by-play?play_titles={play.shortname}")
+    return redirect(f"/view-characters-{play.shortname}")
 
 
-@app.route("/view-characters-by-play", methods = ["GET"])
-def view_characters_by_play():
-    """Given a Shakespeare play by the user, view a list of associated characters."""
+@app.route("/view-characters", methods=["GET", "POST"])
+def view_characters():
+    """Display a form for the user to choose a play, then displays the list of associated characters."""
 
-    play_shortname = request.args.get("play_titles")
-    play = get_play_by_shortname(play_shortname)
+    form = ChoosePlayForm()
+    page_title = "View Characters"
+    if form.validate_on_submit():
+        play_shortname = form.play.data
+        play = get_play_by_shortname(play_shortname)
+        characters = get_all_characters_by_play(play)
+
+        return render_template("characters-view.html",
+                                play=play,
+                                characters=characters,
+                                genders=GENDERS)
+
+    return render_template("choose-play.html",
+                            page_title = page_title,
+                            form=form)
+
+
+@app.route("/view-characters-<shortname>", methods=["GET", "POST"])
+def view_characters_by_play(shortname):
+    """Given a /view-characters URL including a play shortname, display that play's associated characters."""
+
+    play = get_play_by_shortname(shortname)
+    if not type(play) == Play: # if get_play_by_shortname returns error, send user to main view_characters function
+        return redirect("/view-characters")
 
     characters = get_all_characters_by_play(play)
 
-    return render_template("characters-all.html",
+    return render_template("characters-view.html",
                             play=play,
-                            characters=characters)
-
-
-@app.route("/view-characters")
-def view_characters():
-    """Prompts user for play name to view a list of associated characters."""
-
-    return render_template("choose-play.html",
-                            function = "view_characters",
-                            play_titles = play_titles)
+                            characters=characters,
+                            genders=GENDERS)
 
 # ----- END: PROCESS CHARACTERS ----- #
 
