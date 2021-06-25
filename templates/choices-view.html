@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}- All Choices{% endblock %}
+
+{% block content %}
+<h2>Choice List for {{play.title}}</h2>
+
+<div id="choices-metadata">
+
+{% if choices != none and choices|length > 0 %}
+    {% for choice in choices %}
+    <div id="choice-metadata">
+        <ul>
+            <li>Title: {{choice['title']}}</li>
+            <li>Description: {{choice['desc']}}</li>
+            {% if choice['quote'] %}
+                <li>Quote: {{choice['quote']}}</li>
+            {% endif %}
+            {% if choice['scenes'] %}
+                <li>Related Scenes: 
+                <ul>
+                {% for scene in choice['scenes'] %}
+                    <li>{{scene.act}}.{{scene.scene}}{% if scene.title %}: {{scene.title}}{% endif %}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+            {% if choice['characters'] %}
+                <li>Related Characters: 
+                    <ul>
+                    {% for character in choice['characters'] %}
+                        <li>{{character.name}}</li>
+                    {% endfor %}
+                    </ul>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endfor %}
+{% else %}
+    <p>No choices in the database.</p>
+    <p><a href="/add-choices-{{play.shortname}}">Add choices?</a></p>
+{% endif %}
+</div>
+
+
+{% endblock %}
