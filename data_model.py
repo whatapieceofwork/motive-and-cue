@@ -179,6 +179,7 @@ class Choice(db.Model):
     __tablename__ = "choices"
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     title = db.Column(db.String(50), nullable=False)
     desc = db.Column(db.Text)
     quote = db.Column(db.Text)
@@ -340,9 +341,9 @@ if __name__ == "__main__":
     from server import app
     connect_to_db(app)
 
-    os.system("dropdb motiveandcuedb")
-    print("Table dropped.")
-    os.system("createdb motiveandcuedb")
-    print("Table created.")
+    # os.system("dropdb motiveandcuedb")
+    # print("Table dropped.")
+    # os.system("createdb motiveandcuedb")
+    # print("Table created.")
     db.create_all()
 

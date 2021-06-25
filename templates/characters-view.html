@@ -10,6 +10,7 @@
 {% for character in characters %}
 <div id="character-metadata">
     <ul>
+        <li>ID: {{character.id}}</li>
         <li>Name: {{character.name}}</li>
         <li>Canonical Gender:
             {% if character.gender|int == 2 %}Male
@@ -17,7 +18,9 @@
             {% else %}Unknown or N/A
             {% endif %}
         </li>
-        <li>Related Choices: {{character.choices}}</li>
+        {% if character['choices'] %}
+            <li>Related Choices: {{character.choices}}</li>
+        {% endif %}
         
     </ul>
 </div>

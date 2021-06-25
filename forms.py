@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms import validators
-from wtforms.fields.core import SelectField
+from wtforms.fields.core import SelectField, SelectMultipleField
+from wtforms.fields.simple import TextAreaField
 from wtforms.validators import DataRequired, Length, Email, Regexp, EqualTo
 from wtforms import ValidationError
 import crud
@@ -42,7 +43,18 @@ class RegistrationForm(FlaskForm):
 
 class ChoosePlayForm(FlaskForm):
     """Select Shakespeare play."""
+
     title_list = [(key, value) for key, value in play_titles.items()]
     play = SelectField("Play", validators=[DataRequired()], choices=title_list, default="Ham")
     submit = SubmitField("Submit")
 
+
+class CreateChoiceForm(FlaskForm):
+    """Create a new Choice. Requires scene and character lists to be passed in when form is instantiated."""
+
+    title = StringField("Title", validators=[DataRequired(), Length(1, 100)])
+    desc = TextAreaField("Description", validators=[DataRequired(), Length(1, 1000)])
+    quote = TextAreaField("Quote", validators=[Length(1, 1000)])
+    scenes = SelectMultipleField("Related Scenes", coerce=int)
+    characters = SelectMultipleField("Related Characters", coerce=int)
+    submit = SubmitField("Submit")
