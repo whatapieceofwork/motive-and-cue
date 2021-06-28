@@ -14,11 +14,11 @@
     <ul>
         <input type="hidden" id="id-{{loop.index0}}" name="id-{{loop.index0}}" value="{{character['id']}}">
         <li><label for "name">Name</label> 
-            <input type="text" name="name-{{loop.index0}}" id="name-{{loop.index0}}" placeholder="{{character['name']}}" value="{{character['name']}}">
+            <input type="text" name="name-{{loop.index0}}" id="name-{{loop.index0}}" placeholder="{{character['name']}}" value="{{character['name']}}"></li>
         <li><label for "gender">Canonical Gender</label><br />
                 {% set character_loop = loop %}
                 {% for key, value in genders.items() %}
-                    {% if character.gender != None and key == (character['gender']|int) %}
+                    {% if character.gender != 0 and key == (character['gender']|int) %}
                         <input checked type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}}>
                     {% elif key == 2 %}
                         <input checked type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}}>
@@ -28,6 +28,14 @@
                     <label for="{{key}}">{{value}}</label><br>
                 {% endfor %}
             </li>
+        <li><label for "description-{{loop.index0}}">Add a Quote</label> 
+                <textarea name="quote-{{loop.index0}}" id="quote-{{loop.index0}}"></textarea></li>
+        <li><label for "quote-scene-{{loop.index0}}">Quote Scene</label>
+            <select name="quote-scene-{{loop.index0}}" id="quote-scene-{{loop.index0}}">
+                {% for scene in scenes %}
+                    <option value="{{scene.id}}">{{scene.act}}.{{scene.scene}}{% if scene.title %}: {{scene.title}}{% endif %}</option>
+                {% endfor %}
+            </select></li>
     </ul>
     {% if loop.last %}
         <input type="hidden" id="character_count" name="character_count" value="{{loop.index0}}">

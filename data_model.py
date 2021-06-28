@@ -81,8 +81,10 @@ class Play(db.Model):
     title = db.Column(db.String(50))
     shortname = db.Column(db.String(10))
     characters = db.relationship("Character", back_populates="play")
+    choices = db.relationship("Choice", back_populates="play")
     scenes = db.relationship("Scene", back_populates="play")
     films = db.relationship("Film", back_populates="plays")
+    quotes = db.relationship("Quote", back_populates="play")
 
     def __repr__(self):
         return f"<PLAY id={self.id} {self.title}>"
@@ -94,14 +96,14 @@ class Character(db.Model):
     __tablename__ = "characters"
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
+    name = db.Column(db.String(100), nullable=False)
     gender = db.Column(db.String(10))
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="characters")
     played_by = db.relationship("Person", secondary="parts_played", back_populates="parts")
     choices = db.relationship("Choice", secondary="choice_characters", back_populates="characters")
     topics = db.relationship("Topic", secondary="topic_characters", back_populates="characters")
-
+    quotes = db.relationship("Quote", back_populates="character")
 
     def __repr__(self):
         return f"<CHARACTER id={self.id} {self.name} {self.play_id}>"
@@ -117,12 +119,11 @@ class Scene(db.Model):
     scene = db.Column(db.Integer, nullable=False)
     title = db.Column(db.String(100))
     description = db.Column(db.Text)
-    quote = db.Column(db.Text)
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="scenes")
     choices = db.relationship("Choice", secondary="choice_scenes", back_populates="scenes")
     topics = db.relationship("Topic", secondary="topic_scenes", back_populates="scenes")
-
+    quotes = db.relationship("Quote", back_populates="scene")
 
     def __repr__(self):
         return f"<SCENE id={self.id} {self.act}.{self.scene} {self.play.title}>"
@@ -180,6 +181,7 @@ class Choice(db.Model):
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
+    play = db.relationship("Play", back_populates="choices")
     title = db.Column(db.String(50), nullable=False)
     desc = db.Column(db.Text)
     quote = db.Column(db.Text)
@@ -205,6 +207,24 @@ class Interpretation(db.Model):
 
     def __repr__(self):
         return f"<INTERPRETATION id={self.id} {self.title}>"
+
+
+class Quote(db.Model):
+    """A quote from a play."""
+
+    __tablename__ = "quotes"
+
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    text = db.Column(db.Text)
+    play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
+    play = db.relationship("Play", back_populates="quotes")
+    character_id = db.Column(db.Integer, db.ForeignKey("characters.id"))
+    character = db.relationship("Character", back_populates="quotes")
+    scene_id = db.Column(db.Integer, db.ForeignKey("scenes.id"))
+    scene = db.relationship("Scene", back_populates="quotes")
+
+    def __repr__(self):
+        return f"<QUOTE id={self.id} {self.character.name}>"
 
 # -- END Primary data objects --
 
@@ -262,7 +282,6 @@ class Topic(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     desc = db.Column(db.Text)
-    quote = db.Column(db.Text)
     scenes = db.relationship("Scene", secondary="topic_scenes", back_populates="topics")
     characters = db.relationship("Character", secondary="topic_characters", back_populates="topics")
 

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}- {{character.name}}{% endblock %}
+
+{% block content %}
+<h2>{{character.name}} from <em>{{character.play.title}}</em></h2>
+
+    <div id="character-quote">
+        {% if character['quote'] %}
+            <em>{{character['quote']}}</em>
+        {% endif %}
+    </div>
+
+<div id="character-metadata">
+    <ul>
+        <li>ID: {{character.id}}</li>
+        <li>Name: {{character.name}}</li>
+        <li>Canonical Gender:
+            {% if character.gender|int == 2 %}Male
+            {% elif character['gender']|int == 1 %}Female
+            {% else %}Unknown or N/A
+            {% endif %}
+        </li>
+        {% if character['choices'] %}
+            <li>Related Choices: {{character.choices}}</li>
+        {% endif %}
+        {% if character['quotes'] %}
+            <li>Related Quotes:
+                <ul>
+                {% for quote in character.quotes%}
+                <figure>
+                    <blockquote>{{quote.text}}</blockquote>
+                    <figcaption><cite>(<em>{{quote.play.title}}</em> {{quote.scene.act}}.{{quote.scene.scene}})</cite></figcaption>
+                </figure>
+                {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
+    </ul>
+</div>
+
+{% endblock %}

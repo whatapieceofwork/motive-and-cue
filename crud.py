@@ -65,10 +65,10 @@ def add_all_characters(play):
     return Character.query.filter(Character.play_id == play.id).all()
 
 
-def add_choice(play, title, desc, quote=None):
+def add_choice(play, title, desc):
     """Create and return a new Choice database record."""
 
-    choice = Choice(play_id=play.id, title=title, desc=desc, quote=quote)
+    choice = Choice(play_id=play.id, title=title, desc=desc)
 
     db.session.add(choice)
     db.session.commit()
@@ -190,10 +190,18 @@ def add_play(title, shortname):
     return play
 
 
-def add_scene(act, scene, play, title, description=None, quote=None):
+def add_quote(play, character, scene, text):
+    """Create and return a new Quote database record."""
+
+    quote = Quote(play_id=play.id, character_id=character.id, scene_id=scene.id, text=text)
+    db.session.add(quote)
+    db.session.commit()
+
+
+def add_scene(act, scene, play, title, description=None):
     """Create and return a new Scene database record."""
 
-    scene = Scene(act=act, scene=scene, title=title, description=description, quote=quote, play_id=play.id)
+    scene = Scene(act=act, scene=scene, title=title, description=description, play_id=play.id)
     db.session.add(scene)
     db.session.commit()
 
@@ -216,10 +224,10 @@ def add_all_scenes(play):
     return Scene.query.filter(Scene.play_id == play.id).all()
 
 
-def add_topic(title, desc, quote):
+def add_topic(title, desc):
     """Create and return a new Topic database record."""
 
-    topic = Topic(title=title, desc=desc, quote=quote)
+    topic = Topic(title=title, desc=desc)
 
     db.session.add(topic)
     db.session.commit()
@@ -228,7 +236,7 @@ def add_topic(title, desc, quote):
     return topic
 
 
-def get_character(name, play, gender=None):
+def get_character(name, play, gender=2):
     """Given a character name, gender, and play, return the Character object."""
 
     existing_character = db.session.query(exists().where((Character.name == name) & (Character.play_id == play.id))).scalar()
@@ -247,10 +255,10 @@ def get_all_characters_by_play(play):
     existing_characters = db.session.query(exists().where(Character.play_id == play.id)).scalar()
 
     if existing_characters:
-        characters = Character.query.filter(Character.play_id == play.id).all()
+        characters = Character.query.filter(Character.play_id == play.id).order_by(Character.id).all()
     else:
         add_all_characters(play)
-        characters = Character.query.filter(Character.play_id == play.id).all()
+        characters = Character.query.filter(Character.play_id == play.id).order_by(Character.id).all()
     return characters
 
 
@@ -403,20 +411,20 @@ def get_play_by_film(film):
     return play
 
 
-def get_scene(act, scene, play, title=None, description=None, quote=None):
+def get_scene(act, scene, play, title=None, description=None):
     """Given an act, scene, and play, return the appropriate Scene object."""
 
     existing_scene = db.session.query(exists().where((Scene.act == act) & (Scene.scene == scene) & (Scene.play_id == play.id))).scalar()
 
     if existing_scene:
         scene = Scene.query.filter((Scene.act == act) & (Scene.scene == scene) & (Scene.play_id == play.id)).first()
-        if title != scene.title or description != scene.description or quote != scene.quote:
-            updated_scene = update_scene(scene, title, description, quote)
+        if title != scene.title or description != scene.description:
+            updated_scene = update_scene(scene, title, description)
             return updated_scene
         else:
             return scene
     else:
-        new_scene = add_scene(act=act, scene=scene, play=play, title=title, description=description, quote=quote)
+        new_scene = add_scene(act=act, scene=scene, play=play, title=title, description=description)
         return new_scene
 
 
@@ -434,7 +442,7 @@ def get_all_scenes_by_play(play):
     return scenes
 
 
-def update_scene(scene, title=None, description=None, quote=None):
+def update_scene(scene, title=None, description=None):
     """Given a scene, update the existing values."""
 
     db_scene = Scene.query.get(scene.id)
@@ -443,15 +451,13 @@ def update_scene(scene, title=None, description=None, quote=None):
         db_scene.title = title
     if description != None:
         db_scene.description = description
-    if quote != None:
-        db_scene.quote = quote
     
     db.session.merge(db_scene)
     db.session.commit()
     return db_scene
 
 
-def update_choice(choice, title=None, desc=None, quote=None):
+def update_choice(choice, title=None, desc=None):
     """Given a choice, update the existing values."""
 
     db_choice = Choice.query.get(choice.id)
@@ -460,8 +466,6 @@ def update_choice(choice, title=None, desc=None, quote=None):
         db_choice.title = title
     if desc != None:
         db_choice.desc = desc
-    if quote != None:
-        db_choice.quote = quote
     
     db.session.merge(db_choice)
     db.session.commit()

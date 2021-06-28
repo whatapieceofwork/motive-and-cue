@@ -4,14 +4,16 @@
 
 {% block content %}
 <h2>Character List for {{play.title}}</h2>
-
+{% if added_characters %}
+    <strong>New characters were found and added to the database. <a href="/edit-characters-{{play.shortname}}">Edit characters?</a></strong>
+{% endif %}
 <div id="character-metadata">
 
 {% for character in characters %}
 <div id="character-metadata">
     <ul>
         <li>ID: {{character.id}}</li>
-        <li>Name: {{character.name}}</li>
+        <li>Name: <a href="/view-character/{{character.id}}">{{character.name}}</a></li>
         <li>Canonical Gender:
             {% if character.gender|int == 2 %}Male
             {% elif character['gender']|int == 1 %}Female
@@ -20,6 +22,9 @@
         </li>
         {% if character['choices'] %}
             <li>Related Choices: {{character.choices}}</li>
+        {% endif %}
+        {% if character['quotes'] %}
+            <li>Related Quotes: {{character.quotes}}</li>
         {% endif %}
         
     </ul>

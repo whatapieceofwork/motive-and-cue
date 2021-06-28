@@ -26,6 +26,8 @@ app = Flask(__name__)
 app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = True
 app.secret_key = FLASK_KEY
 
+Bootstrap(app)
+
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 login_manager.init_app(app)
@@ -35,7 +37,6 @@ login_manager.init_app(app)
 def load_user(user_id):
     return User.query.get(user_id)
 
-Bootstrap(app)
 
 @app.route("/")
 def index():
@@ -145,10 +146,9 @@ def add_scenes_to_db():
         scene["scene"] = request.form.get(f"scene-{i}")
         scene["title"] = request.form.get(f"title-{i}")
         scene["description"] = request.form.get(f"description-{i}")
-        scene["quote"] = request.form.get(f"quote-{i}")
         scenes[i] = scene
 
-        db_scene = get_scene(act=scene["act"], scene=scene["scene"], play=play, title=scene["title"], description=scene["description"], quote=scene["quote"])
+        db_scene = get_scene(act=scene["act"], scene=scene["scene"], play=play, title=scene["title"], description=scene["description"])
 
     return redirect(f"/view-scenes-{play.shortname}")
 
@@ -192,7 +192,6 @@ def edit_scenes_in_db():
         if title != None or description != None:
             update_scene(scene, title, description)
 
-    print(f"*********************** REDIRECT: /view-scenes-{play.shortname}")
     return redirect(f"/view-scenes-{play.shortname}")
 
 
@@ -244,11 +243,13 @@ def add_characters():
         play_shortname = form.play.data
         play = get_play_by_shortname(play_shortname)
         characters = parse_folger_characters(play)
+        scenes = get_all_scenes_by_play(play)
 
         return render_template("characters-verify.html",
                                 play=play,
                                 characters=characters,
-                                genders=GENDERS)
+                                genders=GENDERS,
+                                scenes=scenes)
 
     return render_template("choose-play.html",
                             form=form)
@@ -267,8 +268,11 @@ def add_characters_to_db():
         character = {}
         character["name"] = request.form.get(f"name-{i}")
         character["gender"] = request.form.get(f"gender-{i}")
-
         db_character = get_character(name=character["name"], gender=character["gender"], play=play)
+        quote = request.form.get(f"quote-{i}")
+        quote_scene = request.form.get(f"quote-scene-{i}")
+        scene = Scene.query.get(quote_scene)
+        add_quote(play=play, character=character, scene=quote_scene, text=quote)
         characters.append(character)
 
     return redirect(f"/view-characters-{play.shortname}")
@@ -284,15 +288,33 @@ def edit_characters():
         play_shortname = form.play.data
         play = get_play_by_shortname(play_shortname)
         characters = get_all_characters_by_play(play)
+        scenes = get_all_scenes_by_play(play)
 
         return render_template("characters-edit.html",
                                 play=play,
                                 characters=characters,
-                                genders=GENDERS)
+                                genders=GENDERS,
+                                scenes=scenes)
 
     return render_template("choose-play.html",
                             page_title = page_title,
                             form=form)
+
+
+@app.route("/edit-characters-<shortname>", methods=["GET", "POST"])
+def edit_characters_by_play(shortname):
+    """Given a /view-characters URL including a play shortname, edit that play's associated characters."""
+
+    play = get_play_by_shortname(shortname)
+    if not type(play) == Play: # if get_play_by_shortname returns error, send user to main view_characters function
+        return redirect("/edit-characters")
+
+    characters = get_all_characters_by_play(play)
+
+    return render_template("characters-edit.html",
+                            play=play,
+                            characters=characters,
+                            genders=GENDERS)
 
 
 @app.route("/edit-characters-in-db", methods = ["POST"])
@@ -310,8 +332,14 @@ def edit_characters_in_db():
         character = Character.query.get(character_id)
         name = request.form.get(f"name-{i}")
         gender = request.form.get(f"gender-{i}")
+        quote = request.form.get(f"quote-{i}")
+        quote_scene = request.form.get(f"quote-scene-{i}")
+
         if name or gender:
             update_character(character, name, gender)
+        if quote and quote_scene:
+            scene = Scene.query.get(quote_scene)
+            add_quote(play=play, character=character, scene=scene, text=quote)
 
     return redirect(f"/view-characters-{play.shortname}")
 
@@ -325,9 +353,13 @@ def view_characters():
     if form.validate_on_submit():
         play_shortname = form.play.data
         play = get_play_by_shortname(play_shortname)
+        character_count = Character.query.filter(Character.play_id == play.id).count()
+        added_characters = (character_count == 0) # if no characters were associated with play, explain that characters shown were just added
+
         characters = get_all_characters_by_play(play)
 
         return render_template("characters-view.html",
+                                added_characters=added_characters,
                                 play=play,
                                 characters=characters,
                                 genders=GENDERS)
@@ -345,12 +377,25 @@ def view_characters_by_play(shortname):
     if not type(play) == Play: # if get_play_by_shortname returns error, send user to main view_characters function
         return redirect("/view-characters")
 
+    character_count = Character.query.filter(Character.play_id == play.id).count()
+    added_characters = (character_count == 0) # if no characters were associated with play, explain that characters shown were just added
     characters = get_all_characters_by_play(play)
 
     return render_template("characters-view.html",
+                            added_characters=added_characters,
                             play=play,
                             characters=characters,
                             genders=GENDERS)
+
+
+@app.route("/view-character/<character_id>", methods=["GET", "POST"])
+def character_page(character_id):
+    """Given a character ID, display information about that character."""
+
+    character = Character.query.get(character_id)
+
+    return render_template("character-page.html",
+                            character=character)
 
 # ----- END: PROCESS CHARACTERS ----- #
 

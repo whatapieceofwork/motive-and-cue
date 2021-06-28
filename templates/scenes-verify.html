@@ -24,8 +24,8 @@
         <label for "description-{{loop.index0}}">Description</label> 
             <textarea name="description-{{loop.index0}}" id="description-{{loop.index0}}" {% if scene['description'] %}placeholder="{{scene['description']}}">{{scene['description']}}{% else %}>{% endif %}</textarea>
         <br />
-        <label for "quote-{{loop.index0}}">Quote</label> 
-            <textarea name="quote-{{loop.index0}}" id="quote-{{loop.index0}}" {% if scene['quote'] %}placeholder="{{scene['quote']}}">{{scene['quote']}}{% else %}>{% endif %}</textarea>
+        <label for "quotes-{{loop.index0}}">Quotes</label> 
+            <textarea name="quotes-{{loop.index0}}" id="quotes-{{loop.index0}}" {% if scene['quotes'] %}placeholder="{{scene['quotes']}}">{{scene['quotes']}}{% else %}>{% endif %}</textarea>
     <br />
         </li>
     </ul>
