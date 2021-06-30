@@ -28,3 +28,11 @@
     width: 600px;
     height: 100px;
 }
+
+#character-metadata figure blockquote {
+    margin: 0;
+}
+
+cite {
+    font-style: unset;
+}

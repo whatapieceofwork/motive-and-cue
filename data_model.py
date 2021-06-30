@@ -183,12 +183,11 @@ class Choice(db.Model):
 
     __tablename__ = "choices"
 
-    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True, info={"label": "ID"})
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="choices")
-    title = db.Column(db.String(50), nullable=False)
-    desc = db.Column(db.Text)
-    quote = db.Column(db.Text)
+    title = db.Column(db.String(50), nullable=False, info={"label": "Title"})
+    desc = db.Column(db.Text, info={"label": "Description"})
     scenes = db.relationship("Scene", secondary="choice_scenes", back_populates="choices")
     characters = db.relationship("Character", secondary="choice_characters", back_populates="choices")
     interpretations = db.relationship("Interpretation", back_populates="choices")

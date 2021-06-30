@@ -3,7 +3,9 @@
 {% block title %}- Edit Scenes{% endblock %}
 
 {% block content %}
-<h2>Edit Scene List for {{play.title or "Play"}}</h2>
+{% if play %}
+    <h2>Edit Scene List for {{play.title or "Play"}}</h2>
+{% endif %}
 
 {% if not scenes %}
     {{ wtf.quick_form(form) }}

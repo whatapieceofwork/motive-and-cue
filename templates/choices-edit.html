@@ -3,19 +3,21 @@
 {% block title %}- Edit Choices{% endblock %}
 
 {% block content %}
-<h2>Edit Choice List for {{play.title}}</h2>
+{% if play %}
+    <h2>Edit Choices for {{play.title}}</h2>
+{% endif %}    
+{% if form %}
+    {{ wtf.quick_form(form) }}
+{% endif %}
 
-<div id="characters-metadata">
-    <form action="/edit-characters-in-db" method="post">
-    <input type="hidden" id="play" name="play" value="{{play.title}}">
-
-{% for choice in choices %}
-<div id="choice-metadata">
-
+{% if choices %}
+<div class="choices-list">
+    <ul>
+        {% for choice in choices %}
+            <li><a href="/choices/{{choice.id}}">{{choice.title}}</a></li>
+        {% endfor %}
+    </ul>
 </div>
-{% endfor %}
-
-<input type="submit" value="Submit">
-</form>
+{% endif %}
 
 {% endblock %}

@@ -70,44 +70,34 @@ class SceneForm(FlaskForm):
     title = StringField("Title", validators=[Length(1, 100)])
     description = TextAreaField("Description", validators=[Length(1, 1000)])
     quote = TextAreaField("Quote", validators=[Length(1, 1000)])
-    
     submit = SubmitField("Submit")
 
 
-class DecisionForm(FlaskForm):
-    
-    """Create or edit an Interpretation object."""
+class InterpretationForm(FlaskForm):
+    """Form to create or edit an Interpretation object."""
+
     id = IntegerField("ID")
     act = IntegerField("Act", validators=[DataRequired(), Length(1, 3)])
     scene = IntegerField("Scene", validators=[DataRequired(), Length(1, 3)])
     title = StringField("Title", validators=[Length(1, 100)])
     description = TextAreaField("Description", validators=[Length(1, 1000)])
     quote = TextAreaField("Quote", validators=[Length(1, 1000)])
-    
     submit = SubmitField("Submit")
 
 
-class ChoiceForm(FlaskForm):
-    """Create or edit a Choice object."""
+# class ChoiceForm(FlaskForm):
+#     """Form to create or edit a Choice object."""
 
-    id = IntegerField("ID")
-    title = StringField("Title", validators=[Length(1, 100)])
-    description = TextAreaField("Description", validators=[Length(1, 1000)])
-
-    
-    submit = SubmitField("Submit")
+#     id = IntegerField("ID")
+#     title = StringField("Title", validators=[Length(1, 100)])
+#     description = TextAreaField("Description", validators=[Length(1, 1000)])
+#     submit = SubmitField("Submit")
 
 
-class CharacterForm(Form):
+class CharacterForm(FlaskForm):
+    """Form to create or edit a Character object."""
+
     id = StringField('ID')
     name = StringField('Name')
-
-class CharactersForm(FlaskForm):
-    category_name = StringField('Category Name')
-    characters = FieldList(FormField(CharacterForm), min_entries=4, max_entries=8)
-
-
-class MyForm(FlaskForm):
-    name = StringField('static field')
-
-
+    gender = IntegerField("Gender")
+    submit = SubmitField("Submit")

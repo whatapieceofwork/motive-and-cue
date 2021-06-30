@@ -286,6 +286,32 @@ def get_all_choices_by_play(play):
         return None
 
 
+def get_choice_character(choice, character):
+    """Given a choice and character, return or create a ChoiceCharacter object."""
+
+    existing_choice_character = db.session.query(exists().where((ChoiceCharacter.choice_id == choice.id) & (ChoiceCharacter.character_id == character.id))).scalar()
+
+    if existing_choice_character:
+        choice_character = ChoiceCharacter.query.filter((ChoiceCharacter.choice_id == choice.id) & (ChoiceCharacter.character_id == character.id)).first()
+    else:
+        choice_character = add_choice_character(choice, character)
+
+    return choice_character
+
+
+def get_choice_scene(choice, scene):
+    """Given a choice and scene, return or create a ChoiceScene object."""
+
+    existing_choice_scene = db.session.query(exists().where((ChoiceScene.choice_id == choice.id) & (ChoiceScene.scene_id == scene.id))).scalar()
+
+    if existing_choice_scene:
+        choice_scene = ChoiceScene.query.filter((ChoiceScene.choice_id == choice.id) & (ChoiceScene.scene_id == scene.id)).first()
+    else:
+        choice_scene = add_choice_scene(choice, scene)
+
+    return choice_scene
+
+
 def get_interpretation(choice, film):
     """Given a choice and film, return the related Interpretation object."""
 

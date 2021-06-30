@@ -170,6 +170,9 @@ def view_scenes(shortname=None, id=None):
 
     if shortname:
         play = get_play_by_shortname(shortname)
+        if not type(play) == Play:
+            flash("Please select a valid play.")
+            return redirect("/scenes")
         scenes = get_all_scenes_by_play(play)
         return render_template("scenes-view.html", play=play, scenes=scenes)
         
@@ -181,6 +184,8 @@ def view_scenes(shortname=None, id=None):
     if form.validate_on_submit():
         shortname = form.play.data
         play = get_play_by_shortname(shortname)
+        if not type(play) == Play:
+            flash("Please select a valid play.")
 
         return redirect(f"/scenes/{shortname}")
 
@@ -188,13 +193,16 @@ def view_scenes(shortname=None, id=None):
                             form=form)
 
 
-@app.route("/scenes/add", methods=["GET", "POST"])
+@app.route("/scenes/add/", methods=["GET", "POST"])
 @app.route("/scenes/add/<string:shortname>", methods=["GET", "POST"])
 def add_scenes(shortname=None):
     """Add scenes by play shortname. Prompt for play if not given in URL."""
 
     if shortname:
         play = get_play_by_shortname(shortname)
+        if not type(play) == Play:
+            flash("Please select a valid play.")
+            return redirect("/scenes/add")
         scenes = parse_folger_scene_descriptions(play)
         return render_template("scenes-edit.html", 
                                 play=play, 
@@ -205,11 +213,11 @@ def add_scenes(shortname=None):
         shortname = form.play.data
         return redirect(f"/scenes/add/{shortname}")
 
-    return render_template("choose-play.html", 
+    return render_template("scenes-edit.html", 
                             form=form)
 
 
-@app.route("/scenes/edit", methods=["GET", "POST"])
+@app.route("/scenes/edit/", methods=["GET", "POST"])
 @app.route("/scenes/edit/<string:shortname>", methods=["GET", "POST"])
 @app.route("/scenes/edit/<int:id>", methods=["GET", "POST"])
 def edit_scenes(shortname=None, id=None):
@@ -217,6 +225,9 @@ def edit_scenes(shortname=None, id=None):
 
     if shortname and request.method == "POST":
         play = get_play_by_shortname(shortname)
+        if not type(play) == Play:
+            flash("Please select a valid play.")
+            return redirect("/scenes/edit")
         scene_count = request.form.get("scene_count")
         scene_count = int(scene_count) + 1
 
@@ -244,6 +255,9 @@ def edit_scenes(shortname=None, id=None):
 
     elif shortname:
         play = get_play_by_shortname(shortname)
+        if not type(play) == Play:
+            flash("Please select a valid play.")
+            return redirect("/scenes")
         scenes = get_all_scenes_by_play(play)
         characters = get_all_characters_by_play(play)
 
@@ -262,185 +276,285 @@ def edit_scenes(shortname=None, id=None):
             db.session.merge(scene)
             db.session.commit()
 
-            return redirect(f"/scenes/{scene_num}")
+            return redirect(f"/scenes/{id}")
     
-        return render_template("scene-edit",
-                                scene=scene)
+        return render_template("scenes-edit.html",
+                                scene=scene,
+                                form=form)
 
     else:
         form = ChoosePlayForm()
-        return render_template("choose-play.html", 
-                        form=form)
+        if form.validate_on_submit():
+            shortname = form.play.data
+            return redirect(f"/scenes/edit/{shortname}")
+
+    return render_template("choose-play.html", 
+                    form=form)
 
 # ----- END: SCENE VIEWS ----- #
 
 
 # ----- BEGIN: CHARACTER VIEWS ----- #
 
-@app.route("/add-characters", methods=["GET", "POST"])
-def add_characters():
-    """Prompts user for play, then scrapes the Folger character information and passes the data to verify_characters()."""
+@app.route("/characters/", methods=["GET", "POST"])
+@app.route("/characters/<string:shortname>", methods=["GET", "POST"])
+@app.route("/characters/<int:id>", methods=["GET", "POST"])
+def view_characters(shortname=None, id=None):
+    """Display all characters, characters by play shortname, or a specific character by character id. Prompt for play if not given in URL."""
+
+    if shortname:
+        play = get_play_by_shortname(shortname)
+        if not type(play) == Play:
+            flash("Please select a valid play.")
+            return redirect("/characters")
+        characters = get_all_characters_by_play(play)
+        return render_template("characters-view.html", play=play, characters=characters)
+        
+    elif id:
+        character = Character.query.get(id)
+        return render_template("character.html", character=character)
 
     form = ChoosePlayForm()
     if form.validate_on_submit():
-        play_shortname = form.play.data
-        play = get_play_by_shortname(play_shortname)
-        characters = parse_folger_characters(play)
-        scenes = get_all_scenes_by_play(play)
+        shortname = form.play.data
+        play = get_play_by_shortname(shortname)
+        if not type(play) == Play:
+            flash("Please select a valid play.")
+            return redirect("/characters")
 
-        return render_template("characters-verify.html",
-                                play=play,
-                                characters=characters,
-                                genders=GENDERS,
-                                scenes=scenes)
+        return redirect(f"/characters/{shortname}")
 
-    return render_template("choose-play.html",
+    return render_template("characters-view.html", 
                             form=form)
 
 
-@app.route("/add-characters-to-db", methods = ["POST"])
-def add_characters_to_db():
-    """Use the form data from /process-characters to add character information to the database."""
+@app.route("/characters/add/", methods=["GET", "POST"])
+@app.route("/characters/add/<string:shortname>", methods=["GET", "POST"])
+def add_characters(shortname=None):
+    """Add characters by play shortname. Prompt for play if not given in URL."""
 
-    play_title = request.form.get("play")
-    play = get_play_by_title(play_title)
-    characters = []
-    character_count = request.form.get("character_count")
-    character_count = int(character_count) + 1
-    for i in range(character_count):
-        character = {}
-        character["name"] = request.form.get(f"name-{i}")
-        character["gender"] = request.form.get(f"gender-{i}")
-        db_character = get_character(name=character["name"], gender=character["gender"], play=play)
-        quote = request.form.get(f"quote-{i}")
-        quote_scene = request.form.get(f"quote-scene-{i}")
-        scene = Scene.query.get(quote_scene)
-        add_quote(play=play, character=character, scene=quote_scene, text=quote)
-        characters.append(character)
-
-    return redirect(f"/view-characters/{play.shortname}")
-
-
-@app.route("/edit-characters", methods=["GET", "POST"])
-def edit_characters():
-    """Given a Shakespeare play by the user, edit the existing characters in the database."""
-
-    form = ChoosePlayForm()
-    page_title = "Edit Characters"
-    if form.validate_on_submit():
-        play_shortname = form.play.data
-        play = get_play_by_shortname(play_shortname)
+    if shortname:
+        play = get_play_by_shortname(shortname)
+        if not type(play) == Play:
+            flash("Please select a valid play.")
+            return redirect("/characters/add")
         characters = get_all_characters_by_play(play)
         scenes = get_all_scenes_by_play(play)
-
-        return render_template("characters-edit.html",
-                                play=play,
+        return render_template("characters-edit.html", 
+                                play=play, 
                                 characters=characters,
                                 genders=GENDERS,
                                 scenes=scenes)
 
-    return render_template("choose-play.html",
-                            page_title = page_title,
+    form = ChoosePlayForm()
+    if form.validate_on_submit():
+        shortname = form.play.data
+        return redirect(f"/characters/add/{shortname}")
+
+    return render_template("choose-play.html", 
                             form=form)
 
 
-@app.route("/edit-characters-<shortname>", methods=["GET", "POST"])
-def edit_characters_by_play(shortname):
-    """Given a /view-characters URL including a play shortname, edit that play's associated characters."""
+@app.route("/characters/edit/", methods=["GET", "POST"])
+@app.route("/characters/edit/<string:shortname>", methods=["GET", "POST"])
+@app.route("/characters/edit/<int:id>", methods=["GET", "POST"])
+def edit_characters(shortname=None, id=None):
+    """Edit all characters by play shortname, or a specific character by character id."""
 
-    play = get_play_by_shortname(shortname)
-    if not type(play) == Play: # if get_play_by_shortname returns error, send user to main view_characters function
-        return redirect("/edit-characters")
-
-    characters = get_all_characters_by_play(play)
-
-    return render_template("characters-edit.html",
-                            play=play,
-                            characters=characters,
-                            genders=GENDERS)
-
-
-@app.route("/edit-characters-in-db", methods = ["POST"])
-def edit_characters_in_db():
-    """Use the form data from /edit-characters to edit character information to the database."""
-
-    play_title = request.form.get("play")
-    play = get_play_by_title(play_title)
-    character_count = request.form.get("character_count")
-    character_count = int(character_count) + 1
-
-    characters = {}
-    for i in range(character_count):
-        character_id = request.form.get(f"id-{i}")
-        character = Character.query.get(character_id)
-        name = request.form.get(f"name-{i}")
-        gender = request.form.get(f"gender-{i}")
-        quote = request.form.get(f"quote-{i}")
-        quote_scene = request.form.get(f"quote-scene-{i}")
-
-        if name or gender:
-            update_character(character, name, gender)
-        if quote and quote_scene:
+    if shortname and request.method == "POST":
+        play = get_play_by_shortname(shortname)
+        character_count = request.form.get("character_count")
+        character_count = int(character_count) + 1
+    
+        for i in range(character_count):
+            character_id = request.form.get(f"id-{i}")
+            name = request.form.get(f"name-{i}")
+            gender = request.form.get(f"gender-{i}")
+            quote = request.form.get(f"quote-{i}")
+            quote_scene = request.form.get(f"quote-scene-{i}")
             scene = Scene.query.get(quote_scene)
-            add_quote(play=play, character=character, scene=scene, text=quote)
 
-    return redirect(f"/view-characters-{play.shortname}")
+            existing_character = Character.query.get(character_id)
+            if existing_character:
+                character = update_character(character=existing_character, name=name, gender=gender)
+            else:
+                character = add_character(name=name, play=play, gender=gender)
 
+            if quote and scene:
+                add_quote(play=play, character=character, scene=scene, text=quote)
 
-@app.route("/view-characters", methods=["GET", "POST"])
-def view_characters():
-    """Display a form for the user to choose a play, then displays the list of associated characters."""
+        return redirect(f"/characters/{shortname}")
 
-    form = ChoosePlayForm()
-    page_title = "View Characters"
-    if form.validate_on_submit():
-        play_shortname = form.play.data
-        play = get_play_by_shortname(play_shortname)
-        character_count = Character.query.filter(Character.play_id == play.id).count()
-        added_characters = (character_count == 0) # if no characters were associated with play, explain that characters shown were just added
+    elif shortname:
+        play = get_play_by_shortname(shortname)
+        if not type(play) == Play:
+            flash("Please select a valid play.")
+            return redirect("/characters/edit")
 
         characters = get_all_characters_by_play(play)
+        scenes = get_all_scenes_by_play(play)
 
-        return render_template("characters-view.html",
-                                added_characters=added_characters,
-                                play=play,
+        return render_template("characters-edit.html", 
+                                play=play, 
+                                scenes=scenes,
                                 characters=characters,
                                 genders=GENDERS)
+    
+    elif id:
+        character = Character.query.get(id)
+        form = CharacterForm(obj=character)
 
-    return render_template("choose-play.html",
-                            page_title = page_title,
+        if form.is_submitted():
+            character.name = form.name.data
+            character.gender = form.gender.data
+            db.session.merge(character)
+            db.session.commit()
+
+            return redirect(f"/characters/{id}")
+    
+        return render_template("character-edit.html",
+                                character=character,
+                                form=form)
+
+    else:
+        form = ChoosePlayForm()
+        if form.validate_on_submit():
+            shortname = form.play.data
+            return redirect(f"/characters/edit/{shortname}")
+
+    return render_template("characters-edit.html", 
+                    form=form)
+
+# ----- END: CHARACTER VIEWS ----- #
+
+
+# ----- BEGIN: CHOICE VIEWS ----- #
+
+@app.route("/choices/", methods=["GET", "POST"])
+@app.route("/choices/<string:shortname>", methods=["GET", "POST"])
+@app.route("/choices/<int:id>", methods=["GET", "POST"])
+def view_choices(shortname=None, id=None):
+    """Display all choices, choices by play shortname, or a specific choice by choice id. Prompt for play if not given in URL."""
+
+    if shortname:
+        play = get_play_by_shortname(shortname)
+        if not type(play) == Play:
+            flash("Please select a valid play.")
+            return redirect("/choices")
+        choices = get_all_choices_by_play(play)
+        return render_template("choices-view.html", play=play, choices=choices)
+        
+    elif id:
+        choice = Choice.query.get(id)
+        return render_template("choice.html", choice=choice)
+
+    form = ChoosePlayForm()
+    if form.validate_on_submit():
+        shortname = form.play.data
+        play = get_play_by_shortname(shortname)
+        if not type(play) == Play:
+            flash("Please select a valid play.")
+            return redirect("/choices")
+
+        return redirect(f"/choices/{shortname}")
+
+    return render_template("choices-view.html", 
                             form=form)
 
 
-@app.route("/view-characters-<shortname>", methods=["GET", "POST"])
-def view_characters_by_play(shortname):
-    """Given a /view-characters URL including a play shortname, display that play's associated characters."""
+@app.route("/choices/add/", methods=["GET", "POST"])
+@app.route("/choices/add/<string:shortname>", methods=["GET", "POST"])
+def add_choices(shortname=None):
+    """Add choices by play shortname. Prompt for play if not given in URL."""
 
-    play = get_play_by_shortname(shortname)
-    if not type(play) == Play: # if get_play_by_shortname returns error, send user to main view_characters function
-        return redirect("/view-characters")
+    if shortname:
+        play = get_play_by_shortname(shortname)
+        if not type(play) == Play:
+            flash("Please select a valid play.")
+            return redirect("/choices/add")
+        choices = get_all_choices_by_play(play)
+        scenes = get_all_scenes_by_play(play)
+        characters = get_all_characters_by_play(play)
+        return render_template("choices-edit.html", 
+                                play=play, 
+                                choices=choices,
+                                characters=characters,
+                                scenes=scenes)
 
-    character_count = Character.query.filter(Character.play_id == play.id).count()
-    added_characters = (character_count == 0) # if no characters were associated with play, explain that characters shown were just added
-    characters = get_all_characters_by_play(play)
+    form = ChoosePlayForm()
+    if form.validate_on_submit():
+        shortname = form.play.data
+        return redirect(f"/choices/add/{shortname}")
 
-    return render_template("characters-view.html",
-                            added_characters=added_characters,
-                            play=play,
-                            characters=characters,
-                            genders=GENDERS)
+    return render_template("choose-play.html", 
+                            form=form)
 
 
-@app.route("/view-character/<character_id>", methods=["GET", "POST"])
-def character_page(character_id):
-    """Given a character ID, display information about that character."""
+@app.route("/choices/edit/", methods=["GET", "POST"])
+@app.route("/choices/edit/<string:shortname>", methods=["GET", "POST"])
+@app.route("/choices/edit/<int:id>", methods=["GET", "POST"])
+def edit_choices(shortname=None, id=None):
+    """Edit all choices by play shortname, or a specific choice by choice id."""
 
-    character = Character.query.get(character_id)
+    if shortname:
+        play = get_play_by_shortname(shortname)
+        choices = get_all_choices_by_play(play)
 
-    return render_template("character-page.html",
-                            character=character)
+        return render_template("/choices-edit.html", 
+                                choices=choices,
+                                play=play)
+    
+    elif id:
+        choice = Choice.query.get(id)
+        class ChoiceForm(OrderFormMixin, ModelForm):
+            class Meta:
+                model = Choice
+                order_before = ["play"]
+                order_after = ["characters", "scenes", "submit"]
+    
+            play = QuerySelectField('Related Play', 
+                                            query_factory=Play.query.all)
+            characters = QuerySelectMultipleField('Related Characters', 
+                                            query_factory=Character.query.all)
+            scenes = QuerySelectMultipleField('Related Scenes', 
+                                            query_factory=Scene.query.all)
+            submit = SubmitField("Submit")
 
-# ----- END: CHARACTER VIEWS ----- #
+        form = ChoiceForm(obj=choice)
+
+        if form.is_submitted():
+            title = form.title.data
+            desc = form.desc.data
+            play = form.play.data
+            db_characters = form.characters.data
+            db_scenes = form.scenes.data
+
+            if not choice:
+                choice = add_choice(play=play, title=title, desc=desc)
+
+            for character in db_characters:
+                get_choice_character(choice=choice, character=character)
+
+            for scene in db_scenes:
+                get_choice_scene(choice=choice, scene=scene)
+
+
+            return redirect(f"/choices/{id}")
+
+    
+        return render_template("choices-edit.html",
+                                choice=choice,
+                                form=form)
+
+    form = ChoosePlayForm()
+    if form.validate_on_submit():
+        shortname = form.play.data
+        return redirect(f"/choices/edit/{shortname}")
+
+    return render_template("choices-edit.html", 
+                    form=form)
+
+# ----- END: CHOICE VIEWS ----- #
 
 
 # ----- BEGIN: PROCESS FILM ----- #
@@ -531,143 +645,6 @@ def add_film_to_db():
                             people=people)
 
 # ----- END: PROCESS FILM ----- #
-
-
-# ----- BEGIN: PROCESS CHOICE ----- #
-
-@app.route("/add-choices", methods=["GET", "POST"])
-def add_choices():
-    """Prompts user for play, then allows user to create a new related Choice object."""
-
-    form = ChoosePlayForm()
-    if form.validate_on_submit():
-        play_shortname = form.play.data
-
-        return redirect(f"/add-choices-{play_shortname}")
-
-    return render_template("choose-play.html",
-                            form=form)
-
-
-@app.route("/add-choices-<shortname>", methods=["GET", "POST"])
-def add_choices_by_play(shortname):
-    """Given an /add-choices URL including a play shortname, display form to create a new Choice object."""
-
-    play = get_play_by_shortname(shortname)
-    scenes = get_all_scenes_by_play(play)
-    characters = get_all_characters_by_play(play)
-    scene_list = [(scene.id, f"{scene.act}.{scene.scene}: {scene.title}") for scene in scenes]
-    character_list = [(character.id, character.name) for character in characters]
-    
-    form = CreateChoiceForm()
-    form.scenes.choices = scene_list
-    form.characters.choices = character_list
-
-    class ChoiceForm(ModelForm):
-        class Meta:
-            model = Choice
-            include_primary_keys = True
-
-
-    if form.validate_on_submit():
-        title = form.title.data
-        desc = form.desc.data
-        quote = form.quote.data
-        scene_ids = form.scenes.data
-        character_ids = form.characters.data
-
-        choice = get_choice(play=play, title=title)
-        if not choice:
-            choice = add_choice(play=play, title=title, desc=desc)
-        else:
-            choice = update_choice(choice=choice, title=title, desc=desc)
-
-        if scene_ids:
-            for scene_id in scene_ids:
-                scene = Scene.query.get(scene_id)
-                add_choice_scene(choice, scene)
-        if character_ids:
-            for character_id in character_ids:
-                character = Character.query.get(character_id)
-                add_choice_character(choice, character)
-
-
-        return redirect(f"/view-choices-{shortname}")
-
-    return render_template("choices-add.html",
-                            form=form)
-
-
-@app.route("/view-choices", methods=["GET", "POST"])
-def view_choices():
-    """Prompts user for play, then display that play's associated choices."""
-
-    form = ChoosePlayForm()
-    if form.validate_on_submit():
-        play_shortname = form.play.data
-
-        return redirect(f"/view-choices-{play_shortname}")
-
-    return render_template("choose-play.html",
-                            form=form)
-
-
-@app.route("/view-choices-<shortname>", methods=["GET", "POST"])
-def view_choices_by_play(shortname):
-    """Given a /view-choices URL including a play shortname, display that play's associated choices."""
-
-    play = get_play_by_shortname(shortname)
-    if not type(play) == Play: # if get_play_by_shortname returns error, send user to main view function
-        return redirect("/view-choices")
-
-    choices = get_all_choices_by_play(play)
-    interpretations = get_all_interpretations_by_play(play)
-
-    return render_template("choices-view.html",
-                            choices=choices,
-                            interpretations=interpretations,
-                            play=play)
-
-
-@app.route("/view-choice/<choice_id>", methods=["GET", "POST"])
-def view_choice(choice_id):
-    """Given a /view-choices URL including a choice ID, display that Choice"""
-
-    choice = Choice.query.get(choice_id)
-
-    return render_template("choice.html",
-                            choice=choice)
-
-@app.route("/choice-edit/<choice_id>", methods=["GET", "POST"])
-def choice_page_edit(choice_id):
-    """Given a Choice ID, retrieve and edit a specific Choice object."""
-
-    choice = Choice.query.get(choice_id)
-
-    class ChoiceForm(OrderFormMixin, ModelForm):
-        class Meta:
-            model = Choice
-            order_after = ["submit"]
-
-        submit = SubmitField("Submit")
-
-    form = ChoiceForm(obj=choice)
-
-    if form.is_submitted():
-        choice = Choice.query.get(choice_id)
-        choice.title = form.title.data
-        choice.description = form.desc.data
-
-        db.session.merge(choice)
-        db.session.commit()
-
-        return redirect(f"/view-choice/{choice_id}")
-
-    return render_template("choice-edit.html",
-                            form=form)
-
-
-# ----- END: PROCESS CHOICE ----- #
 
 
 @app.route("/add-interpretation", methods=["GET", "POST"])
