@@ -3,6 +3,7 @@ from flask_login.utils import login_user, current_user, logout_user, login_requi
 from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager, login_required, set_login_view
+from flask_sqlalchemy.utils import parse_version
 from sqlalchemy.sql import exists
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -112,8 +113,7 @@ def login():
             flash("Invalid username or password. Please try again.")
             return render_template("login.html", form=form)
 
-    return render_template("login.html",
-                            form=form)
+    return render_template("login.html", form=form)
 
 
 @app.route("/logout")
@@ -137,7 +137,7 @@ def register():
         db.session.commit()
         flash("Thank you for registering! Please log in.")
         return redirect("/login")
-    return render_template("register.html",
+    return render_template("register.html", 
                             form=form)
 
 
@@ -146,7 +146,7 @@ def register():
 def my_account():
     """Display account information for logged-in users."""
 
-    return render_template("my-account.html",
+    return render_template("my-account.html", 
                             user=current_user)
 
 
@@ -155,161 +155,127 @@ def choose_play():
     """Prompts user for play name, passes play name to appropriate function."""
     form = ChoosePlayForm()
 
-    return render_template("choose-play.html",
-                            form=form,
+    return render_template("choose-play.html", 
+                            form=form, 
                             play_titles = play_titles)
 
 
-# ----- BEGIN: PROCESS SCENES ----- #
+# ----- BEGIN: SCENE VIEWS ----- #
 
-@app.route("/add-scenes", methods=["GET", "POST"])
-def add_scenes():
-    """Prompts user for play, then scrapes the Folger scene number and descriptions for that play and passes the data to verify_scenes()."""
+@app.route("/scenes/", methods=["GET", "POST"])
+@app.route("/scenes/<string:shortname>", methods=["GET", "POST"])
+@app.route("/scenes/<int:id>", methods=["GET", "POST"])
+def view_scenes(shortname=None, id=None):
+    """Display all scenes, scenes by play shortname, or a specific scene by scene id. Prompt for play if not given in URL."""
+
+    if shortname:
+        play = get_play_by_shortname(shortname)
+        scenes = get_all_scenes_by_play(play)
+        return render_template("scenes-view.html", play=play, scenes=scenes)
+        
+    elif id:
+        scene = Scene.query.get(id)
+        return render_template("scene.html", scene=scene)
 
     form = ChoosePlayForm()
     if form.validate_on_submit():
-        play_shortname = form.play.data
-        play = get_play_by_shortname(play_shortname)
+        shortname = form.play.data
+        play = get_play_by_shortname(shortname)
+
+        return redirect(f"/scenes/{shortname}")
+
+    return render_template("scenes-view.html", 
+                            form=form)
+
+
+@app.route("/scenes/add", methods=["GET", "POST"])
+@app.route("/scenes/add/<string:shortname>", methods=["GET", "POST"])
+def add_scenes(shortname=None):
+    """Add scenes by play shortname. Prompt for play if not given in URL."""
+
+    if shortname:
+        play = get_play_by_shortname(shortname)
         scenes = parse_folger_scene_descriptions(play)
-
-        return render_template("scenes-verify.html",
-                                play=play,
+        return render_template("scenes-edit.html", 
+                                play=play, 
                                 scenes=scenes)
-
-    return render_template("choose-play.html",
-                            form=form)
-    
-
-@app.route("/add-scenes-to-db", methods = ["POST"])
-def add_scenes_to_db():
-    """Use the form data from /process-scenes to add scene information to the database."""
-
-    play_title = request.form.get("play")
-    play = get_play_by_title(play_title)
-    scene_count = request.form.get("scene_count")
-    scene_count = int(scene_count) + 1
-
-    scenes = {}
-    for i in range(scene_count):
-        scene = {}
-        scene["act"] = request.form.get(f"act-{i}")
-        scene["scene"] = request.form.get(f"scene-{i}")
-        scene["title"] = request.form.get(f"title-{i}")
-        scene["description"] = request.form.get(f"description-{i}")
-        scenes[i] = scene
-
-        db_scene = get_scene(act=scene["act"], scene=scene["scene"], play=play, title=scene["title"], description=scene["description"])
-
-    return redirect(f"/view-scenes-{play.shortname}")
-
-
-@app.route("/edit-scenes", methods=["GET", "POST"])
-def edit_scenes():
-    """Given a Shakespeare play by the user, edit the existing scenes in the database."""
 
     form = ChoosePlayForm()
-    page_title = "Edit Scenes"
     if form.validate_on_submit():
-        play_shortname = form.play.data
-        play = get_play_by_shortname(play_shortname)
-        scenes = get_all_scenes_by_play(play)
+        shortname = form.play.data
+        return redirect(f"/scenes/add/{shortname}")
 
-        return render_template("scenes-edit.html",
-                                play=play,
-                                scenes=scenes)
-
-    return render_template("choose-play.html",
-                            page_title = page_title,
+    return render_template("choose-play.html", 
                             form=form)
 
 
-@app.route("/scene-edit/<scene_num>", methods=["GET", "POST"])
-def scene_page_edit(scene_num):
-    """Use the scene number to retrieve and edit a specific Scene object."""
+@app.route("/scenes/edit", methods=["GET", "POST"])
+@app.route("/scenes/edit/<string:shortname>", methods=["GET", "POST"])
+@app.route("/scenes/edit/<int:id>", methods=["GET", "POST"])
+def edit_scenes(shortname=None, id=None):
+    """Edit all scenes by play shortname, or a specific scene by scene id."""
 
-    scene = Scene.query.get(scene_num)
-    form = SceneForm(obj=scene)
+    if shortname and request.method == "POST":
+        play = get_play_by_shortname(shortname)
+        scene_count = request.form.get("scene_count")
+        scene_count = int(scene_count) + 1
 
-    if form.is_submitted():
-        scene.title = form.title.data
-        scene.description = form.description.data
-        db.session.merge(scene)
-        db.session.commit()
+        for i in range(scene_count):
+            scene_id = request.form.get(f"id-{i}")
+            act_num = request.form.get(f"act-{i}")
+            scene_num = request.form.get(f"scene-{i}")
+            title = request.form.get(f"title-{i}")
+            description = request.form.get(f"description-{i}")
+            quote = request.form.get(f"quote-{i}")
+            quote_character = request.form.get(f"quote-character-{i}")
+            if quote_character:
+                character = Character.query.get(quote_character)
+            
+            existing_scene = Scene.query.get(scene_id)
+            if existing_scene:
+                scene = update_scene(scene=existing_scene, title=title, description=description)
+            else:
+                scene = add_scene(act=act_num, scene=scene_num, play=play, title=title, description=description)
 
-        return redirect(f"/view-scene/{scene_num}")
+            if quote and quote_character:
+                add_quote(play=play, character=character, scene=scene, text=quote)
+
+        return redirect(f"/scenes/{shortname}")
+
+    elif shortname:
+        play = get_play_by_shortname(shortname)
+        scenes = get_all_scenes_by_play(play)
+        characters = get_all_characters_by_play(play)
+
+        return render_template("scenes-edit.html", 
+                                play=play, 
+                                scenes=scenes,
+                                characters=characters)
     
-    return render_template("scene-edit.html", form=form)
+    elif id:
+        scene = Scene.query.get(id)
+        form = SceneForm(obj=scene)
+
+        if form.is_submitted():
+            scene.title = form.title.data
+            scene.description = form.description.data
+            db.session.merge(scene)
+            db.session.commit()
+
+            return redirect(f"/scenes/{scene_num}")
+    
+        return render_template("scene-edit",
+                                scene=scene)
+
+    else:
+        form = ChoosePlayForm()
+        return render_template("choose-play.html", 
+                        form=form)
+
+# ----- END: SCENE VIEWS ----- #
 
 
-@app.route("/edit-scenes-in-db", methods = ["POST"])
-def edit_scenes_in_db():
-    """Use the form data from /edit-scenes to edit scene information to the database."""
-
-    play_title = request.form.get("play")
-    play = get_play_by_title(play_title)
-    shortname = play.shortname
-    scene_count = request.form.get("scene_count")
-    scene_count = int(scene_count) + 1
-
-    scenes = {}
-    for i in range(scene_count):
-        scene_id = request.form.get(f"id-{i}")
-        scene = Scene.query.get(scene_id)
-        title = request.form.get(f"title-{i}")
-        description = request.form.get(f"description-{i}")
-        if title != None or description != None:
-            update_scene(scene, title, description)
-
-    return redirect(f"/view-scenes-{play.shortname}")
-
-
-@app.route("/view-scenes", methods=["GET", "POST"])
-def view_scenes():
-    """Display a form for the user to choose a play, then displays the list of associated scenes."""
-
-    form = ChoosePlayForm()
-    page_title = "View Scenes"
-    if form.validate_on_submit():
-        play_shortname = form.play.data
-        play = get_play_by_shortname(play_shortname)
-        scenes = get_all_scenes_by_play(play)
-
-        return render_template("scenes-view.html",
-                                play=play,
-                                scenes=scenes)
-
-    return render_template("choose-play.html",
-                            page_title = page_title,
-                            form=form)
-
-
-@app.route("/view-scenes/<shortname>", methods=["GET", "POST"])
-def view_scenes_by_play(shortname):
-    """Given a /view-scenes URL including a play shortname, display that play's associated scenes."""
-
-    play = get_play_by_shortname(shortname)
-    if not type(play) == Play: # if get_play_by_shortname returns error, send user to main view_scenes function
-        return redirect("/view-scenes")
-
-    scenes = get_all_scenes_by_play(play)
-
-    return render_template("scenes-view.html",
-                        play=play,
-                        scenes=scenes)
-
-
-@app.route("/view-scene/<scene_num>", methods=["GET", "POST"])
-def view_scene(scene_num):
-
-    scene = Scene.query.get(scene_num)
-
-    return render_template("scene.html",
-                            scene=scene)
-
-# ----- END: PROCESS SCENES ----- #
-
-
-# ----- BEGIN: PROCESS CHARACTERS ----- #
+# ----- BEGIN: CHARACTER VIEWS ----- #
 
 @app.route("/add-characters", methods=["GET", "POST"])
 def add_characters():
@@ -474,7 +440,7 @@ def character_page(character_id):
     return render_template("character-page.html",
                             character=character)
 
-# ----- END: PROCESS CHARACTERS ----- #
+# ----- END: CHARACTER VIEWS ----- #
 
 
 # ----- BEGIN: PROCESS FILM ----- #
@@ -776,6 +742,7 @@ def test_forms():
     
 if __name__ == '__main__':
     app.debug = True
+    app.url_map.strict_slashes = False
     connect_to_db(app)
     app.run(host='0.0.0.0')
     seed_hamlet()

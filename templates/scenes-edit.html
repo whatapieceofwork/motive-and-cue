@@ -3,40 +3,54 @@
 {% block title %}- Edit Scenes{% endblock %}
 
 {% block content %}
-<h2>Edit Scene List for {{play.title}}</h2>
+<h2>Edit Scene List for {{play.title or "Play"}}</h2>
 
-{{ wtf.quick_form(form) }}
+{% if not scenes %}
+    {{ wtf.quick_form(form) }}
+{% else %}
 
 <div id="scenes-metadata">
-    <form action="/edit-scenes-in-db" method="post">
-    <input type="hidden" id="play" name="play" value="{{play.title}}">
+    <form action="/scenes/edit/{{play.shortname}}" method="post">
+        <input type="hidden" id="play" name="play" value="{{play.title}}">
 
-{% for scene in scenes %}
-<div id="scene-metadata">
-    <ul>
-        <input type="hidden" id="id-{{loop.index0}}" name="id-{{loop.index0}}" value="{{scene['id']}}">
-        <li><label for "act-{{loop.index0}}">Act</label> 
-            <input type="text" name="act-{{loop.index0}}" id="act-{{loop.index0}}" placeholder="{{scene['act']}}" value="{{scene['act']}}">
-        <label for "scene-{{loop.index0}}">Scene</label> 
-            <input type="text" name="scene-{{loop.index0}}" id="scene-{{loop.index0}}" placeholder="{{scene['scene']}}" value="{{scene['scene']}}">
-        </li>
-        <br />
-        <label for "title-{{loop.index0}}">Title</label>
-                <input type="text" name="title-{{loop.index0}}" id="title-{{loop.index0}}" {% if scene['title'] %}placeholder="{{scene['title']}}" value="{{scene['title']}}{% endif %}">
-        <br />
-        <label for "description-{{loop.index0}}">Description</label> 
-            <textarea name="description-{{loop.index0}}" id="description-{{loop.index0}}" {% if scene['description'] %}placeholder="{{scene['description']}}">{{scene['description']}}{% else %}>{% endif %}</textarea>
-        <br />
-        <label for "quotes-{{loop.index0}}">Quotes</label> 
-            <textarea name="quotes-{{loop.index0}}" id="quotes-{{loop.index0}}" {% if scene['quotes'] %}placeholder="{{scene['quotes']}}">{{scene['quotes']}}{% else %}>{% endif %}</textarea>        </li>
-    </ul>
-    {% if loop.last %}
-        <input type="hidden" id="scene_count" name="scene_count" value="{{loop.index0}}">
-    {% endif %}
+        <datalist id="character_list">
+            {% for character in characters %}
+                <option value="{{character.id}}">{{character.name}}</option>
+            {% endfor %}
+        </datalist>
+
+        <ul>
+        {% for scene in scenes %}
+        <div id="scene-metadata">
+            <li>
+                <input type="hidden" id="id-{{loop.index0}}" name="id-{{loop.index0}}" value="{{scene['id']}}">
+                <label for "act-{{loop.index0}}">Act</label> 
+                    <input type="text" name="act-{{loop.index0}}" id="act-{{loop.index0}}" placeholder="{{scene['act']}}" value="{{scene['act']}}">
+                <label for "scene-{{loop.index0}}">Scene</label> 
+                    <input type="text" name="scene-{{loop.index0}}" id="scene-{{loop.index0}}" placeholder="{{scene['scene']}}" value="{{scene['scene']}}">
+                <br />
+                <label for "title-{{loop.index0}}">Title</label>
+                        <input type="text" name="title-{{loop.index0}}" id="title-{{loop.index0}}" {% if scene['title'] %}placeholder="{{scene['title']}}" value="{{scene['title']}}{% endif %}">
+                <br />
+                <label for "description-{{loop.index0}}">Description</label> 
+                    <textarea name="description-{{loop.index0}}" id="description-{{loop.index0}}" {% if scene['description'] %}placeholder="{{scene['description']}}">{{scene['description']}}{% else %}>{% endif %}</textarea>
+                <br />
+                <label for "quote-{{loop.index0}}">Quote</label> 
+                    <textarea name="quote-{{loop.index0}}" id="quote-{{loop.index0}}"></textarea>
+
+                <label for "quote-character-{{loop.index0}}">Quote Character</label> 
+                    <input list="character_list" name="quote-character-{{loop.index0}}" id="quote-character-{{loop.index0}}">
+                {% if loop.last %}
+                    <input type="hidden" id="scene_count" name="scene_count" value="{{loop.index0}}">
+                {% endif %}
+            </li>
+        </div>
+        {% endfor %}
+        </ul>
+
+        <input type="submit" value="Submit">
+    </form>
 </div>
-{% endfor %}
 
-<input type="submit" value="Submit">
-</form>
-
+{% endif %}
 {% endblock %}

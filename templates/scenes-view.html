@@ -1,25 +1,32 @@
 {% extends "base.html" %}
 
-{% block title %}- All Scenes{% endblock %}
+{% block title %}- Scenes{% endblock %}
 
 {% block content %}
-<h2>Scene List for {{play.title}}</h2>
 
-<div id="scenes-metadata">
+{% if play %}
+    <h2>Scene List for {{play.title}}</h2>
+    <p><em><a href="/scenes/edit/{{play.shortname}}">Edit scenes</a></em></p>
+{% else %}    
+    {{ wtf.quick_form(form) }}
+{% endif %}
 
-{% for scene in scenes %}
-<div id="scene-metadata">
-    <ul>
-        <li>Act {{scene.act}}: Scene {{scene.scene}}</li>
-        {% if scene.title %}
-            <li>Title: {{scene.title}}</li>
-        {% endif %}
-        {% if scene.description %}
-            <li>Description: {{scene.description}}</li>
-        {% endif %}
-    </ul>
-</div>
-{% endfor %}
-
+{% if scenes %}
+    <div id="scenes-metadata">
+    {% for scene in scenes %}
+        <div id="scene-metadata">
+            <ul>
+                <li><a href="/scenes/{{scene.id}}">Act {{scene.act}}, Scene {{scene.scene}}</a></li>
+                {% if scene.title %}
+                    <li>Title: {{scene.title}}</li>
+                {% endif %}
+                {% if scene.description %}
+                    <li>Description: {{scene.description}}</li>
+                {% endif %}
+            </ul>
+        </div>
+    {% endfor %}
+    </div>
+{% endif %}
 
 {% endblock %}
