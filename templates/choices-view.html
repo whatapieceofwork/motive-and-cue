@@ -20,7 +20,7 @@
                 <li>Related Scenes: 
                 <ul>
                 {% for scene in choice['scenes'] %}
-                    <li>{{scene.act}}.{{scene.scene}}{% if scene.title %}: {{scene.title}}{% endif %}</li>
+                    <li><a href="/view-scene/{{scene.id}}">{{scene.act}}.{{scene.scene}}{% if scene.title %}: {{scene.title}}{% endif %}</a></li>
                 {% endfor %}
                 </ul>
             {% endif %}
@@ -28,10 +28,19 @@
                 <li>Related Characters: 
                     <ul>
                     {% for character in choice['characters'] %}
-                        <li>{{character.name}}</li>
+                        <li><a href="/view-character/{{character.id}}">{{character.name}}</a></li>
                     {% endfor %}
                     </ul>
                 </li>
+            {% endif %}
+            {% if choice['interpretations'] %}
+            <li>Related Interpretations: 
+                <ul>
+                {% for interpretation in choice['interpretations'] %}
+                    <li>{{interpretation.title}}</li>
+                {% endfor %}
+                </ul>
+            </li>
             {% endif %}
         </ul>
     </div>

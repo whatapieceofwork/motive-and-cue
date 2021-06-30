@@ -30,11 +30,16 @@ def parse_folger_scenes(play):
 
   play_title = play.title
   play_title = play_title.lower().replace(" ", "-")
+  play_title = play_title.strip("'',:")
 
   scenes_page_url = f"https://shakespeare.folger.edu/shakespeares-works/{play_title}"
+  print(f"****************** IN PARSE_FOLGER_SCENES, URL {scenes_page_url} *******************")
+
   page = requests.get(scenes_page_url)
   soup = BeautifulSoup(page.content, "html.parser")
   scene_list = soup.find_all("h3", attrs={"class": "contents-title"})
+  print(f"****************** IN PARSE_FOLGER_SCENES, play {play.title} *******************")
+  print(f"****************** SCENE_LIST: {scene_list} *******************")
 
   scene_count = 0
   for scene in scene_list:

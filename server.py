@@ -17,6 +17,56 @@ from folger_parser import *
 from moviedb_parser import *
 from seed import *
 from forms import *
+from collections import namedtuple, OrderedDict
+from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
+from wtforms_alchemy import model_form_factory, ModelFormField
+BaseModelForm = model_form_factory(FlaskForm)
+
+class OrderFormMixin(object):
+    """Ordered fields are added to the end of the form."""
+    """Adapted from https://gist.github.com/rombr/89d4d9db0229237f40bbd46482764918"""
+    
+    def __init__(self, *args, **kwargs):
+        super(OrderFormMixin, self).__init__(*args, **kwargs)
+
+        order_before = getattr(self.meta, "order_before", [])
+        order_after = getattr(self.meta, "order_after", [])
+        add_before = {}
+        add_after = {}
+        new_fields = {}
+    
+        if order_before:
+            print(f"************ ORDERBEFORE {order_before}")
+            for field_name in order_before:
+                print(f"*********FIELD_NAME {field_name}")
+                print(f"**********{self._fields}")
+                if field_name in self._fields:
+                    print(f"************* BEFORE IN SELF TRUE")
+                    add_before[field_name] = self._fields[field_name]
+            new_fields.update(add_before)
+
+        if order_after:
+            print(f"************ ORDERAFTER {order_after}")
+            for field_name in order_after:
+                if field_name in self._fields:
+                    print(f"************* AFTER IN SELF TRUE")
+                    add_after[field_name] = self._fields[field_name]
+
+        for field_name in self._fields:
+            if field_name not in add_before and field_name not in add_after:
+                new_fields[field_name] = self._fields[field_name]
+                
+        if add_after:
+           new_fields.update(add_after)
+
+        self._fields = new_fields
+
+
+class ModelForm(BaseModelForm):
+    @classmethod
+    def get_session(self):
+        return db.session
+
 
 FLASK_KEY = os.environ["FLASK_KEY"]
 MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
@@ -173,6 +223,24 @@ def edit_scenes():
                             form=form)
 
 
+@app.route("/scene-edit/<scene_num>", methods=["GET", "POST"])
+def scene_page_edit(scene_num):
+    """Use the scene number to retrieve and edit a specific Scene object."""
+
+    scene = Scene.query.get(scene_num)
+    form = SceneForm(obj=scene)
+
+    if form.is_submitted():
+        scene.title = form.title.data
+        scene.description = form.description.data
+        db.session.merge(scene)
+        db.session.commit()
+
+        return redirect(f"/view-scene/{scene_num}")
+    
+    return render_template("scene-edit.html", form=form)
+
+
 @app.route("/edit-scenes-in-db", methods = ["POST"])
 def edit_scenes_in_db():
     """Use the form data from /edit-scenes to edit scene information to the database."""
@@ -215,7 +283,7 @@ def view_scenes():
                             form=form)
 
 
-@app.route("/view-scenes-<shortname>", methods=["GET", "POST"])
+@app.route("/view-scenes/<shortname>", methods=["GET", "POST"])
 def view_scenes_by_play(shortname):
     """Given a /view-scenes URL including a play shortname, display that play's associated scenes."""
 
@@ -228,6 +296,15 @@ def view_scenes_by_play(shortname):
     return render_template("scenes-view.html",
                         play=play,
                         scenes=scenes)
+
+
+@app.route("/view-scene/<scene_num>", methods=["GET", "POST"])
+def view_scene(scene_num):
+
+    scene = Scene.query.get(scene_num)
+
+    return render_template("scene.html",
+                            scene=scene)
 
 # ----- END: PROCESS SCENES ----- #
 
@@ -275,7 +352,7 @@ def add_characters_to_db():
         add_quote(play=play, character=character, scene=quote_scene, text=quote)
         characters.append(character)
 
-    return redirect(f"/view-characters-{play.shortname}")
+    return redirect(f"/view-characters/{play.shortname}")
 
 
 @app.route("/edit-characters", methods=["GET", "POST"])
@@ -520,6 +597,12 @@ def add_choices_by_play(shortname):
     form.scenes.choices = scene_list
     form.characters.choices = character_list
 
+    class ChoiceForm(ModelForm):
+        class Meta:
+            model = Choice
+            include_primary_keys = True
+
+
     if form.validate_on_submit():
         title = form.title.data
         desc = form.desc.data
@@ -529,9 +612,9 @@ def add_choices_by_play(shortname):
 
         choice = get_choice(play=play, title=title)
         if not choice:
-            choice = add_choice(play=play, title=title, desc=desc, quote=quote)
+            choice = add_choice(play=play, title=title, desc=desc)
         else:
-            choice = update_choice(choice=choice, title=title, desc=desc, quote=quote)
+            choice = update_choice(choice=choice, title=title, desc=desc)
 
         if scene_ids:
             for scene_id in scene_ids:
@@ -541,6 +624,7 @@ def add_choices_by_play(shortname):
             for character_id in character_ids:
                 character = Character.query.get(character_id)
                 add_choice_character(choice, character)
+
 
         return redirect(f"/view-choices-{shortname}")
 
@@ -571,12 +655,123 @@ def view_choices_by_play(shortname):
         return redirect("/view-choices")
 
     choices = get_all_choices_by_play(play)
+    interpretations = get_all_interpretations_by_play(play)
 
     return render_template("choices-view.html",
                             choices=choices,
+                            interpretations=interpretations,
                             play=play)
 
+
+@app.route("/view-choice/<choice_id>", methods=["GET", "POST"])
+def view_choice(choice_id):
+    """Given a /view-choices URL including a choice ID, display that Choice"""
+
+    choice = Choice.query.get(choice_id)
+
+    return render_template("choice.html",
+                            choice=choice)
+
+@app.route("/choice-edit/<choice_id>", methods=["GET", "POST"])
+def choice_page_edit(choice_id):
+    """Given a Choice ID, retrieve and edit a specific Choice object."""
+
+    choice = Choice.query.get(choice_id)
+
+    class ChoiceForm(OrderFormMixin, ModelForm):
+        class Meta:
+            model = Choice
+            order_after = ["submit"]
+
+        submit = SubmitField("Submit")
+
+    form = ChoiceForm(obj=choice)
+
+    if form.is_submitted():
+        choice = Choice.query.get(choice_id)
+        choice.title = form.title.data
+        choice.description = form.desc.data
+
+        db.session.merge(choice)
+        db.session.commit()
+
+        return redirect(f"/view-choice/{choice_id}")
+
+    return render_template("choice-edit.html",
+                            form=form)
+
+
 # ----- END: PROCESS CHOICE ----- #
+
+
+@app.route("/add-interpretation", methods=["GET", "POST"])
+def add_interpretations():
+
+    class InterpretationForm(OrderFormMixin, ModelForm):
+        class Meta:
+            model = Interpretation
+            order_before = ["choice", "film"]
+            order_after = ["submit"]
+    
+        choice = QuerySelectField('Related Choices',
+                                query_factory=Choice.query.all)
+        film = QuerySelectMultipleField('Related Film',
+                        query_factory=Film.query.all)
+        submit = SubmitField("Submit")
+
+    form = InterpretationForm()
+
+    if form.is_submitted():
+        interpretation = Interpretation()
+        interpretation.title = form.title.data
+        interpretation.description = form.description.data
+        interpretation.time_start = form.time_start.data
+        interpretation.time_end = form.time_end.data
+        db_choice = form.choice.data
+        interpretation.choice_id = db_choice.id
+
+        db.session.add(interpretation)
+        db.session.commit()
+
+        return redirect("/view-interpretations")
+
+    return render_template("interpretations-add.html",
+                            form=form)
+
+
+@app.route("/view-interpretations", methods=["GET", "POST"])
+def view_interpretations():
+
+    interpretations = Interpretation.query.all()
+
+    return render_template("interpretations-view.html",
+                            interpretations=interpretations)
+
+
+@app.route("/test-forms", methods=["GET", "POST"])
+def test_forms():
+    """A view for testing forms."""
+
+    hamlet = get_play_by_title("Hamlet")
+    characters = get_all_characters_by_play(hamlet)
+    char = namedtuple("Char", ['id', 'name'])
+    character_list = {str(character.id) : character.name for character in characters}
+
+    scene1 = Scene.query.get(1)
+    scenes = get_all_scenes_by_play(hamlet)
+    form = SceneForm(obj=scene1)
+
+    if form.is_submitted():
+        scene1.title = form.title.data
+        scene1.description = form.description.data
+        db.session.merge(scene1)
+        db.session.commit()
+
+    return render_template('test-forms.html', form=form)
+
+
+
+
 
     
 if __name__ == '__main__':

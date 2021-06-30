@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}- {{choice.title}}{% endblock %}
+
+{% block content %}
+<h2>{{choice.title or "Choice"}}</h2>
+<p><em><a href="/choice-edit/{{choice.id}}">Edit Choice</a></em></p>
+
+<div id="choice-metadata">
+    <ul>
+        <li>ID: {{choice.id}}</li>
+        <li>Title: {{choice.title}}</li>
+        <li>Description: {{choice.desc}}</li>
+        {% if choice['interpretations'] %}
+        <li>Related Interpretations</li>
+            <ul>
+                {% for interpretation in choice['interpretations'] %}
+                    <li><a href="/view-interpretation/{{interpretation.id}}">{{interpretation.title}}</a></li>
+                {% endfor %}
+            </ul>
+        </ul>
+        {% endif %}
+    </ul>
+</div>
+
+{% endblock %}

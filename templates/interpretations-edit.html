@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}- {{page_title}}{% endblock %}
+
+{% block content %}
+<h2>Edit Decision List for {{play.title}}</h2>
+
+<div id="characters-metadata">
+    <form action="/edit-decisions-in-db" method="post">
+    <input type="hidden" id="play" name="play" value="{{play.title}}">
+
+{% for choice in choices %}
+<div id="decision-metadata">
+
+</div>
+{% endfor %}
+
+<input type="submit" value="Submit">
+</form>
+
+{% endblock %}

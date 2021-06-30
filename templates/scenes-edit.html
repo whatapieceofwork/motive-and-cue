@@ -5,6 +5,8 @@
 {% block content %}
 <h2>Edit Scene List for {{play.title}}</h2>
 
+{{ wtf.quick_form(form) }}
+
 <div id="scenes-metadata">
     <form action="/edit-scenes-in-db" method="post">
     <input type="hidden" id="play" name="play" value="{{play.title}}">

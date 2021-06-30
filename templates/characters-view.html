@@ -21,7 +21,13 @@
             {% endif %}
         </li>
         {% if character['choices'] %}
-            <li>Related Choices: {{character.choices}}</li>
+        <li>Related Choices: 
+            <ul>
+            {% for choice in character['choices'] %}
+                <li><a href="/view-choice/{{choice.id}}">{{choice.title}}</a></li>
+            {% endfor %}
+            </ul>
+        </li>
         {% endif %}
         {% if character['quotes'] %}
             <li>Related Quotes: {{character.quotes}}</li>

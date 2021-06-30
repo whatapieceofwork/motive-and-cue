@@ -8,6 +8,7 @@ from datetime import datetime
 from server import *
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
 # from server import play_titles
 
 db = SQLAlchemy()
@@ -85,6 +86,7 @@ class Play(db.Model):
     scenes = db.relationship("Scene", back_populates="play")
     films = db.relationship("Film", back_populates="plays")
     quotes = db.relationship("Quote", back_populates="play")
+    interpretations = db.relationship("Interpretation", back_populates="play")
 
     def __repr__(self):
         return f"<PLAY id={self.id} {self.title}>"
@@ -117,7 +119,7 @@ class Scene(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     act = db.Column(db.Integer, nullable=False)
     scene = db.Column(db.Integer, nullable=False)
-    title = db.Column(db.String(100))
+    title = db.Column(db.String)
     description = db.Column(db.Text)
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="scenes")
@@ -169,6 +171,8 @@ class Film(db.Model):
     actors = db.relationship("Person", secondary="parts_played", back_populates="films")
     plays = db.relationship("Play", back_populates="films")
     jobs_held = db.relationship("JobHeld", back_populates="film")
+    interpretations = db.relationship("Interpretation", secondary="interpretation_films", back_populates="films")
+
 
     def __repr__(self):
         return f"<FILM id={self.id} {self.title} {self.release_date}>"
@@ -187,6 +191,7 @@ class Choice(db.Model):
     quote = db.Column(db.Text)
     scenes = db.relationship("Scene", secondary="choice_scenes", back_populates="choices")
     characters = db.relationship("Character", secondary="choice_characters", back_populates="choices")
+    interpretations = db.relationship("Interpretation", back_populates="choices")
 
     def __repr__(self):
         return f"<CHOICE id={self.id} {self.title}>"
@@ -197,13 +202,18 @@ class Interpretation(db.Model):
 
     __tablename__ = "interpretations"
 
-    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    title = db.Column(db.String(100))
-    time_start = db.Column(db.Integer)
-    time_end = db.Column(db.Integer)
-    desc = db.Column(db.Text)
-    film_id = db.Column(db.Integer, db.ForeignKey("films.id"))
-    choice_id = db.Column(db.Integer, db.ForeignKey("choices.id"))
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True, info={"label": "ID"})
+    title = db.Column(db.String(100), info={"label": "Title"})
+    time_start = db.Column(db.Integer, info={"label": "Starting Timestamp"})
+    time_end = db.Column(db.Integer, info={"label": "Ending Timestamp"})
+    description = db.Column(db.Text, info={"label": "Description"})
+    play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
+    play = db.relationship("Play", back_populates="interpretations")
+    films = db.relationship("Film", secondary="interpretation_films", back_populates="interpretations")
+    choice_id = db.Column(db.Integer, db.ForeignKey("choices.id"), info={"label": "Choice ID"})
+    choices = db.relationship("Choice", back_populates="interpretations")
+    
+
 
     def __repr__(self):
         return f"<INTERPRETATION id={self.id} {self.title}>"
@@ -248,12 +258,12 @@ class JobHeld(db.Model):
         return f"<JOBHELD id={self.id} {self.job.title} {self.film.title}>"
 
 
-class InterpretationFilms(db.Model):
+class InterpretationFilm(db.Model):
     """Relationships between interpretations and films. Interpretations may be used by multiple films.."""
 
     __tablename__ = "interpretation_films"
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    interpretation_id = (db.Integer, db.ForeignKey("interpretations.id"))
+    interpretation_id = db.Column(db.Integer, db.ForeignKey("interpretations.id"))
     film_id = db.Column(db.Integer, db.ForeignKey("films.id"))
 
 
@@ -360,9 +370,11 @@ if __name__ == "__main__":
     from server import app
     connect_to_db(app)
 
-    # os.system("dropdb motiveandcuedb")
-    # print("Table dropped.")
-    # os.system("createdb motiveandcuedb")
-    # print("Table created.")
+    os.system("dropdb motiveandcuedb")
+    print("Table dropped.")
+    os.system("createdb motiveandcuedb")
+    print("Table created.")
     db.create_all()
+
+
 
