@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}- {{film.title}}{% endblock %}
+
+{% block content %}
+    <h2>{{film.title}}</h2>
+
+    <img class="poster" src="{{film.poster_path}}" alt="{{film.title}} film poster">
+
+    <ul>
+        <li>Play: <a href="/plays/{{film.play.shortname}}">{{film.play.title}}</a>
+        <li>Release date: {{film.release_date}}
+        <li>Language: {{film.language}}</li>
+        <li>Length: {{film.length}} minutes</li>
+        <li><a href="https://www.themoviedb.org/movie/{{film.moviedb_id}}">MovieDB page</a>
+        <li><a href="https://www.imdb.com/title/{{film.imdb_id}}">IMDB page</a>
+    </ul>
+
+{% endblock %}

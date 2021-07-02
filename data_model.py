@@ -6,11 +6,7 @@ from flask_login import UserMixin, LoginManager
 from sqlalchemy import *
 import os
 from datetime import datetime
-# from server import 
 from werkzeug.security import generate_password_hash, check_password_hash
-
-
-# from server import play_titles
 
 db = SQLAlchemy()
 
@@ -85,7 +81,7 @@ class Play(db.Model):
     characters = db.relationship("Character", back_populates="play")
     choices = db.relationship("Choice", back_populates="play")
     scenes = db.relationship("Scene", back_populates="play")
-    films = db.relationship("Film", back_populates="plays")
+    films = db.relationship("Film", back_populates="play")
     quotes = db.relationship("Quote", back_populates="play")
     interpretations = db.relationship("Interpretation", back_populates="play")
 
@@ -170,7 +166,7 @@ class Film(db.Model):
     poster_path = db.Column(db.String(100))
     release_date = db.Column(db.Date, nullable=False)
     actors = db.relationship("Person", secondary="parts_played", back_populates="films")
-    plays = db.relationship("Play", back_populates="films")
+    play = db.relationship("Play", back_populates="films")
     jobs_held = db.relationship("JobHeld", back_populates="film")
     interpretations = db.relationship("Interpretation", back_populates="film")
 
@@ -369,10 +365,10 @@ if __name__ == "__main__":
     from server import app
     connect_to_db(app)
 
-    os.system("dropdb motiveandcuedb")
-    print("Table dropped.")
-    os.system("createdb motiveandcuedb")
-    print("Table created.")
+    # os.system("dropdb motiveandcuedb")
+    # print("Table dropped.")
+    # os.system("createdb motiveandcuedb")
+    # print("Table created.")
     db.create_all()
 
 

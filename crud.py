@@ -423,6 +423,17 @@ def get_film_by_moviedb_id(moviedb_id, play):
     return film
 
 
+def get_films_by_play(play):
+    """Given a play, return the related Film objects."""
+
+    existing_films = db.session.query(exists().where(Film.play_id == play.id)).scalar()
+    
+    if existing_films:
+        return Film.query.filter(Film.play_id == play.id).all()
+    else:
+        return None
+
+
 def get_person(moviedb_id, imdb_id, fname, lname, birthday, gender, photo_path):
     """Given a person's information, create (or return) a Person object."""
 

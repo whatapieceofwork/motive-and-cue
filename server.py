@@ -13,8 +13,8 @@ import jinja2
 import os
 import requests
 import json
-from crud import *
 from data_model import *
+from crud import *
 from folger_parser import *
 from moviedb_parser import *
 from seed import *
@@ -756,6 +756,39 @@ def view_plays(shortname=None, id=None):
     else:
         plays = Play.query.all()
         return render_template("plays-view.html", plays=plays)
+
+# ----- END: PLAY VIEWS ----- #
+
+
+# ----- BEGIN: FILM VIEWS ----- #
+
+@app.route("/films/", methods=["GET", "POST"])
+@app.route("/films/<string:shortname>", methods=["GET", "POST"])
+@app.route("/films/<int:id>", methods=["GET", "POST"])
+def view_films(shortname=None, id=None):
+    """Display all films, films by related play shortname, or a specific film by id."""
+
+    if shortname:
+        play = get_play_by_shortname(shortname)
+        if not type(play) == Play:
+            flash("Please select a valid play.")
+            return redirect("/films")
+        
+        films = get_films_by_play(play)
+        return render_template("films-view.html", films=films, play=play)
+        
+    else:
+        films = Film.query.all()
+        form = ChoosePlayForm()
+        if form.validate_on_submit():
+            shortname = form.play.data
+            play = get_play_by_shortname(shortname)
+            if not type(play) == Play:
+                flash("Please select a valid play.")
+
+            return redirect(f"/films/{shortname}")
+
+        return render_template("films-view.html", films=films, form=form)
 
 # ----- END: PLAY VIEWS ----- #
 

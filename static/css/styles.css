@@ -36,3 +36,11 @@
 cite {
     font-style: unset;
 }
+
+img.poster {
+    max-height: 400px;
+}
+
+img.tiny-poster {
+    max-height: 250px;
+}
