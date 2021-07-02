@@ -4,11 +4,13 @@
 
 {% block content %}
 <h2>{{choice.title or "Choice"}}</h2>
-<p><em><a href="/choices/edit/{{choice.id}}">Edit Choice</a></em></p>
+<p><em><a href="/choices/edit/{{choice.id}}">Edit choice</a></em><br/>
+<em><a href="/interpretations/add/{{choice.id}}">Add interpretation</a></em></p>
 
 <div id="choice-metadata">
     <ul>
         <li>ID: {{choice.id}}</li>
+        <li>Play: <a href="/plays/{{choice.play.id}}">{{choice.play.title}}</a></li>
         <li>Title: {{choice.title}}</li>
         <li>Description: {{choice.desc}}</li>
         {% if choice['interpretations'] %}

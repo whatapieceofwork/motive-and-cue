@@ -5,6 +5,7 @@
 {% block content %}
 {% if play %}
     <h2>Edit Scene List for {{play.title or "Play"}}</h2>
+    <p><a href="/scenes/add/{{play.shortname}}">Add Folger scene descriptions</a></p>
 {% endif %}
 
 {% if not scenes %}

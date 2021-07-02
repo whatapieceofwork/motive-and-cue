@@ -4,8 +4,9 @@ from flask import Flask, render_template, redirect, flash, session, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, LoginManager
 from sqlalchemy import *
+import os
 from datetime import datetime
-from server import *
+# from server import 
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
@@ -108,7 +109,7 @@ class Character(db.Model):
     quotes = db.relationship("Quote", back_populates="character")
 
     def __repr__(self):
-        return f"<CHARACTER id={self.id} {self.name} {self.play_id}>"
+        return f"<CHARACTER id={self.id} {self.name} ({self.play.title})>"
 
 
 class Scene(db.Model):
@@ -171,7 +172,7 @@ class Film(db.Model):
     actors = db.relationship("Person", secondary="parts_played", back_populates="films")
     plays = db.relationship("Play", back_populates="films")
     jobs_held = db.relationship("JobHeld", back_populates="film")
-    interpretations = db.relationship("Interpretation", secondary="interpretation_films", back_populates="films")
+    interpretations = db.relationship("Interpretation", back_populates="film")
 
 
     def __repr__(self):
@@ -187,10 +188,10 @@ class Choice(db.Model):
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="choices")
     title = db.Column(db.String(50), nullable=False, info={"label": "Title"})
-    desc = db.Column(db.Text, info={"label": "Description"})
+    description = db.Column(db.Text, info={"label": "Description"})
     scenes = db.relationship("Scene", secondary="choice_scenes", back_populates="choices")
     characters = db.relationship("Character", secondary="choice_characters", back_populates="choices")
-    interpretations = db.relationship("Interpretation", back_populates="choices")
+    interpretations = db.relationship("Interpretation", back_populates="choice")
 
     def __repr__(self):
         return f"<CHOICE id={self.id} {self.title}>"
@@ -208,11 +209,10 @@ class Interpretation(db.Model):
     description = db.Column(db.Text, info={"label": "Description"})
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="interpretations")
-    films = db.relationship("Film", secondary="interpretation_films", back_populates="interpretations")
+    film_id = db.Column(db.Integer, db.ForeignKey("films.id"))
+    film = db.relationship("Film", back_populates="interpretations")
     choice_id = db.Column(db.Integer, db.ForeignKey("choices.id"), info={"label": "Choice ID"})
-    choices = db.relationship("Choice", back_populates="interpretations")
-    
-
+    choice = db.relationship("Choice", back_populates="interpretations")
 
     def __repr__(self):
         return f"<INTERPRETATION id={self.id} {self.title}>"
@@ -290,7 +290,7 @@ class Topic(db.Model):
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    desc = db.Column(db.Text)
+    description = db.Column(db.Text)
     scenes = db.relationship("Scene", secondary="topic_scenes", back_populates="topics")
     characters = db.relationship("Character", secondary="topic_characters", back_populates="topics")
 

@@ -1,21 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}- {{page_title}}{% endblock %}
+{% block title %}- Edit Interpretations{% endblock %}
 
 {% block content %}
-<h2>Edit Decision List for {{play.title}}</h2>
-
-<div id="characters-metadata">
-    <form action="/edit-decisions-in-db" method="post">
-    <input type="hidden" id="play" name="play" value="{{play.title}}">
-
-{% for choice in choices %}
-<div id="decision-metadata">
-
+{% if play %}
+    <h2>Edit Interpretations for {{play.title}}</h2>
+{% endif %}    
+{% if form %}
+    {{ wtf.quick_form(form) }}
+{% elif interpretations %}
+<div class="interpretations-list">
+    <ul>
+        {% for interpretation in interpretations %}
+            <li><a href="/interpretations/{{interpretation.id}}">{{interpretation.title}}</a></li>
+        {% endfor %}
+    </ul>
 </div>
-{% endfor %}
-
-<input type="submit" value="Submit">
-</form>
+{% endif %}
 
 {% endblock %}

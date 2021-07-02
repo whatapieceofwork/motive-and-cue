@@ -23,6 +23,15 @@
                 {% if scene.description %}
                     <li>Description: {{scene.description}}</li>
                 {% endif %}
+                {% if scene.choices %}
+                    <li>Related Choices:
+                        <ul>
+                        {% for choice in scene.choices %}
+                            <li><a href="/choices/{{choice.id}}">{{choice.title}}</a></li>
+                        {% endfor %}
+                        </ul>
+                    </li>
+                {% endif %}
             </ul>
         </div>
     {% endfor %}

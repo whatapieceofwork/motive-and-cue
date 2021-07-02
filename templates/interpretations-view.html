@@ -1,1 +1,59 @@
-{{interpretations}}
+{% extends "base.html" %}
+
+{% block title %}- All Interpretations{% endblock %}
+
+{% block content %}
+{% if play %}
+    <h2>Interpretation List for {{play.title}}</h2>
+    <p><em><a href="/interpretations/edit/{{play.shortname}}">Edit interpretations</a></em></br>
+    <em><a href="/interpretations/add/{{play.shortname}}">Add interpretations</a></em></p>
+{% else %}    
+    {{ wtf.quick_form(form) }}
+{% endif %}
+
+<div id="interpretations-metadata">
+
+{% if interpretations != none and interpretations|length > 0 %}
+    {% for interpretation in interpretations %}
+    <div id="interpretation-metadata">
+        <ul>
+            <li>Title: {{interpretation['title']}}</li>
+            <li>Description: {{interpretation['desc']}}</li>
+            <li>Choice: <a href="/choices/{{interpretation.choice.id}}">{{interpretation.choice.title}}</a></li>
+            {% if interpretation["quotes"] %}
+                <li>Quotes
+                    <ul>
+                        {% for quote in interpretation.quotes%}
+                        <figure class="quote">
+                            <blockquote>{{quote.text}}</blockquote>
+                            <figcaption><cite><a href="/characters/{{quote.character.id}}">{{quote.character.name}}</a> (<em>{{quote.play.title}}</em> <a href="/scenes/{{quote.scene.id}}">({{quote.scene.act}}.{{quote.scene.scene}})</a>)</cite></figcaption>
+                        </figure>
+                        {% endfor %}
+                    <ul>
+                </li>
+            {% endif %}
+            {% if interpretation['scenes'] %}
+                <li>Related Scenes: 
+                <ul>
+                {% for scene in interpretation['scenes'] %}
+                    <li><a href="/scenes/{{scene.id}}">{{scene.act}}.{{scene.scene}}{% if scene.title %}: {{scene.title}}{% endif %}</a></li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+            {% if interpretation['characters'] %}
+                <li>Related Characters: 
+                    <ul>
+                    {% for character in interpretation['characters'] %}
+                        <li><a href="/scenes/{{character.id}}">{{character.name}}</a></li>
+                    {% endfor %}
+                    </ul>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endfor %}
+{% endif %}
+</div>
+
+
+{% endblock %}

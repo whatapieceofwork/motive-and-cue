@@ -8,9 +8,7 @@
 {% endif %}    
 {% if form %}
     {{ wtf.quick_form(form) }}
-{% endif %}
-
-{% if choices %}
+{% elif choices %}
 <div class="choices-list">
     <ul>
         {% for choice in choices %}

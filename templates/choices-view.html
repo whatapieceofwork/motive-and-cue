@@ -29,10 +29,6 @@
                         {% endfor %}
                     <ul>
                 </li>
-                    {% for quote in choice["quotes"] %}
-                        {{quote.text}}
-                    {% endfor %}
-                </ul>
             {% endif %}
             {% if choice['scenes'] %}
                 <li>Related Scenes: 
@@ -46,7 +42,7 @@
                 <li>Related Characters: 
                     <ul>
                     {% for character in choice['characters'] %}
-                        <li><a href="/scenes/{{character.id}}">{{character.name}}</a></li>
+                        <li><a href="/characters/{{character.id}}">{{character.name}}</a></li>
                     {% endfor %}
                     </ul>
                 </li>
@@ -55,7 +51,7 @@
             <li>Related Interpretations: 
                 <ul>
                 {% for interpretation in choice['interpretations'] %}
-                    <li>{{interpretation.title}}</li>
+                    <li><a href="/interpretations/{{interpretation.id}}">{{interpretation.title}}</a></li>
                 {% endfor %}
                 </ul>
             </li>
