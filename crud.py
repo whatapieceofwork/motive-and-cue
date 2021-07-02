@@ -13,7 +13,7 @@ import json
 from data_model import * 
 from folger_parser import parse_folger_characters, parse_folger_scenes
 from moviedb_parser import parse_moviedb_film_details
-# from server import play_titles
+from forms import *
 
 FLASK_KEY = os.environ["FLASK_KEY"]
 MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
@@ -248,6 +248,17 @@ def add_topic(title, description):
 
     print(f"********* Created {topic} *********")
     return topic
+
+
+def calculate_age_during_film(person, film):
+    """Given a person and film, calculate the person's age when the film was released."""
+
+    film_release = film.release_date
+    birthday = person.birthday
+    days_between = film_release - birthday
+    age = int(days_between/365)
+    
+    return age
 
 
 def get_character(name, play, gender=2):

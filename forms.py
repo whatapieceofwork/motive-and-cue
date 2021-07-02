@@ -7,8 +7,8 @@ from wtforms_sqlalchemy.orm import model_form
 from werkzeug.datastructures import MultiDict
 from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 from wtforms_alchemy import model_form_factory, ModelFormField
-from data_model import User, Role, Interpretation, Choice, Film 
-from server import db
+from data_model import User, Role, Interpretation, Choice, Film
+import crud
 BaseModelForm = model_form_factory(FlaskForm)
 
 play_titles = {"AWW": "All's Well That Ends Well", "Ant": "Antony and Cleopatra", "AYL": "As You Like It", "Err": "The Comedy of Errors", "Cor": "Coriolanus", "Cym": "Cymbeline", "Ham": "Hamlet", "1H4": "Henry IV, Part 1", "2H4": "Henry IV, Part 2", "H5": "Henry V", "1H6": "Henry VI, Part 1", "2H6": "Henry VI, Part 2", "3H6": "Henry VI, Part 3", "H8": "Henry VIII", "JC": "Julius Caesar", "Jn": "King John", "Lr": "King Lear", "LLL": "Love's Labor's Lost", "Mac": "Macbeth", "MM": "Measure for Measure", "MV": "The Merchant of Venice", "Wiv": "The Merry Wives of Windsor", "MND": "A Midsummer Night's Dream", "Ado": "Much Ado About Nothing", "Oth": "Othello", "Per": "Pericles", "R2": "Richard II", "R3": "Richard III", "Rom": "Romeo and Juliet", "Shr": "The Taming of the Shrew", "Tmp": "The Tempest", "Tim": "Timon of Athens", "Tit": "Titus Andronicus", "Tro": "Troilus and Cressida", "TN": "Twelfth Night", "TGV": "The Two Gentlemen of Verona", "TNK": "The Two Noble Kinsmen", "WT": "The Winter's Tale"}
@@ -75,12 +75,12 @@ class RegistrationForm(FlaskForm):
 
     def validate_email(self, field):
         email = field.data
-        if user_email_taken(email):
+        if crud.user_email_taken(email):
             raise ValidationError("That email is already in use.")
 
     def validate_username(self, field):
         username = field.data
-        if username_taken(username):
+        if crud.username_taken(username):
             raise ValidationError("Username already taken.")
 
 

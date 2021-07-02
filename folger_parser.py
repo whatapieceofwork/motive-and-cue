@@ -4,7 +4,7 @@ import re #regex
 from bs4 import BeautifulSoup
 import requests
 from crud import *
-from server import *
+from server import db
 
 def parse_folger_characters(play):
   """Given a play shortname, return the Folger list of character names in order of line count."""

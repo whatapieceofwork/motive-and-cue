@@ -18,7 +18,6 @@ from data_model import *
 from folger_parser import *
 from moviedb_parser import *
 from seed import *
-from forms import *
 from collections import namedtuple, OrderedDict
 
 
@@ -219,7 +218,7 @@ def edit_scenes(shortname=None, id=None):
             scenes = get_all_scenes_by_play(play)
         else:
             scenes = parse_folger_scene_descriptions(play)
-            
+
         characters = get_all_characters_by_play(play)
 
         return render_template("scenes-edit.html", 
