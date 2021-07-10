@@ -1,24 +1,26 @@
-from flask import Flask, render_template, redirect, flash, session, request, url_for
-from flask_login.utils import login_user, current_user, logout_user, login_required
-from flask_sqlalchemy import SQLAlchemy
-from flask_bootstrap import Bootstrap
-from flask_login import LoginManager, login_required, set_login_view
-from flask_sqlalchemy.utils import parse_version
-from sqlalchemy.orm.session import object_session
-from sqlalchemy.sql import exists
+
 from bs4 import BeautifulSoup
 from datetime import datetime
+from flask import Flask, render_template, redirect, flash, session, request, url_for, jsonify
+from flask_bootstrap import Bootstrap
+from flask_login import LoginManager, login_required, set_login_view
+from flask_login.utils import login_user, current_user, logout_user, login_required
+from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy.utils import parse_version
+from marshmallow import Schema, fields
+from sqlalchemy.orm.session import object_session
+from sqlalchemy.sql import exists
 from werkzeug.security import generate_password_hash, check_password_hash
 import jinja2
+import json
 import os
 import requests
-import json
 from data_model import *
+from data_schemas import *
 from crud import *
 from folger_parser import *
 from moviedb_parser import *
 from seed import *
-# from api import *
 from collections import namedtuple, OrderedDict
 
 
@@ -28,6 +30,7 @@ db = SQLAlchemy()
 
 app = Flask(__name__)
 app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = True
+app.config['JSON_SORT_KEYS'] = False
 app.secret_key = FLASK_KEY
 
 Bootstrap(app)
@@ -936,11 +939,85 @@ def add_film_to_db():
 # ----- END: PROCESS FILM ----- #
 
 
-@app.route("/test")
-def test_route():
+# ----- BEGIN: API ROUTES ----- #
 
-    return render_template("browse.html",
-                            random_scene = random_scene())
+# @app.route("/api/users", methods=['GET'])
+# @app.route("/api/users/<int:id>", methods=['GET'])
+# def api_get_users(id=None):
+#     if id:
+#         user = user_schema.dump(User.query.get(id))
+#         return {"user": user}
+#     else:
+#         users = users_schema.dump(User.query.all())
+#         return {"users": users}
+
+@app.route("/api/characters", methods=['GET'])
+@app.route("/api/characters/<int:id>", methods=['GET'])
+def api_get_characters(id=None):
+    if id:
+        character = character_schema.dump(Character.query.get(id))
+        return {"character": character}
+    else:
+        characters = characters_schema.dump(Character.query.all())
+        return {"characters": characters}
+
+
+@app.route("/api/choices", methods=['GET'])
+@app.route("/api/choices/<int:id>", methods=['GET'])
+def api_get_choices(id=None):
+    if id:
+        choice = choice_schema.dump(Choice.query.get(id))
+        return {"choice": choice}
+    else:
+        choices = choices_schema.dump(Choice.query.all())
+        return {"choices": choices}
+
+
+@app.route("/api/films", methods=['GET'])
+@app.route("/api/films/<int:id>", methods=['GET'])
+def api_get_films(id=None):
+    if id:
+        film = film_schema.dump(Film.query.get(id))
+        return {"film": film}
+    else:
+        films = films_schema.dump(Film.query.all())
+        return {"films": films}
+
+@app.route("/api/interpretations", methods=['GET'])
+@app.route("/api/interpretations/<int:id>", methods=['GET'])
+def api_get_interpretations(id=None):
+    if id:
+        interpretation = interpretation_schema.dump(Interpretation.query.get(id))
+        return {"interpretation": interpretation}
+    else:
+        interpretations = interpretations_schema.dump(Interpretation.query.all())
+        return {"interpretations": interpretations}
+
+
+@app.route("/api/plays/", methods=['GET'])
+@app.route("/api/plays/<int:id>", methods=['GET'])
+def api_get_plays(id=None):
+
+    if id:
+        play = play_schema.dump(Play.query.get(id))
+        return {"play": play}
+    else:
+        plays = plays_schema.dump(Play.query.all())
+        return {"plays": plays}
+
+
+@app.route("/api/scenes", methods=['GET'])
+@app.route("/api/scenes/<int:id>", methods=['GET'])
+def api_get_scenes(id=None):
+    if id:
+        scene = scene_schema.dump(Scene.query.get(id))
+        return {"scene": scene}
+    else:
+        scenes = scenes_schema.dump(Scene.query.all())
+        return {"scenes": scene}
+
+# ----- END: API ROUTES ----- #
+
     
 if __name__ == '__main__':
     app.debug = True
