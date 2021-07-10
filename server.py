@@ -18,6 +18,7 @@ from crud import *
 from folger_parser import *
 from moviedb_parser import *
 from seed import *
+# from api import *
 from collections import namedtuple, OrderedDict
 
 
@@ -387,6 +388,56 @@ def edit_characters(shortname=None, id=None):
 
 # ----- END: CHARACTER VIEWS ----- #
 
+
+# ----- BEGIN: CHOICE FORM ----- #
+
+def make_choice_form(db_play=None, db_choice=None): 
+    """Create a dynamic Choice form that narrows selections down by the given parameters."""
+    # Parameters are given a "db_" prefix to avoid confusion with form and object field names.
+
+    class ChoiceForm(OrderFormMixin, ModelForm):
+        """A dynamic Choice form. Uses Choice class fields as well as custom-ordered additional fields."""
+
+        def __init__(self, db_play, db_choice=None):
+            super().__init__(obj=db_choice)  # The parent FlaskWTForms-Alchemy form class accepts an existing database object as a form model
+            self.db_play =  db_play
+            self.db_choice = db_choice
+
+        class Meta: # Supplies paramters to OrderFormMixin to arrange additional fields
+            model = Choice
+            order_before = ["play", "scenes", "characters"]
+            order_after = ["submit"]
+
+        if db_choice: # Used when an existing Choice is used as the model object for the form
+            play = QuerySelectField('Play', 
+                                    query_factory=Play.query.all,
+                                    default=db_choice.play) # Defaults to the existing Choice's play
+            characters = QuerySelectMultipleField('Characters', 
+                                    query_factory=Character.query.filter(Character.play_id == db_play.id).all,
+                                    default=db_choice.characters) # Defaults to the existing Choice's choice
+        else:
+            play = QuerySelectField('Play', 
+                                query_factory=Play.query.all,
+                                default=db_play)
+            choice = QuerySelectField('Characters', 
+                                    query_factory=Character.query.filter(Character.play_id == db_play.id).all,
+                                    default=db_choice)
+
+        film = QuerySelectField('Related Film', 
+                                query_factory=Film.query.filter(Film.play_id == db_play.id).all)
+        scenes = QuerySelectMultipleField('Related Scenes', 
+                                query_factory=Scene.query.filter(Scene.play_id == db_play.id).order_by(Scene.act, Scene.scene).all)
+
+        submit = SubmitField("Submit")
+
+    if db_choice:
+        form = ChoiceForm(db_play, db_choice)
+    else:
+        form = ChoiceForm(db_play)
+
+    return form
+
+# ----- END: CHOICE FORM ----- #
 
 # ----- BEGIN: CHOICE VIEWS ----- #
 
@@ -884,6 +935,12 @@ def add_film_to_db():
 
 # ----- END: PROCESS FILM ----- #
 
+
+@app.route("/test")
+def test_route():
+
+    return render_template("browse.html",
+                            random_scene = random_scene())
     
 if __name__ == '__main__':
     app.debug = True
