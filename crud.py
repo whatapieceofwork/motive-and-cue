@@ -1,4 +1,4 @@
-"""Create, Read, Update, Delete Operations. Listed alphabetically."""
+"""Create, Read, Update, Delete Operations. Listed alphabetically by section."""
 
 from flask import Flask, render_template, redirect, flash, session, request
 from flask_sqlalchemy import SQLAlchemy
@@ -7,11 +7,13 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 import jinja2
 import os
+import random
 import requests
 import re #regex
 import json
 from data_model import * 
-from folger_parser import parse_folger_characters, parse_folger_scenes
+# from folger_parser import parse_folger_characters, parse_folger_scenes
+from folger_parser import *
 from moviedb_parser import parse_moviedb_film_details
 from forms import *
 
@@ -22,6 +24,9 @@ db = SQLAlchemy()
 
 play_titles = {"AWW": "All's Well That Ends Well", "Ant": "Antony and Cleopatra", "AYL": "As You Like It", "Err": "The Comedy of Errors", "Cor": "Coriolanus", "Cym": "Cymbeline", "Ham": "Hamlet", "1H4": "Henry IV, Part 1", "2H4": "Henry IV, Part 2", "H5": "Henry V", "1H6": "Henry VI, Part 1", "2H6": "Henry VI, Part 2", "3H6": "Henry VI, Part 3", "H8": "Henry VIII", "JC": "Julius Caesar", "Jn": "King John", "Lr": "King Lear", "LLL": "Love's Labor's Lost", "Mac": "Macbeth", "MM": "Measure for Measure", "MV": "The Merchant of Venice", "Wiv": "The Merry Wives of Windsor", "MND": "A Midsummer Night's Dream", "Ado": "Much Ado About Nothing", "Oth": "Othello", "Per": "Pericles", "R2": "Richard II", "R3": "Richard III", "Rom": "Romeo and Juliet", "Shr": "The Taming of the Shrew", "Tmp": "The Tempest", "Tim": "Timon of Athens", "Tit": "Titus Andronicus", "Tro": "Troilus and Cressida", "TN": "Twelfth Night", "TGV": "The Two Gentlemen of Verona", "TNK": "The Two Noble Kinsmen", "WT": "The Winter's Tale"}
 
+
+# ----- BEGIN: AUTHORIZATION FUNCTIONS ----- #
+# Functions related to user accounts and authentication.
 
 def user_email_taken(email):
     """Check if an email is taken and returns True or False."""
@@ -38,6 +43,11 @@ def username_taken(username):
     
     return existing_username
 
+# ----- END: AUTHORIZATION FUNCTIONS ----- #
+
+
+# ----- BEGIN: ADD FUNCTIONS ----- #
+# For creating new database records
 
 def add_character(name, play, gender=None):
     """Create and return a new Character database record."""
@@ -249,17 +259,11 @@ def add_topic(title, description):
     print(f"********* Created {topic} *********")
     return topic
 
+# ----- END: ADD FUNCTIONS ----- #
 
-def calculate_age_during_film(person, film):
-    """Given a person and film, calculate the person's age when the film was released."""
 
-    film_release = film.release_date
-    birthday = person.birthday
-    days_between = film_release - birthday
-    age = int(days_between/365)
-    
-    return age
-
+# ----- BEGIN: GET FUNCTIONS ----- #
+# For retrieving existing database records or creating new ones
 
 def get_character(name, play, gender=2):
     """Given a character name, gender, and play, return the Character object."""
@@ -534,11 +538,11 @@ def get_all_scenes_by_play(play):
 
     return scenes
 
+# ----- END: GET FUNCTIONS ----- #
 
-def seed_play(play):
-    scenes = get_all_scenes_by_play(play)
-    characters = get_all_characters_by_play(play)
 
+# ----- BEGIN: UPDATE FUNCTIONS ----- #
+# For updating existing database records
 
 def update_character(character, name=None, gender=None):
     """Given a character, update the existing values."""
@@ -606,3 +610,41 @@ def update_scene(scene, title=None, description=None):
     db.session.merge(db_scene)
     db.session.commit()
     return db_scene
+
+# ----- END: UPDATE FUNCTIONS ----- #
+
+
+# ----- BEGIN: RANDOM FUNCTIONS ----- #
+# For returning randomly selected records
+
+def random_scene(play=None):
+    """Returns a random scene. Can  be limited by play"""
+
+    if play:
+        scenes = Scene.query.filter(Scene.play_id == play.id).all()
+    else:
+        scenes = Scene.query.all()
+
+    return random.choice(scenes)
+
+
+# ----- BEGIN: RANDOM FUNCTIONS ----- #
+
+
+# ----- BEGIN: MISC FUNCTIONS ----- #
+
+def calculate_age_during_film(person, film):
+    """Given a person and film, calculate the person's age when the film was released."""
+
+    film_release = film.release_date
+    birthday = person.birthday
+    days_between = film_release - birthday
+    age = int(days_between/365)
+
+    return age
+
+def seed_play(play):
+    scenes = get_all_scenes_by_play(play)
+    characters = get_all_characters_by_play(play)
+
+# ----- END: MISC FUNCTIONS ----- #
