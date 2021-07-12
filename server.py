@@ -15,7 +15,7 @@ import jinja2
 import json
 import os
 import requests
-from data_model import *
+from data_models import *
 from data_schemas import *
 from crud import *
 from folger_parser import *
@@ -52,7 +52,7 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/login", methods=["GET", "POST"])
+@app.route("/login/", methods=["GET", "POST"])
 def login():
     """Prompt the user to log in."""
 
@@ -121,19 +121,19 @@ def choose_play():
 # ----- BEGIN: SCENE VIEWS ----- #
 
 @app.route("/scenes/", methods=["GET", "POST"])
-@app.route("/scenes/<string:shortname>", methods=["GET", "POST"])
-@app.route("/scenes/<int:id>", methods=["GET", "POST"])
+@app.route("/scenes/<string:shortname>/", methods=["GET", "POST"])
+@app.route("/scenes/<int:id>/", methods=["GET", "POST"])
 def view_scenes(shortname=None, id=None):
     """Display all scenes, scenes by play shortname, or a specific scene by scene id. Prompt for play if not given in URL."""
 
     if shortname:
-        play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
             return redirect("/scenes")
+        play = get_play_by_shortname(shortname)
         scenes = get_all_scenes_by_play(play)
         return render_template("scenes-view.html", play=play, scenes=scenes)
-        
+
     elif id:
         scene = Scene.query.get(id)
         return render_template("scene.html", scene=scene)
@@ -141,9 +141,10 @@ def view_scenes(shortname=None, id=None):
     form = ChoosePlayForm()
     if form.validate_on_submit():
         shortname = form.play.data
-        play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
+        
+        play = get_play_by_shortname(shortname)
 
         return redirect(f"/scenes/{shortname}")
 
@@ -152,7 +153,7 @@ def view_scenes(shortname=None, id=None):
 
 
 @app.route("/scenes/add/", methods=["GET", "POST"])
-@app.route("/scenes/add/<string:shortname>", methods=["GET", "POST"])
+@app.route("/scenes/add/<string:shortname>/", methods=["GET", "POST"])
 def add_scenes(shortname=None):
     """Add scenes by play shortname using Folger scene information. Prompt for play if not given in URL."""
 
@@ -176,8 +177,8 @@ def add_scenes(shortname=None):
 
 
 @app.route("/scenes/edit/", methods=["GET", "POST"])
-@app.route("/scenes/edit/<string:shortname>", methods=["GET", "POST"])
-@app.route("/scenes/edit/<int:id>", methods=["GET", "POST"])
+@app.route("/scenes/edit/<string:shortname>/", methods=["GET", "POST"])
+@app.route("/scenes/edit/<int:id>/", methods=["GET", "POST"])
 def edit_scenes(shortname=None, id=None):
     """Edit all scenes by play shortname, or a specific scene by scene id. Prompt for play if not given in URL."""
 
@@ -261,8 +262,8 @@ def edit_scenes(shortname=None, id=None):
 # ----- BEGIN: CHARACTER VIEWS ----- #
 
 @app.route("/characters/", methods=["GET", "POST"])
-@app.route("/characters/<string:shortname>", methods=["GET", "POST"])
-@app.route("/characters/<int:id>", methods=["GET", "POST"])
+@app.route("/characters/<string:shortname>/", methods=["GET", "POST"])
+@app.route("/characters/<int:id>/", methods=["GET", "POST"])
 def view_characters(shortname=None, id=None):
     """Display all characters, characters by play shortname, or a specific character by character id. Prompt for play if not given in URL."""
 
@@ -293,7 +294,7 @@ def view_characters(shortname=None, id=None):
 
 
 @app.route("/characters/add/", methods=["GET", "POST"])
-@app.route("/characters/add/<string:shortname>", methods=["GET", "POST"])
+@app.route("/characters/add/<string:shortname>/", methods=["GET", "POST"])
 def add_characters(shortname=None):
     """Add characters by play shortname using Folger character information. Prompt for play if not given in URL."""
 
@@ -320,8 +321,8 @@ def add_characters(shortname=None):
 
 
 @app.route("/characters/edit/", methods=["GET", "POST"])
-@app.route("/characters/edit/<string:shortname>", methods=["GET", "POST"])
-@app.route("/characters/edit/<int:id>", methods=["GET", "POST"])
+@app.route("/characters/edit/<string:shortname>/", methods=["GET", "POST"])
+@app.route("/characters/edit/<int:id>/", methods=["GET", "POST"])
 def edit_characters(shortname=None, id=None):
     """Edit all characters by play shortname, or a specific character by character id."""
 
@@ -445,8 +446,8 @@ def make_choice_form(db_play=None, db_choice=None):
 # ----- BEGIN: CHOICE VIEWS ----- #
 
 @app.route("/choices/", methods=["GET", "POST"])
-@app.route("/choices/<string:shortname>", methods=["GET", "POST"])
-@app.route("/choices/<int:id>", methods=["GET", "POST"])
+@app.route("/choices/<string:shortname>/", methods=["GET", "POST"])
+@app.route("/choices/<int:id>/", methods=["GET", "POST"])
 def view_choices(shortname=None, id=None):
     """Display all choices, choices by play shortname, or a specific choice by choice id. Prompt for play if not given in URL."""
 
@@ -477,7 +478,7 @@ def view_choices(shortname=None, id=None):
 
 
 @app.route("/choices/add/", methods=["GET", "POST"])
-@app.route("/choices/add/<string:shortname>", methods=["GET", "POST"])
+@app.route("/choices/add/<string:shortname>/", methods=["GET", "POST"])
 def add_choices(shortname=None):
     """Add choices by play shortname. Prompt for play if not given in URL."""
 
@@ -538,8 +539,8 @@ def add_choices(shortname=None):
 
 
 @app.route("/choices/edit/", methods=["GET", "POST"])
-@app.route("/choices/edit/<string:shortname>", methods=["GET", "POST"])
-@app.route("/choices/edit/<int:id>", methods=["GET", "POST"])
+@app.route("/choices/edit/<string:shortname>/", methods=["GET", "POST"])
+@app.route("/choices/edit/<int:id>/", methods=["GET", "POST"])
 def edit_choices(shortname=None, id=None):
     """Edit all choices by play shortname, or a specific choice by choice id."""
 
@@ -660,8 +661,8 @@ def make_interpretation_form(db_interpretation=None, db_play=None, db_choice=Non
 # ----- BEGIN: INTERPRETATION VIEWS ----- #
 
 @app.route("/interpretations/", methods=["GET", "POST"])
-@app.route("/interpretations/<string:shortname>", methods=["GET", "POST"])
-@app.route("/interpretations/<int:id>", methods=["GET", "POST"])
+@app.route("/interpretations/<string:shortname>/", methods=["GET", "POST"])
+@app.route("/interpretations/<int:id>/", methods=["GET", "POST"])
 def view_interpretations(shortname=None, id=None):
     """Display all interpretations, interpretations by play shortname, or a specific interpretation by interpretation id. Prompt for play if not given in URL."""
 
@@ -692,8 +693,8 @@ def view_interpretations(shortname=None, id=None):
 
 
 @app.route("/interpretations/add/", methods=["GET", "POST"])
-@app.route("/interpretations/add/<string:shortname>", methods=["GET", "POST"])
-@app.route("/interpretations/add/<int:choice_id>", methods=["GET", "POST"])
+@app.route("/interpretations/add/<string:shortname>/", methods=["GET", "POST"])
+@app.route("/interpretations/add/<int:choice_id>/", methods=["GET", "POST"])
 def add_interpretations(shortname=None, choice_id=None):
     """Add interpretations by play shortname or by related Choice ID. Prompt for play if not given in URL."""
 
@@ -737,8 +738,8 @@ def add_interpretations(shortname=None, choice_id=None):
 
 
 @app.route("/interpretations/edit/", methods=["GET", "POST"])
-@app.route("/interpretations/edit/<string:shortname>", methods=["GET", "POST"])
-@app.route("/interpretations/edit/<int:id>", methods=["GET", "POST"])
+@app.route("/interpretations/edit/<string:shortname>/", methods=["GET", "POST"])
+@app.route("/interpretations/edit/<int:id>/", methods=["GET", "POST"])
 def edit_interpretations(shortname=None, id=None):
     """Edit all interpretations by play shortname, or a specific interpretation by interpretation id."""
 
@@ -790,8 +791,8 @@ def edit_interpretations(shortname=None, id=None):
 # ----- BEGIN: PLAY VIEWS ----- #
 
 @app.route("/plays/", methods=["GET", "POST"])
-@app.route("/plays/<string:shortname>", methods=["GET", "POST"])
-@app.route("/plays/<int:id>", methods=["GET", "POST"])
+@app.route("/plays/<string:shortname>/", methods=["GET", "POST"])
+@app.route("/plays/<int:id>/", methods=["GET", "POST"])
 def view_plays(shortname=None, id=None):
     """Display all plays, or a specific play by shortname or id."""
 
@@ -817,8 +818,8 @@ def view_plays(shortname=None, id=None):
 # ----- BEGIN: FILM VIEWS ----- #
 
 @app.route("/films/", methods=["GET", "POST"])
-@app.route("/films/<string:shortname>", methods=["GET", "POST"])
-@app.route("/films/<int:id>", methods=["GET", "POST"])
+@app.route("/films/<string:shortname>/", methods=["GET", "POST"])
+@app.route("/films/<int:id>/", methods=["GET", "POST"])
 def view_films(shortname=None, id=None):
     """Display all films, films by related play shortname, or a specific film by id."""
 
@@ -849,7 +850,7 @@ def view_films(shortname=None, id=None):
 
 # ----- BEGIN: PROCESS FILM ----- #
 
-@app.route("/add-film")
+@app.route("/add-film/")
 def add_new_film():
     """Prompts user for play and MovieDB ID to add film information via API."""
 
@@ -857,7 +858,7 @@ def add_new_film():
                             play_titles = play_titles)
 
 
-@app.route("/process-film")
+@app.route("/process-film/")
 def process_film():
     """Given a MovieDB film URL by the user, query the MovieDB API for film info and pass to verification page."""
 
@@ -883,7 +884,7 @@ def process_film():
                             )
 
 
-@app.route("/add-film-to-db", methods = ["POST"])
+@app.route("/add-film-to-db/", methods = ["POST"])
 def add_film_to_db():
     """Use the form data from /process-film to add film information to the database."""
 
@@ -951,52 +952,82 @@ def add_film_to_db():
 #         users = users_schema.dump(User.query.all())
 #         return {"users": users}
 
-@app.route("/api/characters", methods=['GET'])
-@app.route("/api/characters/<int:id>", methods=['GET'])
-def api_get_characters(id=None):
+@app.route("/api/characters/", methods=['GET'])
+@app.route("/api/characters/<int:id>/", methods=['GET'])
+@app.route("/api/characters/<string:shortname>/", methods=['GET'])
+def api_get_characters(id=None, shortname=None):
+    """Return character information in JSON format. Results can be narrowed down by character ID or play shortname."""
+
     if id:
         character = character_schema.dump(Character.query.get(id))
         return {"character": character}
+    elif shortname and shortname in play_titles.keys():
+        play = get_play_by_shortname(shortname)
+        characters = characters_schema.dump(Character.query.filter(Character.play_id == play.id))
+        return {"characters": characters}
     else:
         characters = characters_schema.dump(Character.query.all())
         return {"characters": characters}
 
 
-@app.route("/api/choices", methods=['GET'])
-@app.route("/api/choices/<int:id>", methods=['GET'])
-def api_get_choices(id=None):
+@app.route("/api/choices/", methods=['GET'])
+@app.route("/api/choices/<int:id>/", methods=['GET'])
+@app.route("/api/choices/<string:shortname>/", methods=['GET'])
+def api_get_choices(id=None, shortname=None):
+    """Return choice information in JSON format. Results can be narrowed down by choice ID or play shortname."""
+
     if id:
         choice = choice_schema.dump(Choice.query.get(id))
         return {"choice": choice}
+    elif shortname and shortname in play_titles.keys():
+        play = get_play_by_shortname(shortname)
+        choices = choices_schema.dump(Choice.query.filter(Choice.play_id == play.id))
+        return {"choices": choices}
     else:
         choices = choices_schema.dump(Choice.query.all())
         return {"choices": choices}
 
 
-@app.route("/api/films", methods=['GET'])
-@app.route("/api/films/<int:id>", methods=['GET'])
-def api_get_films(id=None):
+@app.route("/api/films/", methods=['GET'])
+@app.route("/api/films/<int:id>/", methods=['GET'])
+@app.route("/api/films/<string:shortname>/", methods=['GET'])
+def api_get_films(id=None, shortname=None):
+    """Return film information in JSON format. Results can be narrowed down by film ID or play shortname."""
+
     if id:
         film = film_schema.dump(Film.query.get(id))
         return {"film": film}
+    elif shortname and shortname in play_titles.keys():
+        play = get_play_by_shortname(shortname)
+        films = films_schema.dump(Film.query.filter(Film.play_id == play.id))
+        return {"films": films}
     else:
         films = films_schema.dump(Film.query.all())
         return {"films": films}
 
-@app.route("/api/interpretations", methods=['GET'])
-@app.route("/api/interpretations/<int:id>", methods=['GET'])
-def api_get_interpretations(id=None):
+
+@app.route("/api/interpretations/", methods=['GET'])
+@app.route("/api/interpretations/<int:id>/", methods=['GET'])
+@app.route("/api/interpretations/<string:shortname>/", methods=['GET'])
+def api_get_interpretations(id=None, shortname=None):
+    """Return interpretation information in JSON format. Results can be narrowed down by interpretation ID or play shortname."""
+
     if id:
         interpretation = interpretation_schema.dump(Interpretation.query.get(id))
         return {"interpretation": interpretation}
+    elif shortname and shortname in play_titles.keys():
+        play = get_play_by_shortname(shortname)
+        interpretations = interpretations_schema.dump(Interpretation.query.filter(Interpretation.play_id == play.id))
+        return {"interpretations": interpretations}
     else:
         interpretations = interpretations_schema.dump(Interpretation.query.all())
         return {"interpretations": interpretations}
 
 
 @app.route("/api/plays/", methods=['GET'])
-@app.route("/api/plays/<int:id>", methods=['GET'])
+@app.route("/api/plays/<int:id>/", methods=['GET'])
 def api_get_plays(id=None):
+    """Return play information in JSON format."""
 
     if id:
         play = play_schema.dump(Play.query.get(id))
@@ -1006,15 +1037,22 @@ def api_get_plays(id=None):
         return {"plays": plays}
 
 
-@app.route("/api/scenes", methods=['GET'])
-@app.route("/api/scenes/<int:id>", methods=['GET'])
-def api_get_scenes(id=None):
+@app.route("/api/scenes/", methods=['GET'])
+@app.route("/api/scenes/<int:id>/", methods=['GET'])
+@app.route("/api/scenes/<string:shortname>/", methods=['GET'])
+def api_get_scenes(id=None, shortname=None):
+    """Return scene information in JSON format. Results can be narrowed down by scene ID or play shortname."""
+
     if id:
         scene = scene_schema.dump(Scene.query.get(id))
         return {"scene": scene}
+    elif shortname and shortname in play_titles.keys():
+        play = get_play_by_shortname(shortname)
+        scenes = scenes_schema.dump(Scene.query.filter(Scene.play_id == play.id))
+        return {"scenes": scenes}
     else:
         scenes = scenes_schema.dump(Scene.query.all())
-        return {"scenes": scene}
+        return {"scenes": scenes}
 
 # ----- END: API ROUTES ----- #
 
