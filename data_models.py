@@ -7,6 +7,7 @@ from sqlalchemy import *
 import os
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from crud import calculate_age_during_film
 
 db = SQLAlchemy()
 
@@ -64,8 +65,6 @@ class Role(db.Model):
 # -- BEGIN Primary data objects --
 
 
-
-
 class Character(db.Model):
     """A character from the play."""
 
@@ -74,10 +73,13 @@ class Character(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     gender = db.Column(db.String(10))
+    word_count = db.Column(db.Integer)
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="characters")
     played_by = db.relationship("Person", secondary="parts_played", back_populates="parts")
     choices = db.relationship("Choice", secondary="choice_characters", back_populates="characters")
+    interpretations = db.relationship("Interpretation", secondary="interpretation_characters", back_populates="characters")
+    scenes = db.relationship("Scene", secondary="character_scenes", back_populates="characters")
     topics = db.relationship("Topic", secondary="topic_characters", back_populates="characters")
     quotes = db.relationship("Quote", back_populates="character")
 
@@ -149,8 +151,11 @@ class Interpretation(db.Model):
     play = db.relationship("Play", back_populates="interpretations")
     film_id = db.Column(db.Integer, db.ForeignKey("films.id"))
     film = db.relationship("Film", back_populates="interpretations")
+    characters = db.relationship("Character", secondary="interpretation_characters", back_populates="interpretations")
     choice_id = db.Column(db.Integer, db.ForeignKey("choices.id"), info={"label": "Choice ID"})
-    choice = db.relationship("Choice", back_populates="interpretations")
+    choice = db.relationship("Choice", back_populates="interpretations", info={"label": "Choice"})
+    scenes = db.relationship("Scene", secondary="interpretation_scenes", back_populates="interpretations", info={"label": "Scenes"})
+
 
     def __repr__(self):
         return f"<INTERPRETATION id={self.id} {self.title}>"
@@ -236,9 +241,11 @@ class Scene(db.Model):
     description = db.Column(db.Text)
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="scenes")
+    characters = db.relationship("Character", secondary="character_scenes", back_populates="scenes")
     choices = db.relationship("Choice", secondary="choice_scenes", back_populates="scenes")
-    topics = db.relationship("Topic", secondary="topic_scenes", back_populates="scenes")
+    interpretations = db.relationship("Interpretation", secondary="interpretation_scenes", back_populates="scenes", info={"label": "Interpretations"})
     quotes = db.relationship("Quote", back_populates="scene")
+    topics = db.relationship("Topic", secondary="topic_scenes", back_populates="scenes")
 
     def __repr__(self):
         return f"<SCENE id={self.id} {self.act}.{self.scene} {self.play.title}>"
@@ -294,6 +301,19 @@ class Quote(db.Model):
 
 # -- BEGIN Relationship objects --
 
+class CharacterScene(db.Model): 
+    """Relationships between characters and scenes."""
+
+    __tablename__ = "character_scenes"
+
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    character_id = db.Column(db.Integer, db.ForeignKey("characters.id"))
+    scene_id = db.Column(db.Integer, db.ForeignKey("scenes.id"))
+
+    def __repr__(self):
+            return f"<CHARACTERSCENE id={self.id} {self.character_id} {self.scene_id}>"
+
+
 class ChoiceCharacter(db.Model):
     """Relationships between choices and characters."""
 
@@ -307,7 +327,7 @@ class ChoiceCharacter(db.Model):
             return f"<CHOICECHARACTER id={self.id} {self.choice_id} {self.character_id}>"
 
 
-class ChoiceScene(db.Model):
+class ChoiceScene(db.Model): 
     """Relationships between choices and scenes."""
 
     __tablename__ = "choice_scenes"
@@ -316,21 +336,34 @@ class ChoiceScene(db.Model):
     choice_id = db.Column(db.Integer, db.ForeignKey("choices.id"))
     scene_id = db.Column(db.Integer, db.ForeignKey("scenes.id"))
 
-
     def __repr__(self):
             return f"<CHOICESCENE id={self.id} {self.choice_id} {self.scene_id}>"
 
 
-# class InterpretationFilm(db.Model):
-#     """Relationships between interpretations and films. Interpretations may be used by multiple films.."""
+class InterpretationCharacter(db.Model): 
+    """Relationships between interpretations and characters."""
 
-#     __tablename__ = "interpretation_films"
-#     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-#     interpretation_id = db.Column(db.Integer, db.ForeignKey("interpretations.id"))
-#     film_id = db.Column(db.Integer, db.ForeignKey("films.id"))
+    __tablename__ = "interpretation_characters"
 
-#     def __str__(self):
-#         return f"{self.job.title}, {self.film.title}" 
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    interpretation_id = db.Column(db.Integer, db.ForeignKey("interpretations.id"))
+    character_id = db.Column(db.Integer, db.ForeignKey("characters.id"))
+
+    def __repr__(self):
+            return f"<INTERPRETATIONCHARACTER id={self.id} {self.character_id} {self.scene_id}>"
+
+
+class InterpretationScene(db.Model): 
+    """Relationships between interpretations and scenes."""
+
+    __tablename__ = "interpretation_scenes"
+
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    interpretation_id = db.Column(db.Integer, db.ForeignKey("interpretations.id"))
+    scene_id = db.Column(db.Integer, db.ForeignKey("scenes.id"))
+
+    def __repr__(self):
+            return f"<INTERPRETATIONSCENE id={self.id} {self.choice_id} {self.scene_id}>"
 
 
 class JobHeld(db.Model):
@@ -371,6 +404,11 @@ class PartPlayed(db.Model):
 
     def __str__(self):
         return f"{self.person.fname} {self.person.lname}, {self.character.name}"
+
+    def age_during_film(self):
+        age = calculate_age_during_film(self.person, self.film)
+        return age
+        
 
 
 class TopicCharacter(db.Model):

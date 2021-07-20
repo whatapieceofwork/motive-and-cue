@@ -5,6 +5,8 @@
 {% block content %}
 {% if play %}
     <h2>Edit Choices for {{play.title}}</h2>
+    <p><em><a href="/choices/add/{{play.shortname}}/">Add {{play.title}} choices</a></em></p>
+
 {% endif %}    
 {% if form %}
     {{ wtf.quick_form(form) }}
@@ -12,7 +14,7 @@
 <div class="choices-list">
     <ul>
         {% for choice in choices %}
-            <li><a href="/choices/edit/{{choice.id}}">{{choice.title}}</a></li>
+            <li><a href="/choices/edit/{{choice.id}}/">{{choice.title}}</a></li>
         {% endfor %}
     </ul>
 </div>

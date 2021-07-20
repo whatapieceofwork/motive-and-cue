@@ -11,7 +11,7 @@ import random
 import requests
 import re #regex
 import json
-from data_model import * 
+from data_models import * 
 # from folger_parser import parse_folger_characters, parse_folger_scenes
 from folger_parser import *
 from moviedb_parser import parse_moviedb_film_details
@@ -49,10 +49,10 @@ def username_taken(username):
 # ----- BEGIN: ADD FUNCTIONS ----- #
 # For creating new database records
 
-def add_character(name, play, gender=None):
+def add_character(name, play, gender=None, word_count=None):
     """Create and return a new Character database record."""
 
-    character = Character(name=name, gender=gender, play_id=play.id)
+    character = Character(name=name, gender=gender, play_id=play.id, word_count=word_count)
 
     db.session.add(character)
     db.session.commit()
@@ -66,8 +66,8 @@ def add_all_characters(play):
 
     characters = parse_folger_characters(play)
 
-    for character_name in characters:
-        character = get_character(character_name, play)
+    for character_name, word_count in characters.values():
+        character = get_character(name=character_name, play=play, word_count=word_count)
         db.session.add(character)
     
     db.session.commit()
@@ -159,6 +159,18 @@ def add_interpretation(choice, play, title, description, film, time_start, time_
     return interpretation
 
 
+def add_interpretation_character(interpretation, character):
+    """Create and return a new InterpretationCharacter database record."""
+
+    interpretation_character = InterpretationCharacter(interpretation_id=interpretation.id, character_id=character.id)
+
+    db.session.add(interpretation_character)
+    db.session.commit()
+
+    print(f"********* Created {interpretation_character} *********")
+    return interpretation_character
+
+
 def add_interpretation_film(interpretation, film):
     """Create and return a new InterpretationFilm database record."""
 
@@ -169,6 +181,18 @@ def add_interpretation_film(interpretation, film):
 
     print(f"********* Created {interpretation_film} *********")
     return interpretation_film
+
+
+def add_interpretation_scene(interpretation, scene):
+    """Create and return a new InterpretationScene database record."""
+
+    interpretation_scene = InterpretationScene(interpretation_id=interpretation.id, scene_id=scene.id)
+
+    db.session.add(interpretation_scene)
+    db.session.commit()
+
+    print(f"********* Created {interpretation_scene} *********")
+    return interpretation_scene
 
 
 def add_part_played(person, character_name, film):
@@ -235,9 +259,6 @@ def add_all_scenes(play):
     """Given a play, create and return new Scene database records."""
 
     scenes = parse_folger_scenes(play)
-    print(f"****************** IN ADD_ALL_SCENES, play {play.title} *******************")
-    print(f"****************** FOLGER SCENES: {scenes} *******************")
-
 
     for scene in scenes.values():
         db_scene = get_scene(act=scene["act"], scene=scene["scene"], play=play)
@@ -265,7 +286,7 @@ def add_topic(title, description):
 # ----- BEGIN: GET FUNCTIONS ----- #
 # For retrieving existing database records or creating new ones
 
-def get_character(name, play, gender=2):
+def get_character(name, play, gender=2, word_count=None):
     """Given a character name, gender, and play, return the Character object."""
 
     existing_character = db.session.query(exists().where((Character.name == name) & (Character.play_id == play.id))).scalar()
@@ -273,7 +294,7 @@ def get_character(name, play, gender=2):
     if existing_character:
         character = Character.query.filter((Character.name == name) & (Character.play_id == play.id)).first()
     else:
-        character = add_character(name=name, play=play, gender=gender)
+        character = add_character(name=name, play=play, gender=gender, word_count=word_count)
     
     return character
 
@@ -359,6 +380,32 @@ def get_all_interpretations_by_play(play):
         return Interpretation.query.filter(Interpretation.play_id == play.id).all()
     else:
         return None
+
+
+def get_interpretation_character(interpretation, character):
+    """Given an interpretation and character, return or create an InterpretationCharacter object."""
+
+    existing_interpretation_character = db.session.query(exists().where((InterpretationCharacter.interpretation_id == interpretation.id) & (InterpretationCharacter.character_id == character.id))).scalar()
+
+    if existing_interpretation_character:
+        interpretation_character = InterpretationCharacter.query.filter((InterpretationCharacter.interpretation_id == interpretation.id) & (InterpretationCharacter.character_id == character.id)).first()
+    else:
+        interpretation_character = add_interpretation_character(interpretation, character)
+
+    return interpretation_character
+
+
+def get_interpretation_scene(interpretation, scene):
+    """Given an interpretation and scene, return or create an InterpretationScene object."""
+
+    existing_interpretation_scene = db.session.query(exists().where((InterpretationScene.interpretation_id == interpretation.id) & (InterpretationScene.scene_id == scene.id))).scalar()
+
+    if existing_interpretation_scene:
+        interpretation_scene = InterpretationScene.query.filter((InterpretationScene.interpretation_id == interpretation.id) & (Interpretation.scene_id == scene.id)).first()
+    else:
+        interpretation_scene = add_interpretation_scene(interpretation, scene)
+
+    return interpretation_scene
 
 
 def get_interpretation_film(interpretation, film):
@@ -456,7 +503,7 @@ def get_part_played(person, character_name, film):
     """Given a person's information, create (or return) a Person object."""
 
     play = get_play_by_film(film)
-    character = get_character(character_name, play)
+    character = get_character(name=character_name, play=play)
 
     existing_part_played = db.session.query(exists().where((PartPlayed.person_id == person.id) & (PartPlayed.character_id == character.id) & (PartPlayed.film_id == film.id))).scalar()
 
@@ -627,7 +674,6 @@ def random_scene(play=None):
 
     return random.choice(scenes)
 
-
 # ----- BEGIN: RANDOM FUNCTIONS ----- #
 
 
@@ -639,7 +685,7 @@ def calculate_age_during_film(person, film):
     film_release = film.release_date
     birthday = person.birthday
     days_between = film_release - birthday
-    age = int(days_between/365)
+    age = int(days_between.days/365)
 
     return age
 

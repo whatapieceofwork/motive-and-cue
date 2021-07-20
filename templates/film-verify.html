@@ -6,7 +6,7 @@
 <h2>Verify Film Information</h2>
 
 <div id="film-metadata">
-    <form action="/add-film-to-db" method="post">
+    <form action="/add-film-to-db/" method="post">
 {% if details['poster_path'] %}
     <div><img class="poster" src="{{details['poster_path']}}" /></div>
 {% else %}
@@ -76,9 +76,10 @@
         </li>
         {% set parent_loop = loop %}
         {% for part in cast[person]["parts_played"] %}
+
         <li><label for "part-{{loop.index0}}">Part</label>
             {% if part in character_names %}
-                <input type="search" list="parts" name="part-{{parent_loop.index0}}-{{loop.index0}}" id="part-{{parent_loop.index0}}-{{loop.index0}}" placeholder="{{part}} "value="{{part}}">    
+                <input type="search" list="parts" name="part-{{parent_loop.index0}}-{{loop.index0}}" id="part-{{parent_loop.index0}}-{{loop.index0}}" placeholder="{{part}}" value="{{part}}">    
             {% else %} 
                 <input type="search" list="parts" name="part-{{parent_loop.index0}}-{{loop.index0}}" id="part-{{parent_loop.index0}}-{{loop.index0}}" placeholder="{{part}}">                     
             {% endif %}

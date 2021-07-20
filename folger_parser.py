@@ -7,39 +7,37 @@ from crud import *
 from server import db
 
 def parse_folger_characters(play):
-  """Given a play shortname, return the Folger list of character names in order of line count."""
+  """Given a play, return a numbered dictionary of character names and wordcounts from the Folger API, ordered by wordcount."""
 
+  characters = {}
   shortname = play.shortname
   parts_page_url = f"https://folgerdigitaltexts.org/{shortname}/charText/"
   page = requests.get(parts_page_url)
   soup = BeautifulSoup(page.content, "html.parser")
-  character_link_list = soup.find_all("a")
 
-  characters = []
-  for character in character_link_list:
-    if character.string.istitle():
-     characters.append(character.string)
+  count = 0
+  wordcount_names = re.findall('(?P<wordcount>(?<=60px;">)\d+).*(?P<character>(?<=.html">)\w+)', str(soup))
+  for wordcount, name in wordcount_names:
+    split_name = re.sub(r'(?<![A-Z\W])(?=[A-Z])', ' ', name) # Split name after each lowercase letter before an uppercase character
+    name = "".join(split_name)
+    name = name.lstrip()
+    if not name.isupper(): # Discard all-CAPS names, which refer to plural speakers like ATTENDANTS
+      characters[count] = (name, wordcount)
+      count += 1
 
   return characters
 
 
 def parse_folger_scenes(play):
-  """Given a play, scrape the Folger works page and return a dictionary of scene information."""
+  """Given a play, return the Folger API list of scenes as a numbered dictionary."""
 
   scenes = {}
 
-  play_title = play.title
-  play_title = play_title.lower().replace(" ", "-")
-  play_title = play_title.strip("'',:")
-
-  scenes_page_url = f"https://shakespeare.folger.edu/shakespeares-works/{play_title}"
-  print(f"****************** IN PARSE_FOLGER_SCENES, URL {scenes_page_url} *******************")
-
+  shortname = play.shortname
+  scenes_page_url = f"https://folgerdigitaltexts.org/{shortname}/scenes/"
   page = requests.get(scenes_page_url)
   soup = BeautifulSoup(page.content, "html.parser")
-  scene_list = soup.find_all("h3", attrs={"class": "contents-title"})
-  print(f"****************** IN PARSE_FOLGER_SCENES, play {play.title} *******************")
-  print(f"****************** SCENE_LIST: {scene_list} *******************")
+  scene_list = soup.find_all("p")
 
   scene_count = 0
   for scene in scene_list:
@@ -54,23 +52,19 @@ def parse_folger_scenes(play):
 
 
 def parse_folger_scene_descriptions(play):
-  """Given a dictionary of acts and scenes, scrape each Folger scene page and add those descriptions to the Scene database objects."""
+  """Retrieve the Folger API scene descriptions for a play and update any existing Scene objects without a description."""
 
-  from crud import get_all_scenes_by_play, get_scene
-  from server import db
+  from crud import get_scene, get_all_scenes_by_play, update_scene
 
-  scenes = get_all_scenes_by_play(play)
+  shortname = play.shortname
+  synopses_page_url = f"https://folgerdigitaltexts.org/{shortname}/synopsis/"
+  page = requests.get(synopses_page_url)
+  soup = BeautifulSoup(page.content, "html.parser")
+  
+  act_scene_synopses = re.findall('(?P<act>(?<=<p>Act )\d+).*(?P<scene>(?<=, Scene )\d+): (?P<synopsis>.*)(?=</p>)', str(soup))
 
-  for db_scene in scenes:
-    act_num = db_scene.act
-    scene_num = db_scene.scene
-    scene_page_url = f"https://shakespeare.folger.edu/shakespeares-works/{play.title}/act-{act_num}-scene-{scene_num}/"
-    page = requests.get(scene_page_url)
-    soup = BeautifulSoup(page.content, "html.parser")
-    synopsis = soup.find("div", attrs={"id": "modal-ready"}).find("p", recursive=False).string
-    db_scene.description = synopsis
-    db.session.merge(db_scene)
-
-  db.session.commit()
+  for act, scene, synopsis in act_scene_synopses:
+    db_scene = get_scene(act=act, scene=scene, play=play, description=synopsis)
+    db_scene = update_scene(scene=db_scene, description=synopsis)
 
   return get_all_scenes_by_play(play)

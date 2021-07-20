@@ -8,7 +8,7 @@ from werkzeug.datastructures import MultiDict
 from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 from wtforms_alchemy import model_form_factory, ModelFormField
 # from data_model import User, Role, Interpretation, Choice, Film
-from data_model import *
+from data_models import *
 import crud
 BaseModelForm = model_form_factory(FlaskForm)
 

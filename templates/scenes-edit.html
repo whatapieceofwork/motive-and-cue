@@ -5,15 +5,16 @@
 {% block content %}
 {% if play %}
     <h2>Edit Scene List for {{play.title or "Play"}}</h2>
-    <p><a href="/scenes/add/{{play.shortname}}">Add Folger scene descriptions</a></p>
+    <p><em><a href="/scenes/add/{{play.shortname}}/">Add scenes</a></em></p>
 {% endif %}
 
-{% if not scenes %}
+{% if form %}
     {{ wtf.quick_form(form) }}
 {% else %}
 
+{% if scenes %}
 <div id="scenes-metadata">
-    <form action="/scenes/edit/{{play.shortname}}" method="post">
+    <form action="/scenes/edit/{{play.shortname}}/" method="post">
         <input type="hidden" id="play" name="play" value="{{play.title}}">
 
         <datalist id="character_list">
@@ -54,6 +55,7 @@
         <input type="submit" value="Submit">
     </form>
 </div>
+{% endif %}
 
 {% endif %}
 {% endblock %}

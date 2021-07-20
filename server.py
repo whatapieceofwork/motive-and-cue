@@ -31,6 +31,8 @@ db = SQLAlchemy()
 app = Flask(__name__)
 app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = True
 app.config['JSON_SORT_KEYS'] = False
+app.config['SQLALCHEMY_POOL_RECYCLE'] = 54000  # Recycle connection pool every 15 minutes 
+app.config['SQLALCHEMY_POOL_SIZE'] = 10
 app.secret_key = FLASK_KEY
 
 Bootstrap(app)
@@ -94,7 +96,7 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash("Thank you for registering! Please log in.")
-        return redirect("/login")
+        return redirect("/login/")
     return render_template("register.html", 
                             form=form)
 
@@ -129,7 +131,7 @@ def view_scenes(shortname=None, id=None):
     if shortname:
         if shortname not in play_titles.keys():
             flash("Please select a valid play.")
-            return redirect("/scenes")
+            return redirect("/scenes/")
         play = get_play_by_shortname(shortname)
         scenes = get_all_scenes_by_play(play)
         return render_template("scenes-view.html", play=play, scenes=scenes)
@@ -146,7 +148,7 @@ def view_scenes(shortname=None, id=None):
         
         play = get_play_by_shortname(shortname)
 
-        return redirect(f"/scenes/{shortname}")
+        return redirect(f"/scenes/{shortname}/")
 
     return render_template("scenes-view.html", 
                             form=form)
@@ -161,7 +163,7 @@ def add_scenes(shortname=None):
         play = get_play_by_shortname(shortname)
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/scenes/add")
+            return redirect("/scenes/add/")
         scenes = parse_folger_scene_descriptions(play)
         return render_template("scenes-edit.html", 
                                 play=play, 
@@ -170,7 +172,7 @@ def add_scenes(shortname=None):
     form = ChoosePlayForm()
     if form.validate_on_submit():
         shortname = form.play.data
-        return redirect(f"/scenes/add/{shortname}")
+        return redirect(f"/scenes/add/{shortname}/")
 
     return render_template("scenes-edit.html", 
                             form=form)
@@ -186,7 +188,7 @@ def edit_scenes(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/scenes/edit")
+            return redirect("/scenes/edit/")
         scene_count = request.form.get("scene_count")
         scene_count = int(scene_count) + 1
 
@@ -210,13 +212,13 @@ def edit_scenes(shortname=None, id=None):
             if quote and quote_character:
                 add_quote(play=play, character=character, scene=scene, text=quote)
 
-        return redirect(f"/scenes/{shortname}")
+        return redirect(f"/scenes/{shortname}/")
 
     elif shortname: # Edit all scenes for a given play
         play = get_play_by_shortname(shortname)
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/scenes")
+            return redirect("/scenes/")
 
         existing_scenes = Scene.query.all()
         if existing_scenes:
@@ -241,7 +243,7 @@ def edit_scenes(shortname=None, id=None):
             db.session.merge(scene)
             db.session.commit()
 
-            return redirect(f"/scenes/{id}")
+            return redirect(f"/scenes/{id}/")
     
         return render_template("scenes-edit.html",
                                 scene=scene,
@@ -251,7 +253,7 @@ def edit_scenes(shortname=None, id=None):
         form = ChoosePlayForm()
         if form.validate_on_submit():
             shortname = form.play.data
-            return redirect(f"/scenes/edit/{shortname}")
+            return redirect(f"/scenes/edit/{shortname}/")
 
     return render_template("choose-play.html", 
                     form=form)
@@ -271,7 +273,7 @@ def view_characters(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/characters")
+            return redirect("/characters/")
         characters = get_all_characters_by_play(play)
         return render_template("characters-view.html", play=play, characters=characters)
         
@@ -285,9 +287,9 @@ def view_characters(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/characters")
+            return redirect("/characters/")
 
-        return redirect(f"/characters/{shortname}")
+        return redirect(f"/characters/{shortname}/")
 
     return render_template("characters-view.html", 
                             form=form)
@@ -302,7 +304,7 @@ def add_characters(shortname=None):
         play = get_play_by_shortname(shortname)
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/characters/add")
+            return redirect("/characters/add/")
         characters = get_all_characters_by_play(play)
         scenes = get_all_scenes_by_play(play)
         return render_template("characters-edit.html", 
@@ -314,7 +316,7 @@ def add_characters(shortname=None):
     form = ChoosePlayForm()
     if form.validate_on_submit():
         shortname = form.play.data
-        return redirect(f"/characters/add/{shortname}")
+        return redirect(f"/characters/add/{shortname}/")
 
     return render_template("choose-play.html", 
                             form=form)
@@ -348,13 +350,13 @@ def edit_characters(shortname=None, id=None):
             if quote and scene:
                 add_quote(play=play, character=character, scene=scene, text=quote)
 
-        return redirect(f"/characters/{shortname}")
+        return redirect(f"/characters/{shortname}/")
 
     elif shortname:
         play = get_play_by_shortname(shortname)
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/characters/edit")
+            return redirect("/characters/edit/")
 
         characters = get_all_characters_by_play(play)
         scenes = get_all_scenes_by_play(play)
@@ -375,7 +377,7 @@ def edit_characters(shortname=None, id=None):
             db.session.merge(character)
             db.session.commit()
 
-            return redirect(f"/characters/{id}")
+            return redirect(f"/characters/{id}/")
     
         return render_template("characters-edit.html",
                                 character=character,
@@ -385,7 +387,7 @@ def edit_characters(shortname=None, id=None):
         form = ChoosePlayForm()
         if form.validate_on_submit():
             shortname = form.play.data
-            return redirect(f"/characters/edit/{shortname}")
+            return redirect(f"/characters/edit/{shortname}/")
 
     return render_template("characters-edit.html", 
                     form=form)
@@ -409,26 +411,24 @@ def make_choice_form(db_play=None, db_choice=None):
 
         class Meta: # Supplies paramters to OrderFormMixin to arrange additional fields
             model = Choice
-            order_before = ["play", "scenes", "characters"]
-            order_after = ["submit"]
+            order_before = ["play"]
+            order_after = ["scenes", "characters", "submit"]
 
         if db_choice: # Used when an existing Choice is used as the model object for the form
             play = QuerySelectField('Play', 
                                     query_factory=Play.query.all,
                                     default=db_choice.play) # Defaults to the existing Choice's play
             characters = QuerySelectMultipleField('Characters', 
-                                    query_factory=Character.query.filter(Character.play_id == db_play.id).all,
+                                    query_factory=Character.query.filter(Character.play_id == db_play.id).order_by(Character.id).all,
                                     default=db_choice.characters) # Defaults to the existing Choice's choice
         else:
             play = QuerySelectField('Play', 
                                 query_factory=Play.query.all,
                                 default=db_play)
-            choice = QuerySelectField('Characters', 
+            characters = QuerySelectMultipleField('Characters', 
                                     query_factory=Character.query.filter(Character.play_id == db_play.id).all,
                                     default=db_choice)
 
-        film = QuerySelectField('Related Film', 
-                                query_factory=Film.query.filter(Film.play_id == db_play.id).all)
         scenes = QuerySelectMultipleField('Related Scenes', 
                                 query_factory=Scene.query.filter(Scene.play_id == db_play.id).order_by(Scene.act, Scene.scene).all)
 
@@ -455,7 +455,7 @@ def view_choices(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/choices")
+            return redirect("/choices/")
         choices = get_all_choices_by_play(play)
         return render_template("choices-view.html", play=play, choices=choices)
         
@@ -469,9 +469,9 @@ def view_choices(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/choices")
+            return redirect("/choices/")
 
-        return redirect(f"/choices/{shortname}")
+        return redirect(f"/choices/{shortname}/")
 
     return render_template("choices-view.html", 
                             form=form)
@@ -488,24 +488,25 @@ def add_choices(shortname=None):
             flash("Please select a valid play.")
             return redirect("/choices/add/")
         
-        class ChoiceForm(OrderFormMixin, ModelForm):
-            class Meta:
-                model = Choice
-                order_before = ["play"]
-                order_after = ["characters", "scenes", "submit"]
+        # class ChoiceForm(OrderFormMixin, ModelForm):
+        #     class Meta:
+        #         model = Choice
+        #         order_before = ["play"]
+        #         order_after = ["characters", "scenes", "submit"]
 
-            play = QuerySelectField('Related Play', 
-                                            query_factory=Play.query.all)
-            characters = QuerySelectMultipleField('Related Characters', 
-                                            query_factory=Character.query.order_by(Character.id).all)
-            scenes = QuerySelectMultipleField('Related Scenes', 
-                                            query_factory=Scene.query.order_by(Scene.act, Scene.scene).all)
-            submit = SubmitField("Submit")
+        #     play = QuerySelectField('Related Play', 
+        #                                     query_factory=Play.query.all)
+        #     characters = QuerySelectMultipleField('Related Characters', 
+        #                                     query_factory=Character.query.order_by(Character.id).all)
+        #     scenes = QuerySelectMultipleField('Related Scenes', 
+        #                                     query_factory=Scene.query.order_by(Scene.act, Scene.scene).all)
+        #     submit = SubmitField("Submit")
 
-        form = ChoiceForm()
+        # form = ChoiceForm()
+
+        form = make_choice_form(db_play=play)
 
         if form.is_submitted():
-            play = form.play.data
             title = form.title.data
             description = form.description.data
             db_characters = form.characters.data
@@ -517,7 +518,7 @@ def add_choices(shortname=None):
             for scene in db_scenes:
                 get_choice_scene(choice=choice, scene=scene)
 
-            return redirect(f"/choices/{choice.id}")
+            return redirect(f"/choices/{choice.id}/")
 
         choices = get_all_choices_by_play(play)
         scenes = get_all_scenes_by_play(play)
@@ -532,7 +533,7 @@ def add_choices(shortname=None):
     form = ChoosePlayForm()
     if form.validate_on_submit():
         shortname = form.play.data
-        return redirect(f"/choices/add/{shortname}")
+        return redirect(f"/choices/add/{shortname}/")
 
     return render_template("choose-play.html", 
                             form=form)
@@ -548,7 +549,7 @@ def edit_choices(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/choices/edit")
+            return redirect("/choices/edit/")
 
         choices = get_all_choices_by_play(play)
 
@@ -558,22 +559,8 @@ def edit_choices(shortname=None, id=None):
     
     elif id:
         choice = Choice.query.get(id)
-
-        class ChoiceForm(OrderFormMixin, ModelForm):
-            class Meta:
-                model = Choice
-                order_before = ["play"]
-                order_after = ["characters", "scenes", "submit"]
-
-            play = QuerySelectField('Related Play', 
-                                            query_factory=Play.query.all)
-            characters = QuerySelectMultipleField('Related Characters', 
-                                            query_factory=Character.query.order_by(Character.id).all)
-            scenes = QuerySelectMultipleField('Related Scenes', 
-                                            query_factory=Scene.query.order_by(Scene.act, Scene.scene).all)
-            submit = SubmitField("Submit")
-
-        form = ChoiceForm(obj=choice)
+        play = choice.play
+        form = make_choice_form(db_play=play, db_choice=choice)
 
         if form.is_submitted():
             play = form.play.data
@@ -582,14 +569,18 @@ def edit_choices(shortname=None, id=None):
             db_characters = form.characters.data
             db_scenes = form.scenes.data
 
-            if not choice:
-                choice = add_choice(play=play, title=title, description=description)
+            existing_choice = Choice.query.get(choice.id)
+            if existing_choice:
+                choice = update_choice(choice=existing_choice, title=title, description=description)
+            else:
+               choice = add_choice(play=play, title=title, description=description)
+
             for character in db_characters:
-                get_choice_character(choice=choice, character=character)
+                get_interpretation_character(interpretation=interpretation, character=character)
             for scene in db_scenes:
                 get_choice_scene(choice=choice, scene=scene)
 
-            return redirect(f"/choices/{id}")
+            return redirect(f"/choices/{id}/")
 
         return render_template("choices-edit.html",
                                 choice=choice,
@@ -598,7 +589,7 @@ def edit_choices(shortname=None, id=None):
     form = ChoosePlayForm()
     if form.validate_on_submit():
         shortname = form.play.data
-        return redirect(f"/choices/edit/{shortname}")
+        return redirect(f"/choices/edit/{shortname}/")
 
     return render_template("choices-edit.html", 
                     form=form)
@@ -623,7 +614,7 @@ def make_interpretation_form(db_interpretation=None, db_play=None, db_choice=Non
 
         class Meta: # Supplies paramters to OrderFormMixin to arrange additional fields
             model = Interpretation
-            order_before = ["play", "choice", "film"]
+            order_before = ["delete", "play", "choice", "film"]
             order_after = ["scenes", "submit"]
 
         if db_interpretation: # Used when an existing Interpretation is used as the model object for the form
@@ -642,6 +633,7 @@ def make_interpretation_form(db_interpretation=None, db_play=None, db_choice=Non
                                     query_factory=Choice.query.filter(Choice.play_id == db_play.id).all,
                                     default=db_choice)
 
+        delete = BooleanField(label="Delete record?")
         film = QuerySelectField('Related Film', 
                                 query_factory=Film.query.filter(Film.play_id == db_play.id).all)
         scenes = QuerySelectMultipleField('Related Scenes', 
@@ -670,7 +662,7 @@ def view_interpretations(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/interpretations")
+            return redirect("/interpretations/")
         interpretations = get_all_interpretations_by_play(play)
         return render_template("interpretations-view.html", play=play, interpretations=interpretations)
         
@@ -684,9 +676,9 @@ def view_interpretations(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/interpretations")
+            return redirect("/interpretations/")
 
-        return redirect(f"/interpretations/{shortname}")
+        return redirect(f"/interpretations/{shortname}/")
 
     return render_template("interpretations-view.html", 
                             form=form)
@@ -703,7 +695,7 @@ def add_interpretations(shortname=None, choice_id=None):
             play = get_play_by_shortname(shortname)
             if not type(play) == Play:
                 flash("Please select a valid play.")
-                return redirect("/interpretations/add")
+                return redirect("/interpretations/add/")
             form = make_interpretation_form(db_play=play)
 
         if choice_id:
@@ -712,7 +704,7 @@ def add_interpretations(shortname=None, choice_id=None):
             shortname = choice.play.shortname
             if not type(play) == Play:
                 flash("Please select a valid play.")
-                return redirect("/interpretations/add")
+                return redirect("/interpretations/add/")
             form = make_interpretation_form(db_play=play, db_choice=choice)              
         
         if form.is_submitted():
@@ -725,13 +717,13 @@ def add_interpretations(shortname=None, choice_id=None):
  
             interpretation = add_interpretation(choice=choice, play=play, film=film, title=title, description=description, time_start=time_start, time_end=time_end)
 
-            return redirect(f"/interpretations/{interpretation.id}")
+            return redirect(f"/interpretations/{interpretation.id}/")
 
     else:
         form = ChoosePlayForm()
         if form.validate_on_submit():
             shortname = form.play.data
-            return redirect(f"/interpretations/add/{shortname}")
+            return redirect(f"/interpretations/add/{shortname}/")
 
     return render_template("interpretations-edit.html",
                                     form=form) 
@@ -770,7 +762,7 @@ def edit_interpretations(shortname=None, id=None):
             else:
                interpretation = add_interpretation(choice=choice, play=play, film=film, title=title, description=description, time_start=time_start, time_end=time_end)
 
-            return redirect(f"/interpretations/{interpretation.id}")
+            return redirect(f"/interpretations/{interpretation.id}/")
 
     
         return render_template("interpretations-edit.html",
@@ -780,7 +772,7 @@ def edit_interpretations(shortname=None, id=None):
     form = ChoosePlayForm()
     if form.validate_on_submit():
         shortname = form.play.data
-        return redirect(f"/interpretations/edit/{shortname}")
+        return redirect(f"/interpretations/edit/{shortname}/")
 
     return render_template("interpretations-edit.html", 
                     form=form)
@@ -804,7 +796,7 @@ def view_plays(shortname=None, id=None):
 
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/plays")   
+            return redirect("/plays/")   
         else:
             return render_template("play.html", play=play)
         
@@ -827,10 +819,22 @@ def view_films(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         if not type(play) == Play:
             flash("Please select a valid play.")
-            return redirect("/films")
+            return redirect("/films/")
         
         films = get_films_by_play(play)
         return render_template("films-view.html", films=films, play=play)
+
+    elif id:
+        film = Film.query.get(id)
+        play = film.play
+        parts_played = PartPlayed.query.filter(PartPlayed.film_id == film.id).all()
+        hamlet_age = None
+        if play.title == "Hamlet":
+            hamlet = Character.query.filter(Character.name == "Hamlet").first()
+            hamlet_actor = PartPlayed.query.filter((PartPlayed.film_id == film.id) & (PartPlayed.character == hamlet)).first()
+            hamlet_actor = hamlet_actor.person
+            hamlet_age = calculate_age_during_film(hamlet_actor, film)
+        return render_template("film.html", film=film, play=play, parts_played=parts_played, hamlet_age=hamlet_age)
         
     else:
         films = Film.query.all()
@@ -841,7 +845,7 @@ def view_films(shortname=None, id=None):
             if not type(play) == Play:
                 flash("Please select a valid play.")
 
-            return redirect(f"/films/{shortname}")
+            return redirect(f"/films/{shortname}/")
 
         return render_template("films-view.html", films=films, form=form)
 
@@ -1056,7 +1060,14 @@ def api_get_scenes(id=None, shortname=None):
 
 # ----- END: API ROUTES ----- #
 
-    
+@app.route("/search/")
+def search_page():
+    """Displays search page, returns results."""
+
+    return render_template("search.html",
+                            play_titles = play_titles)
+
+
 if __name__ == '__main__':
     app.debug = True
     app.url_map.strict_slashes = False

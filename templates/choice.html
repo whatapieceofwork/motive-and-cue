@@ -10,14 +10,14 @@
 <div id="choice-metadata">
     <ul>
         <li>ID: {{choice.id}}</li>
-        <li>Play: <a href="/plays/{{choice.play.id}}">{{choice.play.title}}</a></li>
+        <li>Play: <a href="/plays/{{choice.play.id}}/">{{choice.play.title}}</a></li>
         <li>Title: {{choice.title}}</li>
-        <li>Description: {{choice.desc}}</li>
+        <li>Description: {{choice.description}}</li>
         {% if choice['interpretations'] %}
             <li>Related Interpretations</li>
                 <ul>
                     {% for interpretation in choice['interpretations'] %}
-                        <li><a href="/interpretations/{{interpretation.id}}">{{interpretation.title}}</a></li>
+                        <li><a href="/interpretations/{{interpretation.id}}/">{{interpretation.title}}</a></li>
                     {% endfor %}
                 </ul>
             </ul>
@@ -26,7 +26,7 @@
         <li>Related Characters:
             <ul>
             {% for character in choice.characters%}
-                <li><a href="/characters/{{character.id}}">{{character.name}}</a></li>
+                <li><a href="/characters/{{character.id}}/">{{character.name}}</a></li>
             {% endfor %}
             </ul>
         </li>

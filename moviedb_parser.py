@@ -58,7 +58,7 @@ def parse_moviedb_film_details(moviedb_id, play):
     film["length"] = details["runtime"]
     film["play_id"] = play.id
     if details["poster_path"]:
-        film["poster_path"] = "https://www.themoviedb.org/t/p/original/" + details.get("poster_path")
+        film["poster_path"] = "https://www.themoviedb.org/t/p/original" + details.get("poster_path")
 
     return film
 

@@ -5,7 +5,7 @@
 {% block content %}
 <h2>Add a Film Adaptation</h2>
 
-<form method="GET" action="/process-film">
+<form method="GET" action="/process-film/">
     <label for="play_titles">Select a play:</label>
     <select name="play_titles" id="play_titles">
         {% for key, value in play_titles.items() %}

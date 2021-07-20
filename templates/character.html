@@ -4,7 +4,7 @@
 
 {% block content %}
 <h2>{{character.name}} from <em>{{character.play.title}}</em></h2>
-<p><em><a href="/characters/edit/{{character.id}}">Edit Character</a></em></p>
+<p><em><a href="/characters/edit/{{character.id}}/">Edit Character</a></em></p>
 
     <div id="character-quote">
         {% if character['quote'] %}
@@ -26,7 +26,7 @@
         <li>Related Choices: 
             <ul>
             {% for choice in character['choices'] %}
-                <li><a href="/choices/{{choice.id}}">{{choice.title}}</a></li>
+                <li><a href="/choices/{{choice.id}}/">{{choice.title}}</a></li>
             {% endfor %}
             </ul>
         </li>
@@ -37,7 +37,7 @@
                 {% for quote in character.quotes%}
                 <figure class="quote">
                     <blockquote>{{quote.text}}</blockquote>
-                    <figcaption><cite><a href="/characters/{{quote.character.id}}">{{quote.character.name}}</a> (<em>{{quote.play.title}}</em> <a href="/scenes/{{quote.scene.id}}">({{quote.scene.act}}.{{quote.scene.scene}})</a>)</cite></figcaption>
+                    <figcaption><cite><a href="/characters/{{quote.character.id}}/">{{quote.character.name}}</a> (<em>{{quote.play.title}}</em> <a href="/scenes/{{quote.scene.id}}">({{quote.scene.act}}.{{quote.scene.scene}})</a>)</cite></figcaption>
                 </figure>
                 {% endfor %}
                 </ul>
