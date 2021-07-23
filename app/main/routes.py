@@ -5,6 +5,8 @@ from . import main
 from .. import db
 from ..models import User
 
+        
 @main.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html",
+                            current_time=datetime.utcnow())
