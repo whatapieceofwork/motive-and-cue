@@ -6,8 +6,8 @@ from . import main
 
 @main.route("/")
 def index():
-    # from motiveandcue import send_email, mail
-    # send_email("motiveandcue@gmail.com", "Test", "testemail")
+    from motiveandcue import send_email
+    send_email("motiveandcue@gmail.com", "Test", "testemail")
 
     return render_template("index.html",
                             current_time=datetime.utcnow())

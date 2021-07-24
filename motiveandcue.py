@@ -19,8 +19,15 @@ def make_shell_context():
 def load_user(user_id):
     return User.query.get(user_id)
 
+@app.cli.command()
+def test():
+    """Run the unit tests."""
+    import unittest
+    tests = unittest.TestLoader().discover("app/tests")
+    unittest.TextTestRunner(verbosity=2).run(tests)
 
 def send_async_email(app, msg):
+    from app import mail
     print("Async mail called")
     with app.app_context():
         mail.send(msg)
