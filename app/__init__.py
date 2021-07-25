@@ -22,6 +22,7 @@ def create_app(config_name):
     app.url_map.strict_slashes = False
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
+    login_manager.login_message_category = "primary"
 
     bootstrap.init_app(app)
     db.init_app(app)

@@ -23,7 +23,7 @@ def login():
 
             return redirect(next)
 
-        flash("Invalid username or password. Please try again or register an account.")
+        flash("Invalid username or password. Please try again or register an account.", "error")
 
     return render_template("auth/login.html", form=form)
 
@@ -34,7 +34,7 @@ def logout():
     """Log out user, redirect to index."""
 
     logout_user()
-    flash("You have been successfully logged out. Thanks for visiting!")
+    flash("You have been successfully logged out. Thanks for visiting!", "primary")
 
     return redirect(url_for("main.index"))
 
@@ -57,7 +57,7 @@ def register():
         token = user.generate_token()
         send_email(user.email, "Confirm Your Account", "auth/email/confirm", user=user, token=token)
 
-        flash("A confirmation link has been emailed to you. Please confirm your account and then log in.")
+        flash("A confirmation link has been emailed to you. Please confirm your account and then log in.", "primary")
         return redirect(url_for("main.index"))
 
     return render_template("auth/register.html", form=form)
@@ -69,15 +69,16 @@ def confirm(token):
     """Confirm user account from confirmation email link."""
 
     if current_user.confirmed:
-        flash("This account is already confirmed.")
+        flash("This account is already confirmed. You're all set!", "primary")
+        return redirect(url_for("main.index"))
 
     if current_user.confirm_account_token(token):
         db.session.commit()
-        flash("You have confirmed your account. Thanks!")
+        flash("You have confirmed your account. Thanks!", "success")
 
     else:
         print(token)
-        flash("This confirmation link is invalid or has expired.")
+        flash("This confirmation link is invalid or has expired.", "error")
 
     return redirect(url_for("main.index"))
 
@@ -90,7 +91,7 @@ def reset_password_request():
     form = RequestPasswordResetForm()
 
     if current_user.is_authenticated:
-        flash("You're currently logged in. Your password can be changed on the My Account page.")
+        flash("You're currently logged in. Your password can be changed on the My Account page.", "message")
         return redirect(url_for("main.index"))
 
     if form.validate_on_submit():
@@ -99,60 +100,31 @@ def reset_password_request():
         if user:
             token = user.generate_token()
             send_email(user.email, "Reset Your Password", "auth/email/reset", user=user, token=token)
-            flash("Please check your email for instructions on how to reset your password.")
+            flash("Please check your email for instructions on how to reset your password.", "message")
 
         else:
-            flash("No user registered with that email address.")
+            flash("No user registered with that email address.", "error")
         return redirect(url_for("main.index"))
 
-    return render_template("auth/request_password_reset.html", form=form)
+    return render_template("auth/password_request.html", form=form)
 
-
-# @auth.route("/reset_password/<token>", methods=["GET", "POST"])
-# def reset_password(token):
-#     """Display form to reset password after clicking reset link in email."""
-
-#     print(f"******************* {token}")
-#     user = User.confirm_reset_token(token)
-#     form = ResetPasswordForm()
-
-#     if current_user.is_authenticated:
-#         flash("You're currently logged in. Your password can be changed on the My Account page.")
-#         return redirect(url_for("main.index"))
-
-#     if not user:
-#         flash("This password reset link is invalid or has expired.")
-#         return redirect(url_for("main.index"))
-
-#     if form.validate_on_submit():
-#         user.set_password(form.password.data)
-#         db.session.commit()
-#         flash("Your new password has been set.")
-#         return redirect(url_for("main.index"))
-
-#     return render_template("auth/reset_password.html", form=form)
 
 @auth.route("/reset_password/<token>", methods=["GET", "POST"])
 def reset_password(token):
     """Reset password."""
 
-    print(f"***************TOKEN: {token}")
     user = User.confirm_reset_token(self=User, token=token)
-    print(f"***************USER: {user}")
-
     form = ResetPasswordForm()
-        
+
+    if not user:
+        flash("This password reset link is invalid or expired.", "error")
+        return redirect(url_for("main.index"))
+
     if form.validate_on_submit():
         user.set_password(form.password.data)
         db.session.commit()
 
-        flash("Your new password has been set.")
+        flash("Your new password has been set.", "success")
         return redirect(url_for("main.index"))
         
-    return render_template("auth/reset_password.html", form=form)
-
-    # else:
-    #     print(token)
-    #     flash("This password reset link is invalid or has expired.")
-
-    return redirect(url_for("main.index"))
+    return render_template("auth/password_reset.html", form=form)

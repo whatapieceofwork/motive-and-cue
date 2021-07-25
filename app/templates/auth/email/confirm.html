@@ -1,0 +1,10 @@
+<h3>Dear {{ user.username }},</h3>
+
+<p>Welcome to Motive and Cue!</p>
+
+<p>To confirm your account, please click on the following link:</p>
+
+<p>{{ url_for("auth.confirm", token=token, _external=True) }}</p>
+
+<p>Sincerely, <br/>
+The Motive and Cue Team</p>
