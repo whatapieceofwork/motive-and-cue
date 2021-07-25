@@ -21,35 +21,49 @@ class User(UserMixin, db.Model):
     confirmed = db.Column(db.Boolean, default=False)
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
     
-    @property
-    def password(self):
-        raise AttributeError("Password is not a readable attribute.")
+    # @property
+    # def password(self):
+    #     raise AttributeError("Password is not a readable attribute.")
 
-    @password.setter
-    def password(self, password):
+    def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def generate_confirmation_token(self, expiration=3600):
+    def generate_token(self, expiration=3600):
         serializer = Serializer(current_app.config["SECRET_KEY"], expiration)
         return serializer.dumps({"confirm": self.id}).decode("utf-8")
 
-    def confirm(self, token):
+    def confirm_account_token(self, token):
         serializer = Serializer(current_app.config["SECRET_KEY"])
+
         try:
             data = serializer.loads(token.encode("utf-8"))
             print(f"In confirm, token = {token}")
         except:
             return False
+
         if data.get("confirm") != self.id:
             return False
+
         self.confirmed = True
         db.session.add(self)
         db.session.commit
 
         return True
+
+    @staticmethod
+    def confirm_reset_token(self, token):
+        serializer = Serializer(current_app.config["SECRET_KEY"])
+
+        try:
+            data = serializer.loads(token.encode("utf-8"))
+        except:
+            return False
+
+        id = data.get("confirm")
+        return User.query.get(id)
 
     def __repr__(self):
         return f"<USER id={self.id} {self.name}>"

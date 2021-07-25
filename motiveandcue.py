@@ -12,11 +12,15 @@ app.app_context().push()
 
 def send_async_email(app, msg):
     from app import mail
+
     print("Async mail called")
+
     with app.app_context():
         mail.send(msg)
 
+
 def send_email(to, subject, template, **kwargs):
+
     print("Send mail called")
     msg = Message(app.config["MAIL_SUBJECT_PREFIX"] + subject, 
                 sender=app.config["MAIL_SENDER"], recipients=[to])
@@ -24,6 +28,7 @@ def send_email(to, subject, template, **kwargs):
     msg.html = render_template(template + ".html", **kwargs)
     thr = Thread(target=send_async_email, args=[app, msg])
     thr.start()
+
     return thr
 
 
@@ -31,9 +36,11 @@ def send_email(to, subject, template, **kwargs):
 def load_user(user_id):
     return User.query.get(user_id)
 
+
 @app.shell_context_processor
 def make_shell_context():
     return dict(db=db, User=User, Role=Role)
+
 
 @app.cli.command()
 def test():
