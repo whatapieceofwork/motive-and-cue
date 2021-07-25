@@ -1,5 +1,7 @@
+
 import os
 from app import create_app, db, login_manager
+from app.main.crud import get_user
 from app.models import User, Role
 from flask import render_template
 from flask_login import LoginManager, login_required, set_login_view
@@ -8,11 +10,21 @@ from threading import Thread
 
 app = create_app(os.getenv('FLASK_CONFIG') or "default")
 app.app_context().push()
+
 # migrate = Migrate(app, db)
 
-def send_async_email(app, msg):
-    from app import mail
+@login_manager.user_loader
+def load_user(user_id):
+    try:
+        return User.query.get(user_id)
+    except:
+        return None
 
+
+def send_async_email(app, msg):
+    """Sends a Flask-Mail message asynchronously."""
+
+    from app import mail
     print("Async mail called")
 
     with app.app_context():
@@ -20,6 +32,7 @@ def send_async_email(app, msg):
 
 
 def send_email(to, subject, template, **kwargs):
+    """Creates a Flask-Mail message and passes it to send_async_email."""
 
     print("Send mail called")
     msg = Message(app.config["MAIL_SUBJECT_PREFIX"] + subject, 
@@ -32,13 +45,10 @@ def send_email(to, subject, template, **kwargs):
     return thr
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(user_id)
-
-
 @app.shell_context_processor
 def make_shell_context():
+    """Sets the Flask shell to automatically import database object models."""
+
     return dict(db=db, User=User, Role=Role)
 
 

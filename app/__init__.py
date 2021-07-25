@@ -6,12 +6,12 @@ from flask_login.utils import login_user, current_user, logout_user, login_requi
 from flask_mail import Mail
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
+from .models import db, AnonymousUser
 from sqlalchemy.sql import exists
 
-db = SQLAlchemy()
+# db = SQLAlchemy()
 bootstrap = Bootstrap()
 login_manager = LoginManager()
-login_manager.login_view = "auth.login"
 mail = Mail()
 moment = Moment()
 
@@ -23,6 +23,8 @@ def create_app(config_name):
     app.jinja_env.trim_blocks = True
     app.jinja_env.lstrip_blocks = True
     login_manager.login_message_category = "primary"
+    login_manager.login_view = "auth.login"
+    login_manager.anonymous_user = AnonymousUser
 
     bootstrap.init_app(app)
     db.init_app(app)

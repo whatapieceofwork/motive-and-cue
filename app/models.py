@@ -2,12 +2,12 @@
 
 from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
+from flask_login import AnonymousUserMixin, UserMixin, login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from sqlalchemy import *
-from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 
+db = SQLAlchemy()
 
 class User(UserMixin, db.Model):
     """A user on the Motive and Cue website."""
@@ -20,12 +20,30 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(10000))
     confirmed = db.Column(db.Boolean, default=False)
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
-    
-    # @property
-    # def password(self):
-    #     raise AttributeError("Password is not a readable attribute.")
 
-    def set_password(self, password):
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        if self.role is None:
+            if self.email == current_app.config["HEAD_ADMIN"]:
+                self.role = Role.query.filter_by(name="Admin").first()
+                print(f"Set {self}'s role as Admin")
+            if self.role is None:
+                self.role = Role.query.filter_by(default=True).first()
+                print(f"Set {self}'s role as {self.role}")
+                
+
+    def can(self, perm):
+        return self.role is not None and self.role.has_permission(perm)
+
+    def is_admin(self):
+        return self.can(Permission.ADMIN)
+
+    @property
+    def password(self):
+        raise AttributeError("Password is not a readable attribute.")
+
+    @password.setter
+    def password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def verify_password(self, password):
@@ -73,15 +91,68 @@ class User(UserMixin, db.Model):
         return f"{self.username}"
 
 
+class AnonymousUser(AnonymousUserMixin):
+    def can(self, permissions):
+        return False
+
+    def is_admin(self):
+        return False
+
+
 class Role(db.Model):
     """User roles on the Motive and Cue website."""
 
     __tablename__ = "roles"
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    title = db.Column(db.String(50), nullable=False, unique=True)
+    name = db.Column(db.String(50), nullable=False, unique=True)
     description = db.Column(db.String(300))
-    users = db.relationship("User", backref="role")
+    default = db.Column(db.Boolean, default=False, index=True)
+    permissions = db.Column(db.Integer)
+    users = db.relationship("User", backref="role", lazy="dynamic")
+
+    @staticmethod
+    def insert_roles():
+        """Find and update existing roles. Create roles as necessary."""
+
+        roles = {
+            "User": [Permission.FOLLOW],
+            "Contributor": [Permission.FOLLOW, Permission.SUGGEST_EDIT],
+            "Editor": [Permission.FOLLOW, Permission.SUGGEST_EDIT, Permission.APPROVE_EDIT],
+            "Creator": [Permission.FOLLOW, Permission.SUGGEST_EDIT, Permission.APPROVE_EDIT, Permission.ADD],
+            "Admin": [Permission.FOLLOW, Permission.SUGGEST_EDIT, Permission.APPROVE_EDIT, Permission.ADD, Permission.ADMIN],
+        }
+
+        default_role = "User"
+        for role in roles:
+            role = Role.query.filter_by(name=role).first()
+            if role is None: # if role doesn't exist, create role
+                role = Role(name=role)
+            role.reset_permissions()
+            for permission in roles[role]:
+                role.add_permission(permission)
+            roles.default = (role.name == default_role)
+            db.session.add(role)
+            db.session.commit()
+
+    def __init__(self, **kwargs):
+        super(Role, self).__init__(**kwargs)
+        if self.permissions is None:
+            self.permissions = 0
+
+    def add_permission(self, perm):
+        if not self.has_permission(perm):
+            self.permissions += perm
+    
+    def remove_permission(self, perm):
+        if self.has_permission(perm):
+            self.permissions -= perm
+
+    def reset_permissions(self):
+        self.permissions = 0
+
+    def has_permission(self, perm): # bitwise operator: check if combined permission value includes given permission
+        return self.permissions & perm == perm
 
     def __repr__(self):
         return f"<ROLE id={self.id} {self.title}>"
@@ -89,6 +160,13 @@ class Role(db.Model):
     def __str__(self):
         return f"{self.title}"
 
+
+class Permission:
+    FOLLOW = 1
+    SUGGEST_EDIT = 2
+    APPROVE_EDIT = 4
+    ADD = 8
+    ADMIN = 32
 
 # -- END User authentication objects --
 

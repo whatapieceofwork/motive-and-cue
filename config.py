@@ -2,6 +2,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
+    HEAD_ADMIN = "motiveandcue@gmail.com"
     JSORT_SORT_KEYS = False
     PRESERVE_CONTEXT_ON_EXCEPTION = True
     SECRET_KEY = os.environ.get("FLASK_KEY")
