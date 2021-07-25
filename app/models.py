@@ -1,19 +1,15 @@
 # """Data model."""
 
-from flask import Flask, render_template, redirect, flash, session, request
+from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin, LoginManager
+from flask_login import UserMixin
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from sqlalchemy import *
-# import os
-# from datetime import datetime
+from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
-# from crud import calculate_age_during_film
 
-db = SQLAlchemy()
 
-# -- BEGIN User authentication objects --
-
-class User(db.Model):
+class User(UserMixin, db.Model):
     """A user on the Motive and Cue website."""
 
     __tablename__ = "users"
@@ -21,8 +17,9 @@ class User(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     email = db.Column(db.String(70), unique=True, index=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
-    password_hash = db.Column(db.String(100))
-    roles = db.relationship('Role', backref=db.backref('users', lazy='dynamic'))
+    password_hash = db.Column(db.String(10000))
+    confirmed = db.Column(db.Boolean, default=False)
+    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
     
     @property
     def password(self):
@@ -34,6 +31,25 @@ class User(db.Model):
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def generate_confirmation_token(self, expiration=3600):
+        serializer = Serializer(current_app.config["SECRET_KEY"], expiration)
+        return serializer.dumps({"confirm": self.id}).decode("utf-8")
+
+    def confirm(self, token):
+        serializer = Serializer(current_app.config["SECRET_KEY"])
+        try:
+            data = serializer.loads(token.encode("utf-8"))
+            print(f"In confirm, token = {token}")
+        except:
+            return False
+        if data.get("confirm") != self.id:
+            return False
+        self.confirmed = True
+        db.session.add(self)
+        db.session.commit
+
+        return True
 
     def __repr__(self):
         return f"<USER id={self.id} {self.name}>"
@@ -51,6 +67,7 @@ class Role(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.String(50), nullable=False, unique=True)
     description = db.Column(db.String(300))
+    users = db.relationship("User", backref="role")
 
     def __repr__(self):
         return f"<ROLE id={self.id} {self.title}>"
