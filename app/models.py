@@ -124,14 +124,14 @@ class Role(db.Model):
         }
 
         default_role = "User"
-        for role in roles:
-            role = Role.query.filter_by(name=role).first()
+        for r in roles:
+            role = Role.query.filter_by(name=r).first()
             if role is None: # if role doesn't exist, create role
-                role = Role(name=role)
+                role = Role(name=r)
             role.reset_permissions()
-            for permission in roles[role]:
+            for permission in roles[r]:
                 role.add_permission(permission)
-            roles.default = (role.name == default_role)
+            role.default = (role.name == default_role)
             db.session.add(role)
             db.session.commit()
 
@@ -155,10 +155,10 @@ class Role(db.Model):
         return self.permissions & perm == perm
 
     def __repr__(self):
-        return f"<ROLE id={self.id} {self.title}>"
+        return f"<ROLE id={self.id} {self.name}>"
 
     def __str__(self):
-        return f"{self.title}"
+        return f"{self.name}"
 
 
 class Permission:

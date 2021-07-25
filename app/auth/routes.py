@@ -133,3 +133,10 @@ def reset_password(token):
         return redirect(url_for("main.index"))
         
     return render_template("auth/password_reset.html", form=form)
+
+
+@auth.route("/my_account")
+def my_account():
+    """Displays user's account page."""
+        
+    return render_template("auth/my_account.html")

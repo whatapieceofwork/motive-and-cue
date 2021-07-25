@@ -16,7 +16,7 @@ def index():
  
 #  REMOVE BEFORE LAUNCH!!
 @main.route("/reboot")
-# @admin_required
+@admin_required
 def test_reboot():
     """A wonderfully dangerous route to dump and rebuild the database for testing."""
 
