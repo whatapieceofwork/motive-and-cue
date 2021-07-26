@@ -1,9 +1,11 @@
 from flask_wtf import FlaskForm
 from wtforms import BooleanField, PasswordField, StringField, SubmitField
+from wtforms.fields.simple import TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, Regexp
 from wtforms import ValidationError
 from ..models import User
 import re
+
 
 class LoginForm(FlaskForm):
     """Form for user log-in."""
