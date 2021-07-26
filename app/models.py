@@ -7,6 +7,7 @@ from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from sqlalchemy import *
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import os
 
 db = SQLAlchemy()
 
@@ -18,6 +19,7 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     email = db.Column(db.String(70), unique=True, index=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
+    name = db.Column(db.String(150))
     about = db.Column(db.Text())
     password_hash = db.Column(db.String(10000))
     confirmed = db.Column(db.Boolean, default=False)
@@ -47,7 +49,7 @@ class User(UserMixin, db.Model):
         raise AttributeError("Password is not a readable attribute.")
 
     @password.setter
-    def password(self, password):
+    def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def verify_password(self, password):
@@ -168,7 +170,6 @@ class Role(db.Model):
 
     def __str__(self):
         return f"{self.name}"
-
 
 class Permission:
     FOLLOW = 1

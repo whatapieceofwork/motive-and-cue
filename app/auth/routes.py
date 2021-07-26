@@ -145,9 +145,9 @@ def reset_password(token):
 
 
 @auth.route("/my_account")
-def my_account():
+def account_page():
     """Displays user's account page."""
 
     title = "My Account"
         
-    return render_template("auth/my_account.html", title=title)
+    return render_template("auth/account.html", title=title)

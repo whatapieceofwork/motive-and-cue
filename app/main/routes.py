@@ -43,8 +43,13 @@ def about():
 def test_reboot():
     """A wonderfully dangerous route to dump and rebuild the database for testing."""
 
+    from app.main.seed import make_admin
+
+    db.session.commit() # closes existing database connections to prevent issues when dropping tables
     db.drop_all()
     db.create_all()
+    make_admin()
+    
     flash("Good job, you successfully broke everything!", "success")
 
     return redirect("/index/")

@@ -2,7 +2,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
-    HEAD_ADMIN = "motiveandcue@gmail.com"
+    HEAD_ADMIN = os.environ.get("ADMIN_EMAIL")
     JSORT_SORT_KEYS = False
     PRESERVE_CONTEXT_ON_EXCEPTION = True
     SECRET_KEY = os.environ.get("FLASK_KEY")
@@ -16,8 +16,8 @@ class Config:
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASS")
-    MAIL_SUBJECT_PREFIX = "[Motive and Cue] "
-    MAIL_SENDER = "Motive and Cue Admin <motiveandcue@gmail.com>"
+    MAIL_SUBJECT_PREFIX = os.environ.get("MAIL_SUBJECT_PREFIX")
+    MAIL_SENDER = os.environ.get("MAIL_SENDER")
     MAIL_SUPPRESS_SEND = False
 
     @staticmethod
