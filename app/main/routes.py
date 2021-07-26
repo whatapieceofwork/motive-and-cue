@@ -1,9 +1,12 @@
+from app.main.crud import get_user_by_username
+from app.main.errors import page_not_found
 from bs4 import BeautifulSoup
 from datetime import datetime
-from flask import flash, redirect, render_template, session, url_for, render_template_string
+from flask import abort, flash, redirect, render_template, session, url_for, render_template_string
 from . import main
 from ..decorators import admin_required, permission_required
-from app import db
+from .. import db
+from ..models import User
 
 @main.route("/")
 @main.route("/index/")
@@ -14,14 +17,44 @@ def index():
     return render_template("index.html",
                             current_time=datetime.utcnow())
  
+
+@main.route("/user/<username>")
+def user(username):
+    """Given a username in the URL, display user profile page or return 404."""
+
+    user = get_user_by_username(username)
+    if not user:
+        abort(404)
+
+    title = user.username
+    return render_template("user.html", user=user, title=title)
+
+
+@main.route("/about")
+def about():
+    """Display the About page."""
+
+    title = "About"
+    return render_template("about.html")
+
+
 #  REMOVE BEFORE LAUNCH!!
 @main.route("/reboot")
-@admin_required
 def test_reboot():
     """A wonderfully dangerous route to dump and rebuild the database for testing."""
 
     db.drop_all()
     db.create_all()
     flash("Good job, you successfully broke everything!", "success")
+
+    return redirect("/index/")
+
+#  REMOVE BEFORE LAUNCH!!
+@main.route("/refresh")
+def test_refresh():
+    """A much less dangerous route to update tables."""
+
+    db.create_all()
+    flash("Tables re-created.", "success")
 
     return redirect("/index/")

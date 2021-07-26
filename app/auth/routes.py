@@ -6,11 +6,17 @@ from .forms import LoginForm, RegistrationForm, RequestPasswordResetForm, ResetP
 from ..models import User
 from werkzeug.security import generate_password_hash
 
+@auth.before_app_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.ping()
+
 @auth.route("/login", methods=["GET", "POST"])
 def login():
     """Display login form; log user in or return error."""
 
     form = LoginForm()
+    title = "Log In"
 
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -30,7 +36,7 @@ def login():
 
         flash("Invalid username or password. Please try again or register an account.", "warning")
 
-    return render_template("auth/login.html", form=form)
+    return render_template("auth/login.html", form=form, title=title)
 
 
 @auth.route("/logout")
@@ -50,6 +56,7 @@ def register():
 
     from motiveandcue import send_email
 
+    title = "Register"
     form = RegistrationForm()
 
     if form.validate_on_submit():
@@ -65,7 +72,7 @@ def register():
         flash("A confirmation link has been emailed to you. Please confirm your account.", "primary")
         return redirect(url_for("main.index"))
 
-    return render_template("auth/register.html", form=form)
+    return render_template("auth/register.html", form=form, title=title)
 
 
 @auth.route("/confirm/<token>")
@@ -94,6 +101,7 @@ def reset_password_request():
 
     from motiveandcue import send_email
     form = RequestPasswordResetForm()
+    title = "Reset Password"
 
     if current_user.is_authenticated:
         flash("You're currently logged in. Your password can be changed on the My Account page.", "message")
@@ -111,7 +119,7 @@ def reset_password_request():
             flash("No user registered with that email address.", "error")
         return redirect(url_for("main.index"))
 
-    return render_template("auth/password_request.html", form=form)
+    return render_template("auth/password_request.html", form=form, title=title)
 
 
 @auth.route("/reset_password/<token>", methods=["GET", "POST"])
@@ -120,6 +128,7 @@ def reset_password(token):
 
     user = User.confirm_reset_token(self=User, token=token)
     form = ResetPasswordForm()
+    title = "Reset Password"
 
     if not user:
         flash("This password reset link is invalid or expired.", "error")
@@ -132,11 +141,13 @@ def reset_password(token):
         flash("Your new password has been set.", "success")
         return redirect(url_for("main.index"))
         
-    return render_template("auth/password_reset.html", form=form)
+    return render_template("auth/password_reset.html", form=form, title=title)
 
 
 @auth.route("/my_account")
 def my_account():
     """Displays user's account page."""
+
+    title = "My Account"
         
-    return render_template("auth/my_account.html")
+    return render_template("auth/my_account.html", title=title)

@@ -6,6 +6,7 @@ from flask_login import AnonymousUserMixin, UserMixin, login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from sqlalchemy import *
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -17,9 +18,12 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     email = db.Column(db.String(70), unique=True, index=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
+    about = db.Column(db.Text())
     password_hash = db.Column(db.String(10000))
     confirmed = db.Column(db.Boolean, default=False)
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
+    member_since = db.Column(db.DateTime(), default=datetime.now)
+    last_seen = db.Column(db.DateTime(), default=datetime.now)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -82,6 +86,11 @@ class User(UserMixin, db.Model):
 
         id = data.get("confirm")
         return User.query.get(id)
+
+    def ping(self):
+        self.last_seen = datetime.now()
+        db.session.add(self)
+        db.session.commit()
 
     def __repr__(self):
         return f"<USER id={self.id} {self.name}>"
