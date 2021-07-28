@@ -1,29 +1,26 @@
 {% extends "base.html" %}
 
-{% block title %}- {{interpretation.title}}{% endblock %}
-
 {% block page_content %}
-<h2>{{interpretation.title or "Interpretation"}}</h2>
-<p><em><a href="/interpretations/edit/{{interpretation.id}}">Edit Interpretation</a></em></p>
-
-<div id="interpretation-metadata">
-    <ul>
-        <li>ID: {{interpretation.id}}</li>
-        <li>Play: <a href="/plays/{{interpretation.play.id}}">{{interpretation.play.title}}</a></li>
-        <li>Film: <a href="/films/{{interpretation.film.id}}">{{interpretation.film.title}}</a></li>
-        <li>Choice: <a href="/choices/{{interpretation.choice.id}}">{{interpretation.choice.title}}</a></li>
-        <li>Title: {{interpretation.title}}</li>
-        <li>Description: {{interpretation.description}}</li>
-        {% if interpretation['characters'] %}
-        <li>Related Characters:
-            <ul>
-            {% for character in interpretation.characters%}
-                <li><a href="/characters/{{character.id}}">{{character.name}}</a></li>
-            {% endfor %}
-            </ul>
-        </li>
+    {% if current_user.isadmin() %}
+        <p><em><a href="/interpretations/edit/{{interpretation.id}}">Edit Interpretation</a></em></p>
     {% endif %}
-    </ul>
-</div>
-
+    <div id="interpretation-metadata">
+        <ul>
+            <li>ID: {{interpretation.id}}</li>
+            <li>Play: <a href="/plays/{{interpretation.play.id}}">{{interpretation.play.title}}</a></li>
+            <li>Film: <a href="/films/{{interpretation.film.id}}">{{interpretation.film.title}}</a></li>
+            <li>Choice: <a href="/choices/{{interpretation.choice.id}}">{{interpretation.choice.title}}</a></li>
+            <li>Title: {{interpretation.title}}</li>
+            <li>Description: {{interpretation.description}}</li>
+            {% if interpretation['characters'] %}
+            <li>Related Characters:
+                <ul>
+                {% for character in interpretation.characters%}
+                    <li><a href="/characters/{{character.id}}">{{character.name}}</a></li>
+                {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
+        </ul>
+    </div>
 {% endblock %}

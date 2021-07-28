@@ -16,8 +16,9 @@ def index():
     from motiveandcue import send_email
     # send_email("motiveandcue@gmail.com", "Test", "testemail")
 
+    title = "Home"
     return render_template("index.html",
-                            current_time=datetime.utcnow())
+                            current_time=datetime.utcnow(), title=title)
  
 
 @main.route("/admin", methods=["GET", "POST"])
@@ -82,7 +83,7 @@ def profile_edit_admin(id):
     form.about.data = user.about
 
     title = "Edit User Profile"
-    return render_template("profile_edit.html", form=form, user=user)
+    return render_template("profile_edit.html", form=form, user=user, title=title)
 
 
 @main.route("/user/<username>")
@@ -102,7 +103,7 @@ def about():
     """Display the About page."""
 
     title = "About"
-    return render_template("about.html")
+    return render_template("about.html", title=title)
 
 
 # ----- BEGIN: SCENE VIEWS ----- #
@@ -119,11 +120,14 @@ def view_scenes(shortname=None, id=None):
             return redirect("/scenes/")
         play = get_play_by_shortname(shortname)
         scenes = get_all_scenes_by_play(play)
-        return render_template("scenes-view.html", play=play, scenes=scenes)
+
+        title = f"{play.title} Scenes"
+        return render_template("scenes-view.html", play=play, scenes=scenes, title=title)
 
     elif id:
         scene = Scene.query.get(id)
-        return render_template("scene.html", scene=scene)
+        title = f"Act {scene.act}, Scene {scene.scene} from {scene.play.title}"
+        return render_template("scene.html", scene=scene, title=title)
 
     form = ChoosePlayForm()
     if form.validate_on_submit():
@@ -135,12 +139,14 @@ def view_scenes(shortname=None, id=None):
 
         return redirect(f"/scenes/{shortname}/")
 
-    return render_template("scenes-view.html", 
-                            form=form)
+    title = "Scenes"
+    return render_template("scenes-view.html", form=form, title=title)
 
 
 @main.route("/scenes/add/", methods=["GET", "POST"])
 @main.route("/scenes/add/<string:shortname>/", methods=["GET", "POST"])
+@login_required
+@admin_required
 def add_scenes(shortname=None):
     """Add scenes by play shortname using Folger scene information. Prompt for play if not given in URL."""
 
@@ -150,22 +156,24 @@ def add_scenes(shortname=None):
             flash("Please select a valid play.")
             return redirect("/scenes/add/")
         scenes = parse_folger_scene_descriptions(play)
-        return render_template("scenes-edit.html", 
-                                play=play, 
-                                scenes=scenes)
+
+        title = "Add Scenes"
+        return render_template("scenes-edit.html", play=play, scenes=scenes, title=title)
 
     form = ChoosePlayForm()
     if form.validate_on_submit():
         shortname = form.play.data
         return redirect(f"/scenes/add/{shortname}/")
 
-    return render_template("scenes-edit.html", 
-                            form=form)
+    title = "Add Scenes"
+    return render_template("scenes-edit.html", form=form, title=title)
 
 
 @main.route("/scenes/edit/", methods=["GET", "POST"])
 @main.route("/scenes/edit/<string:shortname>/", methods=["GET", "POST"])
 @main.route("/scenes/edit/<int:id>/", methods=["GET", "POST"])
+@login_required
+@admin_required
 def edit_scenes(shortname=None, id=None):
     """Edit all scenes by play shortname, or a specific scene by scene id. Prompt for play if not given in URL."""
 
@@ -213,10 +221,8 @@ def edit_scenes(shortname=None, id=None):
 
         characters = get_all_characters_by_play(play)
 
-        return render_template("scenes-edit.html", 
-                                play=play, 
-                                scenes=scenes,
-                                characters=characters)
+        title = f"Edit {play.title} Scenes"
+        return render_template("scenes-edit.html", play=play, scenes=scenes, characters=characters, title=title)
     
     elif id: # Edit a single scene
         scene = Scene.query.get(id)
@@ -230,9 +236,8 @@ def edit_scenes(shortname=None, id=None):
 
             return redirect(f"/scenes/{id}/")
     
-        return render_template("scenes-edit.html",
-                                scene=scene,
-                                form=form)
+        title = f"Edit Act {scene.act}, Scene {scene.scene} from {scene.play.title}"
+        return render_template("scenes-edit.html", scene=scene, form=form, title=title)
 
     else: # Choose a play to edit scenes for
         form = ChoosePlayForm()
@@ -240,8 +245,8 @@ def edit_scenes(shortname=None, id=None):
             shortname = form.play.data
             return redirect(f"/scenes/edit/{shortname}/")
 
-    return render_template("choose-play.html", 
-                    form=form)
+    title = "Edit Scenes"
+    return render_template("choose-play.html", form=form, title=title)
 
 # ----- END: SCENE ROUTES ----- #
 
@@ -260,11 +265,15 @@ def view_characters(shortname=None, id=None):
             flash("Please select a valid play.")
             return redirect("/characters/")
         characters = get_all_characters_by_play(play)
-        return render_template("characters-view.html", play=play, characters=characters)
+
+        title = f"{play.title} Characters"
+        return render_template("characters-view.html", play=play, characters=characters, title=title)
         
     elif id:
         character = Character.query.get(id)
-        return render_template("character.html", character=character)
+
+        title = f"{character.name} from {character.play.title}"
+        return render_template("character.html", character=character, title=title)
 
     form = ChoosePlayForm()
     if form.validate_on_submit():
@@ -276,12 +285,14 @@ def view_characters(shortname=None, id=None):
 
         return redirect(f"/characters/{shortname}/")
 
-    return render_template("characters-view.html", 
-                            form=form)
+    title = "Characters"
+    return render_template("characters-view.html", form=form, title=title)
 
 
 @main.route("/characters/add/", methods=["GET", "POST"])
 @main.route("/characters/add/<string:shortname>/", methods=["GET", "POST"])
+@login_required
+@admin_required
 def add_characters(shortname=None):
     """Add characters by play shortname using Folger character information. Prompt for play if not given in URL."""
 
@@ -292,24 +303,25 @@ def add_characters(shortname=None):
             return redirect("/characters/add/")
         characters = get_all_characters_by_play(play)
         scenes = get_all_scenes_by_play(play)
-        return render_template("characters-edit.html", 
-                                play=play, 
-                                characters=characters,
-                                genders=GENDERS,
-                                scenes=scenes)
+
+        title = f"Add {play.title} Characters"
+        return render_template("characters-edit.html", play=play, characters=characters, 
+                                genders=GENDERS, scenes=scenes, title=title)
 
     form = ChoosePlayForm()
     if form.validate_on_submit():
         shortname = form.play.data
         return redirect(f"/characters/add/{shortname}/")
 
-    return render_template("choose-play.html", 
-                            form=form)
+    title = "Add Characters"
+    return render_template("choose-play.html", form=form, title=title)
 
 
 @main.route("/characters/edit/", methods=["GET", "POST"])
 @main.route("/characters/edit/<string:shortname>/", methods=["GET", "POST"])
 @main.route("/characters/edit/<int:id>/", methods=["GET", "POST"])
+@login_required
+@admin_required
 def edit_characters(shortname=None, id=None):
     """Edit all characters by play shortname, or a specific character by character id."""
 
@@ -335,6 +347,7 @@ def edit_characters(shortname=None, id=None):
             if quote and scene:
                 add_quote(play=play, character=character, scene=scene, text=quote)
 
+        title = f"Edit {play.title} Characters"
         return redirect(f"/characters/{shortname}/")
 
     elif shortname:
@@ -346,11 +359,9 @@ def edit_characters(shortname=None, id=None):
         characters = get_all_characters_by_play(play)
         scenes = get_all_scenes_by_play(play)
 
-        return render_template("characters-edit.html", 
-                                play=play, 
-                                scenes=scenes,
-                                characters=characters,
-                                genders=GENDERS)
+        title = f"Edit {play.title} Characters"
+        return render_template("characters-edit.html", play=play, scenes=scenes, 
+                                characters=characters, genders=GENDERS, title=title)
     
     elif id:
         character = Character.query.get(id)
@@ -364,9 +375,8 @@ def edit_characters(shortname=None, id=None):
 
             return redirect(f"/characters/{id}/")
     
-        return render_template("characters-edit.html",
-                                character=character,
-                                form=form)
+        title = f"Edit {character.title} from {character.play.title}"
+        return render_template("characters-edit.html", character=character, form=form, title=title)
 
     else:
         form = ChoosePlayForm()
@@ -374,8 +384,8 @@ def edit_characters(shortname=None, id=None):
             shortname = form.play.data
             return redirect(f"/characters/edit/{shortname}/")
 
-    return render_template("characters-edit.html", 
-                    form=form)
+    title = "Edit Characters"
+    return render_template("characters-edit.html", form=form, title=title)
 
 # ----- END: CHARACTER ROUTES ----- #
 
@@ -394,11 +404,15 @@ def view_questions(shortname=None, id=None):
             flash("Please select a valid play.")
             return redirect("/questions/")
         questions = get_all_questions_by_play(play)
-        return render_template("questions-view.html", play=play, questions=questions)
+
+        title = f"Textual Questions from {play.title}"
+        return render_template("questions-view.html", play=play, questions=questions, title=title)
         
     elif id:
         question = Question.query.get(id)
-        return render_template("question.html", question=question)
+
+        title = f"{question.title}"
+        return render_template("question.html", question=question, title=title)
 
     form = ChoosePlayForm()
     if form.validate_on_submit():
@@ -410,12 +424,14 @@ def view_questions(shortname=None, id=None):
 
         return redirect(f"/questions/{shortname}/")
 
-    return render_template("questions-view.html", 
-                            form=form)
+    title = "Textual Questions"
+    return render_template("questions-view.html", form=form, title=title)
 
 
 @main.route("/questions/add/", methods=["GET", "POST"])
 @main.route("/questions/add/<string:shortname>/", methods=["GET", "POST"])
+@login_required
+@admin_required
 def add_questions(shortname=None):
     """Add questions by play shortname. Prompt for play if not given in URL."""
 
@@ -444,25 +460,25 @@ def add_questions(shortname=None):
         questions = get_all_questions_by_play(play)
         scenes = get_all_scenes_by_play(play)
         characters = get_all_characters_by_play(play)
-        return render_template("questions-edit.html", 
-                                form=form,
-                                play=play, 
-                                questions=questions,
-                                characters=characters,
-                                scenes=scenes)
+
+        title = f"Edit {play.title} Characters"
+        return render_template("questions-edit.html", form=form, play=play, questions=questions, 
+                                characters=characters, scenes=scenes, title=title)
 
     form = ChoosePlayForm()
     if form.validate_on_submit():
         shortname = form.play.data
         return redirect(f"/questions/add/{shortname}/")
 
-    return render_template("choose-play.html", 
-                            form=form)
+    title = "Textual Questions"
+    return render_template("choose-play.html", form=form, title=title)
 
 
 @main.route("/questions/edit/", methods=["GET", "POST"])
 @main.route("/questions/edit/<string:shortname>/", methods=["GET", "POST"])
 @main.route("/questions/edit/<int:id>/", methods=["GET", "POST"])
+@login_required
+@admin_required
 def edit_questions(shortname=None, id=None):
     """Edit all questions by play shortname, or a specific question by question id."""
 
@@ -474,9 +490,8 @@ def edit_questions(shortname=None, id=None):
 
         questions = get_all_questions_by_play(play)
 
-        return render_template("/questions-edit.html", 
-                                questions=questions,
-                                play=play)
+        title = f"Edit Textual Questions from {play.title}"
+        return render_template("/questions-edit.html", questions=questions, play=play, title=title)
     
     elif id:
         question = Question.query.get(id)
@@ -503,19 +518,18 @@ def edit_questions(shortname=None, id=None):
 
             return redirect(f"/questions/{id}/")
 
-        return render_template("questions-edit.html",
-                                question=question,
-                                form=form)
+        title = f"Edit {question.title}"
+        return render_template("questions-edit.html", question=question, form=form, title=title)
 
     form = ChoosePlayForm()
     if form.validate_on_submit():
         shortname = form.play.data
         return redirect(f"/questions/edit/{shortname}/")
 
-    return render_template("questions-edit.html", 
-                    form=form)
+    title = "Edit Textual Questions"
+    return render_template("questions-edit.html", form=form, title=title)
 
-# ----- END: CHOICE VIEWS ----- #
+# ----- END: QUESTION VIEWS ----- #
 
 
 # ----- BEGIN: INTERPRETATION VIEWS ----- #
@@ -532,11 +546,15 @@ def view_interpretations(shortname=None, id=None):
             flash("Please select a valid play.")
             return redirect("/interpretations/")
         interpretations = get_all_interpretations_by_play(play)
-        return render_template("interpretations-view.html", play=play, interpretations=interpretations)
+
+        title = f"{play.title} Film Interpretations"
+        return render_template("interpretations-view.html", play=play, interpretations=interpretations, title=title)
         
     elif id:
         interpretation = Interpretation.query.get(id)
-        return render_template("interpretation.html", interpretation=interpretation)
+
+        title = f"{interpretation.title}"
+        return render_template("interpretation.html", interpretation=interpretation, title=title)
 
     form = ChoosePlayForm()
     if form.validate_on_submit():
@@ -548,13 +566,15 @@ def view_interpretations(shortname=None, id=None):
 
         return redirect(f"/interpretations/{shortname}/")
 
-    return render_template("interpretations-view.html", 
-                            form=form)
+    title = "Film Interpretations"
+    return render_template("interpretations-view.html", form=form, title=title)
 
 
 @main.route("/interpretations/add/", methods=["GET", "POST"])
 @main.route("/interpretations/add/<string:shortname>/", methods=["GET", "POST"])
 @main.route("/interpretations/add/<int:question_id>/", methods=["GET", "POST"])
+@login_required
+@admin_required
 def add_interpretations(shortname=None, question_id=None):
     """Add interpretations by play shortname or by related Question ID. Prompt for play if not given in URL."""
 
@@ -593,8 +613,8 @@ def add_interpretations(shortname=None, question_id=None):
             shortname = form.play.data
             return redirect(f"/interpretations/add/{shortname}/")
 
-    return render_template("interpretations-edit.html",
-                                    form=form) 
+    title = "Add Film Interpretations"
+    return render_template("interpretations-edit.html", form=form, title=title) 
 
 
 @main.route("/interpretations/edit/", methods=["GET", "POST"])
@@ -607,9 +627,9 @@ def edit_interpretations(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         interpretations = get_all_interpretations_by_play(play)
 
-        return render_template("/interpretations-edit.html", 
-                                interpretations=interpretations,
-                                play=play)
+        title = f"Edit {play.title} Film Interpretations"
+        return render_template("/interpretations-edit.html", interpretations=interpretations,
+                                play=play, title=title)
 
     elif id:
         interpretation = Interpretation.query.get(id)
@@ -632,18 +652,16 @@ def edit_interpretations(shortname=None, id=None):
 
             return redirect(f"/interpretations/{interpretation.id}/")
 
-    
-        return render_template("interpretations-edit.html",
-                                interpretation=interpretation,
-                                form=form)
+        title = f"Edit {interpretation.title}"
+        return render_template("interpretations-edit.html", interpretation=interpretation, form=form, title=title)
 
     form = ChoosePlayForm()
     if form.validate_on_submit():
         shortname = form.play.data
         return redirect(f"/interpretations/edit/{shortname}/")
 
-    return render_template("interpretations-edit.html", 
-                    form=form)
+    title = "Edit Film Interpretations"
+    return render_template("interpretations-edit.html", form=form, title=title)
 
 # ----- END: INTERPRETATION VIEWS ----- #
 
@@ -666,11 +684,15 @@ def view_plays(shortname=None, id=None):
             flash("Please select a valid play.")
             return redirect("/plays/")   
         else:
-            return render_template("play.html", play=play)
+
+            title = play.title
+            return render_template("play.html", play=play, title=title)
         
     else:
         plays = Play.query.all()
-        return render_template("plays-view.html", plays=plays)
+
+        title = "Plays"
+        return render_template("plays-view.html", plays=plays, title=title)
 
 # ----- END: PLAY VIEWS ----- #
 
@@ -690,7 +712,9 @@ def view_films(shortname=None, id=None):
             return redirect("/films/")
         
         films = get_films_by_play(play)
-        return render_template("films-view.html", films=films, play=play)
+
+        title = f"{play.title} Films"
+        return render_template("films-view.html", films=films, play=play, title=title)
 
     elif id:
         film = Film.query.get(id)
@@ -702,7 +726,9 @@ def view_films(shortname=None, id=None):
             hamlet_actor = CharacterActor.query.filter((CharacterActor.film_id == film.id) & (CharacterActor.character == hamlet)).first()
             hamlet_actor = hamlet_actor.person
             hamlet_age = calculate_age_during_film(hamlet_actor, film)
-        return render_template("film.html", film=film, play=play, parts_played=parts_played, hamlet_age=hamlet_age)
+
+        title = f"{film.title} - {film.release_date}"
+        return render_template("film.html", film=film, play=play, parts_played=parts_played, hamlet_age=hamlet_age, title=title)
         
     else:
         films = Film.query.all()
@@ -715,7 +741,8 @@ def view_films(shortname=None, id=None):
 
             return redirect(f"/films/{shortname}/")
 
-        return render_template("films-view.html", films=films, form=form)
+        title = "Films"
+        return render_template("films-view.html", films=films, form=form, title=title)
 
 # ----- END: PLAY VIEWS ----- #
 
@@ -726,8 +753,8 @@ def view_films(shortname=None, id=None):
 def add_new_film():
     """Prompts user for play and MovieDB ID to add film information via API."""
 
-    return render_template("film-add.html",
-                            play_titles = play_titles)
+    title = "Add a Film"
+    return render_template("film-add.html", play_titles=play_titles, title=title)
 
 
 @main.route("/process-film/")
@@ -746,14 +773,9 @@ def process_film():
     character_names = [character.name for character in play.characters]
     character_names.sort()
 
-    return render_template("film-verify.html",
-                            details=details,
-                            cast=cast,
-                            crew=crew,
-                            play=play,
-                            genders=GENDERS,
-                            character_names=character_names,
-                            )
+    title = "Verify Film Information"
+    return render_template("film-verify.html", details=details, cast=cast, crew=crew,
+                            play=play, genders=GENDERS, character_names=character_names, title=title)
 
 
 @main.route("/add-film-to-db/", methods = ["POST"])
@@ -805,9 +827,8 @@ def add_film_to_db():
 
             people.append(person)
 
-    return render_template("submit-form.html",
-                            film=film,
-                            people=people)
+    title = "Add Film"
+    return render_template("submit-form.html", film=film, people=people, title=title)
 
 # ----- END: PROCESS FILM ----- #
 

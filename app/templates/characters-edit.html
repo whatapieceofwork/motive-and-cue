@@ -1,57 +1,54 @@
 {% extends "base.html" %}
 
-{% block title %}- Edit Characters{% endblock %}
-
 {% block page_content %}
-{% if play %}
-    <h2>Edit Character List for {{play.title}}</h2>
-{% else %}    
-    {{ render_form(form) }}
-{% endif %}
+    {% if play and current_user.is_admin() %}
+        <h2>Edit Character List for {{play.title}}</h2>
+    {% else %}    
+        {{ render_form(form) }}
+    {% endif %}
 
 
-{% if characters %}
-    <div id="characters-metadata">
-        <form action="/characters/edit/{{play.shortname}}/" method="post">
-            <input type="hidden" id="play" name="play" value="{{play.title}}">
+    {% if characters %}
+        <div id="characters-metadata">
+            <form action="/characters/edit/{{play.shortname}}/" method="post">
+                <input type="hidden" id="play" name="play" value="{{play.title}}">
 
-        {% for character in characters %}
-            <div id="character-metadata">
-                <ul>
-                    <input type="hidden" id="id-{{loop.index0}}" name="id-{{loop.index0}}" value="{{character['id']}}">
-                    <li><label for "name">Name</label> 
-                        <input type="text" name="name-{{loop.index0}}" id="name-{{loop.index0}}" placeholder="{{character['name']}}" value="{{character['name']}}"></li>
-                    <li><label for "gender">Canonical Gender</label><br />
-                            {% set character_loop = loop %}
-                            {% for key, value in genders.items() %}
-                                {% if character.gender != 0 and key == (character['gender']|int) %}
-                                    <input checked type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}}>
-                                {% elif key == 2 %}
-                                    <input checked type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}}>
-                                {% else %}
-                                    <input type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}}>
-                                {% endif %}
-                                <label for="{{key}}">{{value}}</label><br>
-                            {% endfor %}
-                        </li>
-                    <li><label for "description-{{loop.index0}}">Add a Quote</label> 
-                            <textarea name="quote-{{loop.index0}}" id="quote-{{loop.index0}}"></textarea></li>
-                    <li><label for "quote-scene-{{loop.index0}}">Quote Scene</label>
-                        <select name="quote-scene-{{loop.index0}}" id="quote-scene-{{loop.index0}}">
-                            {% for scene in scenes %}
-                                <option value="{{scene.id}}">{{scene.act}}.{{scene.scene}}{% if scene.title %}: {{scene.title}}{% endif %}</option>
-                            {% endfor %}
-                        </select></li>
-                    {% if loop.last %}
-                        <input type="hidden" id="character_count" name="character_count" value="{{loop.index0}}">
-                    {% endif %}
-                </ul>
-            </div>
-        {% endfor %}
+            {% for character in characters %}
+                <div id="character-metadata">
+                    <ul>
+                        <input type="hidden" id="id-{{loop.index0}}" name="id-{{loop.index0}}" value="{{character['id']}}">
+                        <li><label for "name">Name</label> 
+                            <input type="text" name="name-{{loop.index0}}" id="name-{{loop.index0}}" placeholder="{{character['name']}}" value="{{character['name']}}"></li>
+                        <li><label for "gender">Canonical Gender</label><br />
+                                {% set character_loop = loop %}
+                                {% for key, value in genders.items() %}
+                                    {% if character.gender != 0 and key == (character['gender']|int) %}
+                                        <input checked type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}}>
+                                    {% elif key == 2 %}
+                                        <input checked type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}}>
+                                    {% else %}
+                                        <input type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}}>
+                                    {% endif %}
+                                    <label for="{{key}}">{{value}}</label><br>
+                                {% endfor %}
+                            </li>
+                        <li><label for "description-{{loop.index0}}">Add a Quote</label> 
+                                <textarea name="quote-{{loop.index0}}" id="quote-{{loop.index0}}"></textarea></li>
+                        <li><label for "quote-scene-{{loop.index0}}">Quote Scene</label>
+                            <select name="quote-scene-{{loop.index0}}" id="quote-scene-{{loop.index0}}">
+                                {% for scene in scenes %}
+                                    <option value="{{scene.id}}">{{scene.act}}.{{scene.scene}}{% if scene.title %}: {{scene.title}}{% endif %}</option>
+                                {% endfor %}
+                            </select></li>
+                        {% if loop.last %}
+                            <input type="hidden" id="character_count" name="character_count" value="{{loop.index0}}">
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endfor %}
 
-    <input type="submit" value="Submit">
-</form>
-{% endif %}
-
+        <input type="submit" value="Submit">
+    </form>
+    {% endif %}
 
 {% endblock %}

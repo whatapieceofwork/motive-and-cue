@@ -1,22 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}- Edit Interpretations{% endblock %}
-
 {% block page_content %}
-{% if play %}
-    <h2>Edit Interpretations for {{play.title}}</h2>
-    <p><em><a href="/interpretations/add/{{play.shortname}}">Add {{play.title}} interpretations</a></em></p>
-{% endif %}    
-{% if form %}
-    {{ render_form(form) }}
-{% elif interpretations %}
-<div class="interpretations-list">
-    <ul>
-        {% for interpretation in interpretations %}
-            <li><a href="/interpretations/{{interpretation.id}}">{{interpretation.title}}</a></li>
-        {% endfor %}
-    </ul>
-</div>
-{% endif %}
-
+    {% if play and current_user.is_admin() %}
+        <h2>Edit Interpretations for {{play.title}}</h2>
+        <p><em><a href="/interpretations/add/{{play.shortname}}">Add {{play.title}} interpretations</a></em></p>
+    {% endif %}    
+    {% if form %}
+        {{ render_form(form) }}
+    {% elif interpretations %}
+    <div class="interpretations-list">
+        <ul>
+            {% for interpretation in interpretations %}
+                <li><a href="/interpretations/{{interpretation.id}}">{{interpretation.title}}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 {% endblock %}

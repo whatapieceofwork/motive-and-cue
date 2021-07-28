@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block h1 %}Hello{% if current_user.is_authenticated %}, {{ current_user.username }}{% endif %}.{% endblock %}
+{% block h2 %}Hello{% if current_user.is_authenticated %}, {{ current_user.username }}{% endif %}.{% endblock %}
 
 {% block page_content %}
     <div>

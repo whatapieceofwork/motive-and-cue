@@ -1,9 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}- {{page_title}}{% endblock %}
-
 {% block page_content %}
-<h2>{{page_title or "Page Title"}}</h2>
-{{ form }}
-{{ render_form(form) }}
+    {{ form }}
+    {{ render_form(form) }}
 {% endblock %}

@@ -1,9 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}- {{play.title}}{% endblock %}
-
 {% block page_content %}
-    <h2>{{play.title}}</h2>
     <ul>
         <li><a href="/films/{{play.shortname}}">Film adaptations</a></li>
         <li><a href="/characters/{{play.shortname}}">Characters</a></li>
@@ -13,7 +10,10 @@
     </ul>
 
     <h3>Scene List</h3>
-    <p><em><a href="/scenes/edit/{{play.shortname}}">Edit scenes</a></em></p>
+    
+    {% if current_user.isadmin() %}
+        <p><em><a href="/scenes/edit/{{play.shortname}}">Edit Scenes</a></em></p>
+    {% endif %}
 
     {% if play.scenes %}
         <div id="scenes-metadata">
