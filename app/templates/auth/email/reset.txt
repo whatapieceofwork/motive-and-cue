@@ -1,0 +1,10 @@
+Dear {{ user.username }},
+
+To reset your password, please click on the following link:
+
+{{ url_for("auth.reset_password", token=token, _external=True) }}
+
+If you have not requested a password reset, feel free to ignore this message. Your password will not be changed.
+
+Sincerely, 
+The Motive and Cue Team

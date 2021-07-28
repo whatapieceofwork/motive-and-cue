@@ -1,0 +1,10 @@
+Dear {{ user.username }},
+
+Welcome to Motive and Cue!
+
+To confirm your account, please click on the following link:
+
+{{ url_for("auth.confirm", token=token, _external=True) }}
+
+Sincerely,
+The Motive and Cue Team

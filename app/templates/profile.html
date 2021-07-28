@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+    <div class="col-md-6">
+        {% if user == current_user %}
+        <div>
+            <a class="btn btn-primary float-end" href="{{ url_for('.profile_edit') }}">
+                Edit Profile
+            </a>
+        </div>
+        {% endif %}
+        {% if current_user.is_admin() %}
+        <div>
+            <a class="btn btn-danger float-end" href="{{ url_for('.profile_edit_admin', id=user.id) }}">
+                Edit Profile [Admin]
+            </a>
+        </div>
+        {% endif %}
+
+        {% if user.about %}
+            <p>{{ user.about }}</p>
+        {% endif %}
+
+        <p>Member since {{ moment(user.member_since).format("L") }}.</p>
+        <p>Last seen {{ moment(user.last_seen).fromNow() }}.</p>
+        {% if current_user.is_admin() %}
+            <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
+        {% endif %}
+    </div>
+{% endblock %}

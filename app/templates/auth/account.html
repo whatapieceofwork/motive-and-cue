@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+    <div class="col-md-4">
+        <p>User: {{ current_user.username }}</p>
+        <p>Account confirmed: {{ current_user.is_authenticated }}</p>
+        <p>Account type: {{ current_user.role }}</p>
+    </div>
+{% endblock %}
