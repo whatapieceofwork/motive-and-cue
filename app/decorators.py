@@ -4,7 +4,7 @@ from flask_login import current_user
 from .models import Permission
 
 def permission_required(permission):
-    """Wraps a function in a permission check; returns 403 error if check failed."""
+    """Wraps a function in a permission check; returns 403 error if check fails."""
 
     def decorator(f):
         @wraps(f)
@@ -17,6 +17,6 @@ def permission_required(permission):
 
 
 def admin_required(f):
-    """Wraps a function in an admin-only permission check."""
+    """Wraps a function in an admin-only permission check; returns 403 error if check fails."""
 
     return permission_required(Permission.ADMIN)(f)
