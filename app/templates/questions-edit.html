@@ -2,10 +2,9 @@
 
 {% block page_content %}
     {% if play and current_user.is_admin() %}
-        <h2>Edit Choices for {{play.title}}</h2>
         <p><em><a href="/choices/add/{{play.shortname}}/">Add {{play.title}} choices</a></em></p>
     {% endif %}
-        
+
     {% if form %}
         {{ render_form(form) }}
     {% elif choices %}

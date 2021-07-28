@@ -2,7 +2,6 @@
 
 {% block page_content %}
     {% if play and current_user.is_admin() %}
-        <h2>Edit Interpretations for {{play.title}}</h2>
         <p><em><a href="/interpretations/add/{{play.shortname}}">Add {{play.title}} interpretations</a></em></p>
     {% endif %}    
     {% if form %}

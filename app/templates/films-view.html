@@ -1,17 +1,13 @@
 {% extends "base.html" %}
 
-    {% block page_content %}
-
-    <h2>{% if play %}{{play.title}} {% endif %}Films Currently in the Database</h2>
-        <p><em><a href="/films">View all films</a></em></br>
-        {% if current_user.is_admin() %}
-            <em><a href="/add-film">Add a film</a></em></p>
-        {% endif %}
+{% block page_content %}
+    <p><em><a href="/films">View all films</a></em></br>
+    {% if current_user.is_admin() %}
+        <em><a href="/add-film">Add a film</a></em></p>
+    {% endif %}
     {% if form %}
         <p>View films by play
         {{ render_form(form) }}</p>
-    {% else %}
-
     {% endif %}
 
     {% if films %}
@@ -19,7 +15,7 @@
         {% for film in films %}
             <div id="film-metadata">
                 <ul>
-                    <h3><a href="/films/{{film.id}}">{{film.title}}</a></h2>
+                    <h3><a href="/films/{{film.id}}">{{film.title}}</a></h3>
                     <div><img class="tiny-poster" src="{{film.poster_path}}" alt="{{film.title}} film poster"></div>
                     <ul>
                         <li>Adaptation of: <em><a href="/plays/{{film.play.shortname}}">{{film.play.title}}</a></em>

@@ -1,9 +1,6 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-
-    <h2>Verify Film Information</h2>
-
     <div id="film-metadata">
         <form action="/add-film-to-db/" method="post">
     {% if details['poster_path'] %}
@@ -95,5 +92,4 @@
 
     <input type="submit" value="Submit">
     </form>
-
 {% endblock %}

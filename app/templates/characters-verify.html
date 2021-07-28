@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    <h2>Verify Character List for {{play.title}}</h2>
-
     <div id="characters-metadata">
         <form action="/edit-characters/" method="post">
 
@@ -40,5 +38,4 @@
 
     <input type="submit" value="Submit">
     </form>
-
 {% endblock %}

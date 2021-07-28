@@ -1,12 +1,9 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    {% if play and current_user.is_admin() %}
-        <h2>Edit Character List for {{play.title}}</h2>
-    {% else %}    
+    {% if form %}
         {{ render_form(form) }}
     {% endif %}
-
 
     {% if characters %}
         <div id="characters-metadata">

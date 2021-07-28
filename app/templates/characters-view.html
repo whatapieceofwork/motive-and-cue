@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    {% if play %}
-        <h2>Character List for {{play.title}}</h2>
+    {% if current_user.is_admin() %}
         <p><em><a href="/characters/edit/{{play.shortname}}/">Edit characters</a></em></p>
-    {% else %}    
+    {% endif %}
+    {% if form %}    
         {{ render_form(form) }}
     {% endif %}
 
