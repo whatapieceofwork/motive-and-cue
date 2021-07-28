@@ -2,7 +2,7 @@
 import os
 from app import create_app, db, login_manager
 from app.main.crud import get_user
-from app.models import User, Role
+from app.models import *
 from flask import render_template
 from flask_login import LoginManager, login_required, set_login_view
 from flask_mail import Message
@@ -13,7 +13,7 @@ app.app_context().push()
 
 # migrate = Migrate(app, db)
 
-@login_manager.user_loader
+@current_app.login_manager.user_loader
 def load_user(user_id):
     try:
         return User.query.get(user_id)
@@ -49,7 +49,7 @@ def send_email(to, subject, template, **kwargs):
 def make_shell_context():
     """Sets the Flask shell to automatically import database object models."""
 
-    return dict(db=db, User=User, Role=Role)
+    return dict(db=db, User=User, Role=Role, Character=Character, Question=Question, Film=Film, Interpretation=Interpretation, Job=Job, Person=Person, Play=Play, Scene=Scene, Topic=Topic, Quote=Quote, CharacterScene=CharacterScene, SceneQuestion=SceneQuestion, CharacterInterpretation=CharacterInterpretation, SceneInterpretation=SceneInterpretation, PersonJob=PersonJob, CharacterActor=CharacterActor, CharacterTopic=CharacterTopic, SceneTopic=SceneTopic)
 
 
 @app.cli.command()
