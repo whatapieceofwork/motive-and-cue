@@ -2,14 +2,14 @@
 
 {% block title %}- Edit Scenes{% endblock %}
 
-{% block content %}
+{% block page_content %}
 {% if play %}
     <h2>Edit Scene List for {{play.title or "Play"}}</h2>
     <p><em><a href="/scenes/add/{{play.shortname}}/">Add scenes</a></em></p>
 {% endif %}
 
 {% if form %}
-    {{ wtf.quick_form(form) }}
+    {{ render_form(form) }}
 {% else %}
 
 {% if scenes %}

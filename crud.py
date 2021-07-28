@@ -1,28 +1,13 @@
 """Create, Read, Update, Delete Operations. Listed alphabetically by section."""
 
-from flask import Flask, render_template, redirect, flash, session, request
+from app.models import *
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import exists
-from bs4 import BeautifulSoup
-from datetime import datetime
-import jinja2
 import os
 import random
-import requests
-import re #regex
-import json
-from data_models import * 
-# from folger_parser import parse_folger_characters, parse_folger_scenes
-from folger_parser import *
-from moviedb_parser import parse_moviedb_film_details
+from app.main.folger_parser import *
+from app.main.moviedb_parser import parse_moviedb_film_details
 from forms import *
-
-FLASK_KEY = os.environ["FLASK_KEY"]
-MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
-db = SQLAlchemy()
-
-
-play_titles = {"AWW": "All's Well That Ends Well", "Ant": "Antony and Cleopatra", "AYL": "As You Like It", "Err": "The Comedy of Errors", "Cor": "Coriolanus", "Cym": "Cymbeline", "Ham": "Hamlet", "1H4": "Henry IV, Part 1", "2H4": "Henry IV, Part 2", "H5": "Henry V", "1H6": "Henry VI, Part 1", "2H6": "Henry VI, Part 2", "3H6": "Henry VI, Part 3", "H8": "Henry VIII", "JC": "Julius Caesar", "Jn": "King John", "Lr": "King Lear", "LLL": "Love's Labor's Lost", "Mac": "Macbeth", "MM": "Measure for Measure", "MV": "The Merchant of Venice", "Wiv": "The Merry Wives of Windsor", "MND": "A Midsummer Night's Dream", "Ado": "Much Ado About Nothing", "Oth": "Othello", "Per": "Pericles", "R2": "Richard II", "R3": "Richard III", "Rom": "Romeo and Juliet", "Shr": "The Taming of the Shrew", "Tmp": "The Tempest", "Tim": "Timon of Athens", "Tit": "Titus Andronicus", "Tro": "Troilus and Cressida", "TN": "Twelfth Night", "TGV": "The Two Gentlemen of Verona", "TNK": "The Two Noble Kinsmen", "WT": "The Winter's Tale"}
 
 
 # ----- BEGIN: AUTHORIZATION FUNCTIONS ----- #
@@ -75,40 +60,40 @@ def add_all_characters(play):
     return Character.query.filter(Character.play_id == play.id).all()
 
 
-def add_choice(play, title, description):
-    """Create and return a new Choice database record."""
+def add_question(play, title, description):
+    """Create and return a new Question database record."""
 
-    choice = Choice(play_id=play.id, title=title, description=description)
+    question = Question(play_id=play.id, title=title, description=description)
 
-    db.session.add(choice)
+    db.session.add(question)
     db.session.commit()
 
-    print(f"********* Created {choice} *********")
-    return choice
+    print(f"********* Created {question} *********")
+    return question
 
 
-def add_choice_character(choice, character):
-    """Create and return a new ChoiceCharacter database record."""
+def add_question_character(question, character):
+    """Create and return a new CharacterQuestion database record."""
 
-    choice_character = ChoiceCharacter(choice_id=choice.id, character_id=character.id)
+    question_character = CharacterQuestion(question_id=question.id, character_id=character.id)
 
-    db.session.add(choice_character)
+    db.session.add(question_character)
     db.session.commit()
 
-    print(f"********* Created {choice_character} *********")
-    return choice_character
+    print(f"********* Created {question_character} *********")
+    return question_character
     
     
-def add_choice_scene(choice, scene):
-    """Create and return a new ChoiceScene database record."""
+def add_question_scene(question, scene):
+    """Create and return a new SceneQuestion database record."""
 
-    choice_scene = ChoiceScene(choice_id=choice.id, scene_id=scene.id)
+    question_scene = SceneQuestion(question_id=question.id, scene_id=scene.id)
 
-    db.session.add(choice_scene)
+    db.session.add(question_scene)
     db.session.commit()
 
-    print(f"********* Created {choice_scene} *********")
-    return choice_scene
+    print(f"********* Created {question_scene} *********")
+    return question_scene
 
 
 def add_film(play, moviedb_id, imdb_id, title, release_date, language, length, poster_path):
@@ -135,22 +120,22 @@ def add_job(title):
     return job
 
 
-def add_job_held(film, job, person):
-    """Create and return a new JobHeld database record."""
+def add_person_job(film, job, person):
+    """Create and return a new PersonJob database record."""
 
-    jobheld = JobHeld(film_id=film.id, job_id=job.id, person_id=person.id)
+    personjob = PersonJob(film_id=film.id, job_id=job.id, person_id=person.id)
     
-    db.session.add(jobheld)
+    db.session.add(personjob)
     db.session.commit()
 
-    print(f"********* Created {jobheld} *********")
-    return jobheld
+    print(f"********* Created {personjob} *********")
+    return personjob
 
 
-def add_interpretation(choice, play, title, description, film, time_start, time_end):
+def add_interpretation(question, play, title, description, film, time_start, time_end):
     """Create and return a new Interpretation database record."""
 
-    interpretation = Interpretation(choice_id=choice.id, play_id=play.id, film_id=film.id, title=title, description=description, time_start=time_start, time_end=time_end)
+    interpretation = Interpretation(question_id=question.id, play_id=play.id, film_id=film.id, title=title, description=description, time_start=time_start, time_end=time_end)
 
     db.session.add(interpretation)
     db.session.commit()
@@ -159,40 +144,28 @@ def add_interpretation(choice, play, title, description, film, time_start, time_
     return interpretation
 
 
-def add_interpretation_character(interpretation, character):
-    """Create and return a new InterpretationCharacter database record."""
+def add_character_interpretation(interpretation, character):
+    """Create and return a new CharacterInterpretation database record."""
 
-    interpretation_character = InterpretationCharacter(interpretation_id=interpretation.id, character_id=character.id)
+    character_interpretation = CharacterInterpretation(interpretation_id=interpretation.id, character_id=character.id)
 
-    db.session.add(interpretation_character)
+    db.session.add(character_interpretation)
     db.session.commit()
 
-    print(f"********* Created {interpretation_character} *********")
-    return interpretation_character
+    print(f"********* Created {character_interpretation} *********")
+    return character_interpretation
 
 
-def add_interpretation_film(interpretation, film):
-    """Create and return a new InterpretationFilm database record."""
+def add_scene_interpretation(interpretation, scene):
+    """Create and return a new SceneInterpretation database record."""
 
-    interpretation_film = InterpretationFilm(interpretation_id=interpretation.id, film_id=film.id)
+    scene_interpretation = SceneInterpretation(interpretation_id=interpretation.id, scene_id=scene.id)
 
-    db.session.add(interpretation_film)
+    db.session.add(scene_interpretation)
     db.session.commit()
 
-    print(f"********* Created {interpretation_film} *********")
-    return interpretation_film
-
-
-def add_interpretation_scene(interpretation, scene):
-    """Create and return a new InterpretationScene database record."""
-
-    interpretation_scene = InterpretationScene(interpretation_id=interpretation.id, scene_id=scene.id)
-
-    db.session.add(interpretation_scene)
-    db.session.commit()
-
-    print(f"********* Created {interpretation_scene} *********")
-    return interpretation_scene
+    print(f"********* Created {scene_interpretation} *********")
+    return scene_interpretation
 
 
 def add_part_played(person, character_name, film):
@@ -312,61 +285,61 @@ def get_all_characters_by_play(play):
     return characters
 
 
-def get_choice(play, title):
-    """Given a play and choice title, return the Choice database record."""
+def get_question(play, title):
+    """Given a play and question title, return the Question database record."""
 
-    existing_choice = db.session.query(exists().where((Choice.play_id == play.id) & (Choice.title == title))).scalar()
+    existing_question = db.session.query(exists().where((Question.play_id == play.id) & (Question.title == title))).scalar()
 
-    if existing_choice:
-        return Choice.query.filter((Choice.play_id == play.id) & (Choice.title == title)).first()
+    if existing_question:
+        return Question.query.filter((Question.play_id == play.id) & (Question.title == title)).first()
     else:
         return None
 
 
-def get_all_choices_by_play(play):
-    """Given a play, return any existing related Choice objects in the database."""
+def get_all_questions_by_play(play):
+    """Given a play, return any existing related Question objects in the database."""
 
-    existing_choices = db.session.query(exists().where(Choice.play_id == play.id)).scalar()
+    existing_questions = db.session.query(exists().where(Question.play_id == play.id)).scalar()
 
-    if existing_choices:
-        return Choice.query.filter(Choice.play_id == play.id).all()
+    if existing_questions:
+        return Question.query.filter(Question.play_id == play.id).all()
     else:
         return None
 
 
-def get_choice_character(choice, character):
-    """Given a choice and character, return or create a ChoiceCharacter object."""
+def get_question_character(question, character):
+    """Given a question and character, return or create a CharacterQuestion object."""
 
-    existing_choice_character = db.session.query(exists().where((ChoiceCharacter.choice_id == choice.id) & (ChoiceCharacter.character_id == character.id))).scalar()
+    existing_question_character = db.session.query(exists().where((CharacterQuestion.question_id == question.id) & (CharacterQuestion.character_id == character.id))).scalar()
 
-    if existing_choice_character:
-        choice_character = ChoiceCharacter.query.filter((ChoiceCharacter.choice_id == choice.id) & (ChoiceCharacter.character_id == character.id)).first()
+    if existing_question_character:
+        question_character = CharacterQuestion.query.filter((CharacterQuestion.question_id == question.id) & (CharacterQuestion.character_id == character.id)).first()
     else:
-        choice_character = add_choice_character(choice, character)
+        question_character = add_question_character(question, character)
 
-    return choice_character
+    return question_character
 
 
-def get_choice_scene(choice, scene):
-    """Given a choice and scene, return or create a ChoiceScene object."""
+def get_question_scene(question, scene):
+    """Given a question and scene, return or create a SceneQuestion object."""
 
-    existing_choice_scene = db.session.query(exists().where((ChoiceScene.choice_id == choice.id) & (ChoiceScene.scene_id == scene.id))).scalar()
+    existing_question_scene = db.session.query(exists().where((SceneQuestion.question_id == question.id) & (SceneQuestion.scene_id == scene.id))).scalar()
 
-    if existing_choice_scene:
-        choice_scene = ChoiceScene.query.filter((ChoiceScene.choice_id == choice.id) & (ChoiceScene.scene_id == scene.id)).first()
+    if existing_question_scene:
+        question_scene = SceneQuestion.query.filter((SceneQuestion.question_id == question.id) & (SceneQuestion.scene_id == scene.id)).first()
     else:
-        choice_scene = add_choice_scene(choice, scene)
+        question_scene = add_question_scene(question, scene)
 
-    return choice_scene
+    return question_scene
 
 
-def get_interpretation(choice, film):
-    """Given a choice and film, return the related Interpretation object."""
+def get_interpretation(question, film):
+    """Given a question and film, return the related Interpretation object."""
 
-    existing_interpretation = db.query.session(exists().where((Interpretation.choice_id == choice.id) & (Interpretation.film_id == film.id))).scalar()
+    existing_interpretation = db.query.session(exists().where((Interpretation.question_id == question.id) & (Interpretation.film_id == film.id))).scalar()
 
     if existing_interpretation:
-        return Interpretation.query.filter((Interpretation.choice_id == choice.id) & (Interpretation.film_id == film.id)).first()
+        return Interpretation.query.filter((Interpretation.question_id == question.id) & (Interpretation.film_id == film.id)).first()
     else:
         return None
 
@@ -382,30 +355,30 @@ def get_all_interpretations_by_play(play):
         return None
 
 
-def get_interpretation_character(interpretation, character):
-    """Given an interpretation and character, return or create an InterpretationCharacter object."""
+def get_character_interpretation(interpretation, character):
+    """Given an interpretation and character, return or create an CharacterInterpretation object."""
 
-    existing_interpretation_character = db.session.query(exists().where((InterpretationCharacter.interpretation_id == interpretation.id) & (InterpretationCharacter.character_id == character.id))).scalar()
+    existing_character_interpretation = db.session.query(exists().where((CharacterInterpretation.interpretation_id == interpretation.id) & (CharacterInterpretation.character_id == character.id))).scalar()
 
-    if existing_interpretation_character:
-        interpretation_character = InterpretationCharacter.query.filter((InterpretationCharacter.interpretation_id == interpretation.id) & (InterpretationCharacter.character_id == character.id)).first()
+    if existing_character_interpretation:
+        character_interpretation = CharacterInterpretation.query.filter((CharacterInterpretation.interpretation_id == interpretation.id) & (CharacterInterpretation.character_id == character.id)).first()
     else:
-        interpretation_character = add_interpretation_character(interpretation, character)
+        character_interpretation = add_character_interpretation(interpretation, character)
 
-    return interpretation_character
+    return character_interpretation
 
 
-def get_interpretation_scene(interpretation, scene):
-    """Given an interpretation and scene, return or create an InterpretationScene object."""
+def get_scene_interpretation(interpretation, scene):
+    """Given an interpretation and scene, return or create an SceneInterpretation object."""
 
-    existing_interpretation_scene = db.session.query(exists().where((InterpretationScene.interpretation_id == interpretation.id) & (InterpretationScene.scene_id == scene.id))).scalar()
+    existing_scene_interpretation = db.session.query(exists().where((SceneInterpretation.interpretation_id == interpretation.id) & (SceneInterpretation.scene_id == scene.id))).scalar()
 
-    if existing_interpretation_scene:
-        interpretation_scene = InterpretationScene.query.filter((InterpretationScene.interpretation_id == interpretation.id) & (Interpretation.scene_id == scene.id)).first()
+    if existing_scene_interpretation:
+        scene_interpretation = SceneInterpretation.query.filter((SceneInterpretation.interpretation_id == interpretation.id) & (Interpretation.scene_id == scene.id)).first()
     else:
-        interpretation_scene = add_interpretation_scene(interpretation, scene)
+        scene_interpretation = add_scene_interpretation(interpretation, scene)
 
-    return interpretation_scene
+    return scene_interpretation
 
 
 def get_interpretation_film(interpretation, film):
@@ -435,14 +408,14 @@ def get_job_by_title(title):
 
 
 def get_job_held(person, film, job_title):
-    """Given a person, film and job title, return (or create and return) a JobHeld object."""
+    """Given a person, film and job title, return (or create and return) a PersonJob object."""
 
     job = get_job_by_title(job_title)
 
-    existing_job_held = db.session.query(exists().where((JobHeld.person_id == person.id) & (JobHeld.film_id == film.id) & (JobHeld.job_id == job.id))).scalar()
+    existing_job_held = db.session.query(exists().where((PersonJob.person_id == person.id) & (PersonJob.film_id == film.id) & (PersonJob.job_id == job.id))).scalar()
     
     if existing_job_held:
-        job_held = JobHeld.query.filter((JobHeld.person_id == person.id) & (JobHeld.film_id == film.id) & (JobHeld.job_id == job.id)).first()
+        job_held = PersonJob.query.filter((PersonJob.person_id == person.id) & (PersonJob.film_id == film.id) & (PersonJob.job_id == job.id)).first()
     else:
         job_held = add_job_held(film, job, person)
     
@@ -606,19 +579,19 @@ def update_character(character, name=None, gender=None):
     return db_character
 
 
-def update_choice(choice, title=None, description=None):
-    """Given a choice, update the existing values."""
+def update_question(question, title=None, description=None):
+    """Given a question, update the existing values."""
 
-    db_choice = Choice.query.get(choice.id)
+    db_question = Question.query.get(question.id)
 
     if title != None:
-        db_choice.title = title
+        db_question.title = title
     if description != None:
-        db_choice.description = description
+        db_question.description = description
     
-    db.session.merge(db_choice)
+    db.session.merge(db_question)
     db.session.commit()
-    return db_choice
+    return db_question
 
 
 def update_interpretation(interpretation, play=None, film=None, title=None, description=None, time_start=None, time_end=None):
@@ -672,7 +645,7 @@ def random_scene(play=None):
     else:
         scenes = Scene.query.all()
 
-    return random.choice(scenes)
+    return random.question(scenes)
 
 # ----- BEGIN: RANDOM FUNCTIONS ----- #
 

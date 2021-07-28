@@ -3,3 +3,37 @@
     flex-flow: row;
     justify-content: space-between;
 }
+
+#film-metadata,
+#person-metadata {
+    padding: 15px;
+}
+
+#film-metadata img.poster {
+    max-height: 300px;
+}
+
+#person-metadata img.portrait {
+    max-height: 250px;
+}
+
+#scene-metadata textarea {
+    width: 600px;
+    height: 100px;
+}
+
+#character-metadata figure blockquote {
+    margin: 0;
+}
+
+cite {
+    font-style: unset;
+}
+
+img.poster {
+    max-height: 400px;
+}
+
+img.tiny-poster {
+    max-height: 250px;
+}

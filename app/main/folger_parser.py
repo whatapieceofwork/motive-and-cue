@@ -1,10 +1,9 @@
 """Classes and functions used for parsing Folger Shakespeare API data."""
 
-import re #regex
 from bs4 import BeautifulSoup
-import requests
 from crud import *
-from server import db
+import re
+import requests
 
 def parse_folger_characters(play):
   """Given a play, return a numbered dictionary of character names and wordcounts from the Folger API, ordered by wordcount."""

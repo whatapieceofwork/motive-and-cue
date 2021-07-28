@@ -1,21 +1,12 @@
 """Classes and functions used for parsing MovieDB API data."""
 
-from flask import Flask, render_template, redirect, flash, session, request
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.sql import exists
-from bs4 import BeautifulSoup
 from datetime import datetime
 import os
+import re
 import requests
-import re #regex
-import json
 
 MOVIEDB_API_KEY = os.environ["MOVIEDB_API_KEY"]
-GENDERS = {
-    2: "Male",
-    1: "Female",
-    0: "Other/NA"
-}
+
 
 def get_moviedb_film_id(film_url):
     """Given the URL of a film on MovieDB, return the film's MovieDB ID."""

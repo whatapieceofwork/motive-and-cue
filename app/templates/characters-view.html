@@ -2,12 +2,12 @@
 
 {% block title %}- All Characters{% endblock %}
 
-{% block content %}
+{% block page_content %}
 {% if play %}
     <h2>Character List for {{play.title}}</h2>
     <p><em><a href="/characters/edit/{{play.shortname}}/">Edit characters</a></em></p>
 {% else %}    
-    {{ wtf.quick_form(form) }}
+    {{ render_form(form) }}
 {% endif %}
 
 {% if characters %}
@@ -17,7 +17,7 @@
     <div id="character-metadata">
         <ul>
             <li>ID: {{character.id}}</li>
-            <li>Name: <a href="/view-character/{{character.id}}">{{character.name}}</a></li>
+            <li>Name: <a href="/characters/{{character.id}}">{{character.name}}</a></li>
             <li>Canonical Gender:
                 {% if character.gender|int == 2 %}Male
                 {% elif character['gender']|int == 1 %}Female

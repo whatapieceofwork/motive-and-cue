@@ -2,8 +2,8 @@
 
 {% block title %}- {{page_title}}{% endblock %}
 
-{% block content %}
+{% block page_content %}
 <h2>{{page_title or "Page Title"}}</h2>
 {{ form }}
-{{ wtf.quick_form(form) }}
+{{ render_form(form) }}
 {% endblock %}

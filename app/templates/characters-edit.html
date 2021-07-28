@@ -2,11 +2,11 @@
 
 {% block title %}- Edit Characters{% endblock %}
 
-{% block content %}
+{% block page_content %}
 {% if play %}
     <h2>Edit Character List for {{play.title}}</h2>
 {% else %}    
-    {{ wtf.quick_form(form) }}
+    {{ render_form(form) }}
 {% endif %}
 
 

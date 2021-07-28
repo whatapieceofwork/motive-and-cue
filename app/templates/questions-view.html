@@ -2,12 +2,12 @@
 
 {% block title %}- All Choices{% endblock %}
 
-{% block content %}
+{% block page_content %}
 {% if play %}
     <h2>Choice List for {{play.title}}</h2>
     <p><em><a href="/choices/edit/{{play.shortname}}/">Edit choices</a></em></p>
 {% else %}    
-    {{ wtf.quick_form(form) }}
+    {{ render_form(form) }}
 {% endif %}
 
 <div id="choices-metadata">
