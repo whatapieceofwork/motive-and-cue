@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    <h2>{{character.name}} from <em>{{character.play.title}}</em></h2>
-    <p><em><a href="/characters/edit/{{character.id}}/">Edit Character</a></em></p>
+    {% if current_user.is_admin() %}
+        <p><em><a href="/characters/edit/{{character.id}}/">Edit Character</a></em></p>
+    {% endif %}
 
         <div id="character-quote">
             {% if character['quote'] %}

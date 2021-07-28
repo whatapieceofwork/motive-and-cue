@@ -11,7 +11,7 @@
 
     <h3>Scene List</h3>
     
-    {% if current_user.isadmin() %}
+    {% if current_user.is_admin() %}
         <p><em><a href="/scenes/edit/{{play.shortname}}">Edit Scenes</a></em></p>
     {% endif %}
 

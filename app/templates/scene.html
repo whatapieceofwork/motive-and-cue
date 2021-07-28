@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    {% if current_user.isadmin() %}
+    {% if current_user.is_admin() %}
         <p><em><a href="/scenes/edit/{{scene.id}}">Edit Scene</a></em></p>
     {% endif %}
     <div id="scene-metadata">

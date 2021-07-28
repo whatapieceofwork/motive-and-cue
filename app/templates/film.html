@@ -2,7 +2,7 @@
 
 {% block page_content %}
     <div id="film-page">
-        {% if current_user.isadmin() %}
+        {% if current_user.is_admin() %}
             <p><em><a href="/films/edit/{{film.id}}/">Edit Film</a></em></p>
         {% endif %}
         <div class="container-sm poster-box">
