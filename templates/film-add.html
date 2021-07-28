@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}- Add Film{% endblock %}
+
+{% block content %}
+<h2>Add a Film Adaptation</h2>
+
+<form method="GET" action="/process-film/">
+    <label for="play_titles">Select a play:</label>
+    <select name="play_titles" id="play_titles">
+        {% for key, value in play_titles.items() %}
+            {% if key == "Ham" %}
+                <option selected value="{{ key }}">{{ value }}</option>
+            {% else %}
+                <option value="{{ key }}">{{ value }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+
+
+    <label for="film-url">Enter the URL of a film on <a href="https://www.themoviedb.org/">https://www.themoviedb.org/</a>:</label>
+    <input type="url" id="film-url" name="film-url">
+    
+    <input type="submit" value="Submit">
+</form>
+{% endblock %}

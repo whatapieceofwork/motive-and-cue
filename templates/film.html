@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}- {{film.title}}{% endblock %}
+
+{% block content %}
+<div id="film-page">
+    <h2>{{film.title}}</h2>
+    <div class="container-sm poster-box">
+        <img class="img-fluid" src="{{film.poster_path}}" alt="{{film.title}} film poster">
+    </div>
+
+    <ul>
+        <li>Play: <a href="/plays/{{film.play.shortname}}">{{film.play.title}}</a>
+        <li>Release date: {{film.release_date}}
+        <li>Language: {{film.language}}</li>
+        <li>Length: {{film.length}} minutes</li>
+        <li><a href="https://www.themoviedb.org/movie/{{film.moviedb_id}}">MovieDB page</a>
+        <li><a href="https://www.imdb.com/title/{{film.imdb_id}}">IMDB page</a>
+    </ul>
+
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Character</th>
+            <th scope="col">Actor</th>
+            <th scope="col">Actor's Age on Film Release</th>
+            {% if film.play.title == "Hamlet" %}
+                <th scope="col">Age Difference from Hamlet</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+        {% for part in parts_played %}
+            <tr>
+                <td>{{part.character.name}}</td>
+                <td>{{part.person.fname}} {{part.person.lname}}</td>
+                <td>
+                {% if part.person.birthday %}
+                    {% set age = part.age_during_film() %}{{age}}
+                    {% if film.play.title == "Hamlet" %}
+                        {% set age_diff = (age - hamlet_age) %}
+                    {% endif %}
+                {% endif %}
+                </td>
+                {% if film.play.title == "Hamlet" %}
+                {% if ( 
+                (part.character.name == "Ophelia" and age_diff < -15) or
+                (part.character.name == "Gertrude" and age_diff < 10)
+                ) %}
+                    <td class="table-danger">
+                {% elif ( 
+                (part.character.name == "Ophelia" and age_diff < -11) or
+                (part.character.name == "Gertrude" and age_diff < 15)
+                ) %}
+                    <td class="table-warning">
+                {% elif ( 
+                (part.character.name == "Ophelia" and age_diff < -7) or
+                (part.character.name == "Gertrude" and age_diff >= 18 )
+                ) %}
+                    <td class="table-success">
+                {% else %}
+                    <td>
+                {% endif %}
+                    {{age_diff}}
+                </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+</div>
+{% endblock %}

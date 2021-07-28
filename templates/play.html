@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}- {{play.title}}{% endblock %}
+
+{% block content %}
+    <h2>{{play.title}}</h2>
+    <ul>
+        <li><a href="/films/{{play.shortname}}">Film adaptations</a></li>
+        <li><a href="/characters/{{play.shortname}}">Characters</a></li>
+        <li><a href="/scenes/{{play.shortname}}">Scenes</a></li>
+        <li><a href="/choices/{{play.shortname}}">Choices</a></li>
+        <li><a href="/interpretations/{{play.shortname}}">Interpretations</li></a>
+    </ul>
+
+    <h3>Scene List</h3>
+    <p><em><a href="/scenes/edit/{{play.shortname}}">Edit scenes</a></em></p>
+
+    {% if play.scenes %}
+        <div id="scenes-metadata">
+            {% for scene in play.scenes %}
+                <div id="scene-metadata">
+                    <ul>
+                        <li><a href="/scenes/{{scene.id}}">Act {{scene.act}}, Scene {{scene.scene}}</a></li>
+                        {% if scene.title %}
+                            <li>Title: {{scene.title}}</li>
+                        {% endif %}
+                        {% if scene.description %}
+                            <li>Description: {{scene.description}}</li>
+                        {% endif %}
+                        {% if scene.choices %}
+                            <li>Related Choices:
+                                <ul>
+                                {% for choice in scene.choices %}
+                                    <li><a href="/choices/{{choice.id}}">{{choice.title}}</a></li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+{% endblock %}

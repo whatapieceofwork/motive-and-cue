@@ -1,0 +1,46 @@
+/* .actor-card img {
+    max-height: 250px;
+    border: 1px solid darkgray;
+} */
+
+#site-navbar {
+    padding-bottom: 10px;
+}
+
+#content {
+    padding: 10px 20px 10px 20px;
+}
+
+#film-metadata,
+#person-metadata {
+    padding: 15px;
+}
+
+#film-metadata img.poster {
+    max-height: 300px;
+}
+
+#person-metadata img.portrait {
+    max-height: 250px;
+}
+
+#scene-metadata textarea {
+    width: 600px;
+    height: 100px;
+}
+
+#character-metadata figure blockquote {
+    margin: 0;
+}
+
+cite {
+    font-style: unset;
+}
+
+img.poster {
+    max-height: 400px;
+}
+
+img.tiny-poster {
+    max-height: 250px;
+}

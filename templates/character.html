@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}- {{character.name}}{% endblock %}
+
+{% block content %}
+<h2>{{character.name}} from <em>{{character.play.title}}</em></h2>
+<p><em><a href="/characters/edit/{{character.id}}/">Edit Character</a></em></p>
+
+    <div id="character-quote">
+        {% if character['quote'] %}
+            <em>{{character['quote']}}</em>
+        {% endif %}
+    </div>
+
+<div id="character-metadata">
+    <ul>
+        <li>ID: {{character.id}}</li>
+        <li>Name: {{character.name}}</li>
+        <li>Canonical Gender:
+            {% if character.gender|int == 2 %}Male
+            {% elif character['gender']|int == 1 %}Female
+            {% else %}Unknown or N/A
+            {% endif %}
+        </li>
+        {% if character['choices'] %}
+        <li>Related Choices: 
+            <ul>
+            {% for choice in character['choices'] %}
+                <li><a href="/choices/{{choice.id}}/">{{choice.title}}</a></li>
+            {% endfor %}
+            </ul>
+        </li>
+        {% endif %}
+        {% if character['quotes'] %}
+            <li>Related Quotes:
+                <ul>
+                {% for quote in character.quotes%}
+                <figure class="quote">
+                    <blockquote>{{quote.text}}</blockquote>
+                    <figcaption><cite><a href="/characters/{{quote.character.id}}/">{{quote.character.name}}</a> (<em>{{quote.play.title}}</em> <a href="/scenes/{{quote.scene.id}}">({{quote.scene.act}}.{{quote.scene.scene}})</a>)</cite></figcaption>
+                </figure>
+                {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
+    </ul>
+</div>
+
+{% endblock %}

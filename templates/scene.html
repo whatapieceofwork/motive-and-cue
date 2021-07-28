@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}- {{scene}}{% endblock %}
+
+{% block content %}
+<h2>Act {{scene.act}}, Scene {{scene.scene}} from <em>{{scene.play.title}}</em></h2>
+<p><em><a href="/scenes/edit/{{scene.id}}">Edit Scene</a></em></p>
+
+<div id="scene-metadata">
+    <ul>
+        <li>ID: {{scene.id}}</li>
+        <li>Title: {{scene.title}}</li>
+        <li>Description: {{scene.description}}</li>
+        {% if scene['choices'] %}
+        <li>Related Choices</li>
+            <ul>
+                {% for choice in scene['choices'] %}
+                    <li><a href="/view-choice/{{choice.id}}">{{choice.title}}</a></li>
+                {% endfor %}
+            </ul>
+        </ul>
+        {% endif %}
+        {% if scene['quotes'] %}
+            <li>Related Quotes:
+                <ul>
+                {% for quote in scene.quotes%}
+                <figure class="quote">
+                    <blockquote>{{quote.text}}</blockquote>
+                    <figcaption><cite><a href="/characters/{{quote.character.id}}">{{quote.character.name}}</a> (<em>{{quote.play.title}}</em> <a href="/scenes/{{quote.scene.id}}">({{quote.scene.act}}.{{quote.scene.scene}})</a>)</cite></figcaption>
+                </figure>
+                {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
+    </ul>
+</div>
+
+{% endblock %}

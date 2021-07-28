@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}- Verify Characters{% endblock %}
+
+{% block content %}
+<h2>Verify Character List for {{play.title}}</h2>
+
+<div id="characters-metadata">
+    <form action="/edit-characters/" method="post">
+
+{% for character in characters %}
+<div id="character-metadata">
+    <ul>
+        <input type="hidden" id="play" name="play" value="{{play.title}}">
+        <li><label for "name">Name</label> 
+            <input type="text" name="name-{{loop.index0}}" id="name-{{loop.index0}}" placeholder="{{character}}" value="{{character}}"></li>
+        <li><label for "gender">Canonical Gender</label><br />
+                {% set character_loop = loop %}
+                {% for key, value in genders.items() %}
+                    {% if key == 2 %}
+                        <input type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}} checked>
+                    {% else %}
+                        <input type="radio" name="gender-{{character_loop.index0}}" id="gender-{{character_loop.index0}}" value={{key}}>
+                    {% endif %}
+                    
+                    <label for="{{key}}">{{value}}</label><br>
+                {% endfor %}
+        <li><label for "description-{{loop.index0}}">Add a Quote</label> 
+                <textarea name="quote-{{loop.index0}}" id="quote-{{loop.index0}}"></textarea></li>
+        <li><label for "quote-scene-{{loop.index0}}">Quote Scene</label>
+            <select name="quote-scene-{{loop.index0}}" id="quote-scene-{{loop.index0}}">
+                {% for scene in scenes %}
+                <option value="{{scene.id}}">{{scene.act}}.{{scene.scene}}{% if scene.title %}: {{scene.title}}{% endif %}</option>
+                {% endfor %}
+            </select></li>
+    </ul>
+    {% if loop.last %}
+        <input type="hidden" id="character_count" name="character_count" value="{{loop.index0}}">
+    {% endif %}
+</div>
+{% endfor %}
+
+<input type="submit" value="Submit">
+</form>
+
+{% endblock %}
