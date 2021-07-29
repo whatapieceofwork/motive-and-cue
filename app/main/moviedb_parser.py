@@ -47,9 +47,17 @@ def parse_moviedb_film_details(moviedb_id, play):
     film["release_date"] = datetime.strptime(film["release_date"], date_format)
     film["language"] = details["original_language"]
     film["length"] = details["runtime"]
+    film["overview"] = details["overview"]
+    film["tagline"] = details["tagline"]
     film["play_id"] = play.id
     if details["poster_path"]:
         film["poster_path"] = "https://www.themoviedb.org/t/p/original" + details.get("poster_path")
+
+    # Watch provider information courtesy of JustWatch
+    watch_request_url = "https://api.themoviedb.org/3/movie/" + str(moviedb_id) + "/watch/providers?api_key=" + MOVIEDB_API_KEY + "&language=en-US"
+    watch_providers = details = requests.get(watch_request_url).json()
+
+    film["watch_providers"] = watch_providers
 
     return film
 
