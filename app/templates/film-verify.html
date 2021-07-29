@@ -1,95 +1,133 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    <div id="film-metadata">
-        <form action="/add-film-to-db/" method="post">
-    {% if details['poster_path'] %}
-        <div><img class="poster" src="{{details['poster_path']}}" /></div>
-    {% else %}
-        <p>[NO FILM POSTER AVAILABLE.]</p>
-    {% endif %}
+    <div class="col-md-8">
+        <form class="row g-3" action="/add-film-to-db/" method="post">
+            {% if details['poster_path'] %}
+                <div><img class="poster" src="{{details['poster_path']}}" /></div>
+            {% else %}
+                <p>[NO FILM POSTER AVAILABLE.]</p>
+            {% endif %}
 
-    <datalist id="parts">
-        {% for name in character_names %}
-            <option value="{{name}}"></option>
-        {% endfor %}
-    </datalist>
+            <datalist id="parts">
+                {% for name in character_names %}
+                    <option value="{{name}}"></option>
+                {% endfor %}
+            </datalist>
 
-    <h3>{{details['title']}}</h3>
-    <ul>
-        <input type="hidden" id="play" name="play" value="{{play.title}}">
-        <li><label for "title">Film Title</label>
-            <input type="text" name="title" id="title" placeholder="{{details['title']}}" value="{{details['title']}}" required></li>
-        <li><label for "poster_path">Poster Path</label>
-            <input type="text" name="poster_path" id="poster_path" value="{{details['poster_path']}}"></li>
-        <li><label for "release_date">Release Date</label>
-            <input type="date" name="release_date" id="release_date" placeholder="{{details['release_date'].strftime('%Y-%m-%d')}}" value="{{details['release_date'].strftime('%Y-%m-%d')}}" required></li>
-        <li><label for "language">Language</label>
-            <input type="text" name="language" id="language" placeholder="{{details['language']}}" value="{{details['language']}}" required></li>
-        <li><label for "length">Length in minutes</label>
-            <input type="text" name="length" id="length" placeholder="{{details['length']}}" value="{{details['length']}}" required></li>
-        <li><label for "film_moviedb_id"><a href="https://www.themoviedb.org/movie/{{details['film_moviedb_id']}}">MovieDB ID</a></label>
-            <input type="text" name="film_moviedb_id" id="film_moviedb_id" placeholder="{{details['film_moviedb_id']}}" value="{{details['film_moviedb_id']}}" required></li>
-        <li><label for "film_imdb_id"><a href="https://www.imdb.com/title/{{details['film_imdb_id']}}">IMDB ID</a></label>
-            <input type="text" name="film_imdb_id" id="film_imdb_id" placeholder="{{details['film_imdb_id']}}" value="{{details['film_imdb_id']}}" required></li>
-    </ul>
-    </div>
+            <h3>{{details['title']}}</h3>
+            <input type="hidden" id="play" name="play" value="{{play.title}}">
 
-    {% for person in cast %}
-    <div id="person-metadata">
-        {% if cast[person]['photo_path'] %}
-            <img class="portrait" src="{{cast[person]['photo_path']}}" /><br/>
-        {% else %}
-            <p>[NO PROFILE IMAGE AVAILABLE.]</p>
-        {% endif %}
+            <div class="col-md-12">
+                <label for="title" class="form-label">Film Title</label>
+                <input type="text" name="title" id="title" class="form-control" placeholder="{{details['title']}}" value="{{details['title']}}" required>
+            </div>
+            <div class="col-md-12">
+                <label for="poster_path" class="form-label">Poster Path</label>
+                <input type="text" name="poster_path" id="poster_path" class="form-control" value="{{details['poster_path']}}">
+            </div>
+            <div class="col-md-4">
+                <label for="release_date" class="form-label">Release Date</label>
+                <input type="date" name="release_date" id="release_date" class="form-control" placeholder="{{details['release_date'].strftime('%Y-%m-%d')}}" value="{{details['release_date'].strftime('%Y-%m-%d')}}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="language" class="form-label">Language</label>
+                <input type="text" name="language" id="language" class="form-control" placeholder="{{details['language']}}" value="{{details['language']}}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="length" class="form-label">Length in minutes</label>
+                <input type="number" name="length" id="length" class="form-control" placeholder="{{details['length']}}" value="{{details['length']}}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="film_moviedb_id" class="form-label"><a href="https://www.themoviedb.org/movie/{{details['film_moviedb_id']}}">MovieDB ID</a></label>
+                <input type="text" name="film_moviedb_id" id="film_moviedb_id" class="form-control" placeholder="{{details['film_moviedb_id']}}" value="{{details['film_moviedb_id']}}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="film_imdb_id" class="form-label"><a href="https://www.imdb.com/title/{{details['film_imdb_id']}}">IMDB ID</a></label>
+                <input type="text" name="film_imdb_id" id="film_imdb_id" class="form-control" placeholder="{{details['film_imdb_id']}}" value="{{details['film_imdb_id']}}" required>
+            </div>
+            <div class="col-md-12">
+                <label for="overview" class="form-label">Overview</label> 
+                <textarea name="overview" id="overview" class="form-control">{{details['overview']}}</textarea>
+            </div>
+            <div class="col-md-12">
+                <label for="tagline" class="form-label">Tagline</label> 
+                <textarea name="tagline" id="tagline" class="form-control">{{details['tagline']}}</textarea>
+            </div>
+            <div class="col-md-12">
+                <label for="watch_providers" class="form-label">Watch Providers</label>
+                <textarea name="tagline" id="tagline" class="form-control">{{details['watch_providers']}}</textarea>
+            </div>
 
-        <h3>{{cast[person]['full_name']|join(' ')}}</h3>
-        <ul>
-            <li><label for "exclude">Exclude this entry from the database?</label>
-                <input type="checkbox" name="exclude-{{loop.index0}}" id="exclude-{{loop.index0}}">
-        <li><label for "fname-{{loop.index0}}">First Name</label> 
-                <input type="text" name="fname-{{loop.index0}}" id="fname-{{loop.index0}}" placeholder="{{cast[person]['fname']}}" value="{{cast[person]['fname']}}">
-                <label for "lname-{{loop.index0}}">Last Name</label> 
-                <input type="text" name="lname-{{loop.index0}}" id="lname-{{loop.index0}}" placeholder="{{cast[person]['lname']}}" value="{{cast[person]['lname']}}">
-            <li><label for "photo_path-{{loop.index0}}">Photo Path</label>
-                <input type="text" name="photo_path-{{loop.index0}}" id="photo_path-{{loop.index0}}" placeholder="{{cast[person]['photo_path']}}" value="{{cast[person]['photo_path']}}"></li>
-            <li><label for "birthday-{{loop.index0}}">Birthday</label>
-                <input type="date" name="birthday-{{loop.index0}}" id="birthday-{{loop.index0}}" {% if cast[person]['birthday'] %} placeholder="{{cast[person]['birthday'].strftime('%Y-%m-%d')}}" value="{{cast[person]['birthday'].strftime('%Y-%m-%d')}}" {% endif %}></li>
-            <li><label for "gender-{{loop.index0}}">Gender</label>
-                <select name="gender-{{loop.index0}}" id="gender-{{loop.index0}}">
-                    {% for key, value in genders.items() %}
-                        {% if key == cast[person]['gender'] %}
-                            <option selected value="{{ key }}">{{ value }}</option>
-                        {% else %}
-                            <option value="{{ key }}">{{ value }}</option>
+            {% for person in cast %}
+                <div class="d-flex justify-content-center">
+                    {% if cast[person]['photo_path'] %}
+                        <img class="portrait" src="{{cast[person]['photo_path']}}" /><br/>
+                    {% else %}
+                        <p>[NO PROFILE IMAGE AVAILABLE.]</p>
+                    {% endif %}
+                </div>
+
+                <h3>{{cast[person]['full_name']|join(' ')}}</h3>
+                <div class="form-check col-md-8">
+                    <label for="exclude" class="form-check-label">Exclude this entry from the database?</label>
+                    <input type="checkbox" name="exclude-{{loop.index0}}" id="exclude-{{loop.index0}}" class="form-check-input">
+                </div>
+                <div class="col-md-6">
+                    <label for="fname-{{loop.index0}}" class="form-label">First Name</label> 
+                    <input type="text" name="fname-{{loop.index0}}" id="fname-{{loop.index0}}" class="form-control" placeholder="{{cast[person]['fname']}}" value="{{cast[person]['fname']}}">
+                </div>
+                <div class="col-md-6">
+                    <label for="lname-{{loop.index0}}" class="form-label">Last Name</label> 
+                    <input type="text" name="lname-{{loop.index0}}" id="lname-{{loop.index0}}" class="form-control" placeholder="{{cast[person]['lname']}}" value="{{cast[person]['lname']}}">
+                </div>
+                <div class="col-md-12">
+                    <label for="photo_path-{{loop.index0}}" class="form-label">Photo Path</label>
+                    <input type="text" name="photo_path-{{loop.index0}}" id="photo_path-{{loop.index0}}" class="form-control" placeholder="{{cast[person]['photo_path']}}" value="{{cast[person]['photo_path']}}">
+                </div>
+                <div class="col-md-6">
+                    <label for="birthday-{{loop.index0}}" class="form-label">Birthday</label>
+                    <input type="date" name="birthday-{{loop.index0}}" id="birthday-{{loop.index0}}" class="form-control" {% if cast[person]['birthday'] %} placeholder="{{cast[person]['birthday'].strftime('%Y-%m-%d')}}" value="{{cast[person]['birthday'].strftime('%Y-%m-%d')}}" {% endif %}>
+                </div>
+                <div class="col-md-6">
+                    <label for="gender-{{loop.index0}}" class="form-label">Gender</label>
+                    <select name="gender-{{loop.index0}}" id="gender-{{loop.index0}}" class="form-select">
+                        {% for key, value in genders.items() %}
+                            {% if key == cast[person]['gender'] %}
+                                <option selected value="{{ key }}">{{ value }}</option>
+                            {% else %}
+                                <option value="{{ key }}">{{ value }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="person_moviedb_id-{{loop.index0}}" class="form-label"><a href="https://www.themoviedb.org/person/{{cast[person]['person_moviedb_id']}}">MovieDB ID</a></label>
+                    <input type="text" name="person_moviedb_id-{{loop.index0}}" id="person_moviedb_id-{{loop.index0}}" class="form-control" placeholder="{{cast[person]['person_moviedb_id']}}" value="{{cast[person]['person_moviedb_id']}}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="person_imdb_id-{{loop.index0}}" class="form-label"><a href="https://www.imdb.com/name/{{cast[person]['person_imdb_id']}}">IMDB ID</a></label>
+                    <input type="text" name="person_imdb_id-{{loop.index0}}" id="person_imdb_id-{{loop.index0}}" class="form-control" placeholder="{{cast[person]['person_imdb_id']}}" value="{{cast[person]['person_imdb_id']}}" required>
+                </div>
+                {% set parent_loop = loop %}
+                {% for part in cast[person]["parts_played"] %}
+                    <div class="col-md-12">
+                        <label for="part-{{loop.index0}}" class="form-label">Part</label>
+                        {% if part in character_names %}
+                            <input type="search" list="parts" name="part-{{parent_loop.index0}}-{{loop.index0}}" id="part-{{parent_loop.index0}}-{{loop.index0}}" class="form-control" placeholder="{{part}}" value="{{part}}">    
+                        {% else %} 
+                            <input type="search" list="parts" name="part-{{parent_loop.index0}}-{{loop.index0}}" id="part-{{parent_loop.index0}}-{{loop.index0}}" class="form-control" placeholder="{{part}}">                     
                         {% endif %}
-                    {% endfor %}
-                </select>
-            <li><label for "person_moviedb_id-{{loop.index0}}"><a href="https://www.themoviedb.org/person/{{cast[person]['person_moviedb_id']}}">MovieDB ID</a></label>
-                <input type="text" name="person_moviedb_id-{{loop.index0}}" id="person_moviedb_id-{{loop.index0}}" placeholder="{{cast[person]['person_moviedb_id']}}" value="{{cast[person]['person_moviedb_id']}}" required></li>
-            <li><label for "person_imdb_id-{{loop.index0}}"><a href="https://www.imdb.com/name/{{cast[person]['person_imdb_id']}}">IMDB ID</a></label>
-                <input type="text" name="person_imdb_id-{{loop.index0}}" id="person_imdb_id-{{loop.index0}}" placeholder="{{cast[person]['person_imdb_id']}}" value="{{cast[person]['person_imdb_id']}}" required></li>
-            </li>
-            {% set parent_loop = loop %}
-            {% for part in cast[person]["parts_played"] %}
-
-            <li><label for "part-{{loop.index0}}">Part</label>
-                {% if part in character_names %}
-                    <input type="search" list="parts" name="part-{{parent_loop.index0}}-{{loop.index0}}" id="part-{{parent_loop.index0}}-{{loop.index0}}" placeholder="{{part}}" value="{{part}}">    
-                {% else %} 
-                    <input type="search" list="parts" name="part-{{parent_loop.index0}}-{{loop.index0}}" id="part-{{parent_loop.index0}}-{{loop.index0}}" placeholder="{{part}}">                     
-                {% endif %}
+                        {% if loop.last %}
+                            <input type="hidden" id="part_count-{{parent_loop.index0}}" name="part_count-{{parent_loop.index0}}" value="{{loop.index0}}">
+                        {% endif %}
+                    </div>
+                {% endfor %}
                 {% if loop.last %}
-                    <input type="hidden" id="part_count-{{parent_loop.index0}}" name="part_count-{{parent_loop.index0}}" value="{{loop.index0}}">
+                    <input type="hidden" id="person_count" name="person_count" value="{{loop.index0}}">
                 {% endif %}
             {% endfor %}
-        </ul>
-        {% if loop.last %}
-            <input type="hidden" id="person_count" name="person_count" value="{{loop.index0}}">
-        {% endif %}
-    </div>
-    {% endfor %}
-
-    <input type="submit" value="Submit">
+            <button type="submit" class="btn btn-primary">Submit</button>
     </form>
+</div>
 {% endblock %}
