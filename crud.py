@@ -1,6 +1,7 @@
 """Create, Read, Update, Delete Operations. Listed alphabetically by section."""
 
 from app.models import *
+from app.main.forms import play_titles
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import exists
 import os
@@ -381,19 +382,6 @@ def get_scene_interpretation(interpretation, scene):
     return scene_interpretation
 
 
-def get_interpretation_film(interpretation, film):
-    """Given an interpreation and film, return the related InterpretationFilm object."""
-
-    existing_interpretation_film = db.session.query(exists().where((InterpretationFilm.interpretation_id == interpretation.id) & (InterpretationFilm.film_id == film.id))).scalar()
-    
-    if existing_interpretation_film:
-        interpretation_film = InterpretationFilm.query.filter((InterpretationFilm.interpretation_id == interpretation.id) & (InterpretationFilm.film_id == film.id)).first()
-    else:
-        interpretation_film = add_interpretation_film(interpretation, film)
-
-    return interpretation_film
-
-
 def get_job_by_title(title):
     """Given a job title, return the Job object."""
 
@@ -544,16 +532,15 @@ def get_scene(act, scene, play, title=None, description=None):
 
 
 def get_all_scenes_by_play(play):
-    """Given a play, return any existing related Scene objects in the database in order of act/scene."""
+    """Given a play, retrieve or create scenes and return them in order of act and scene number."""
 
     existing_scenes = db.session.query(exists().where(Scene.play_id == play.id)).scalar()
-    print(f"****************** IN GET_ALL_SCENES, play {play.title} *******************")
-    print(f"****************** EXISTING SCENES: {existing_scenes} *******************")
 
     if existing_scenes:
         scenes = Scene.query.filter(Scene.play_id == play.id).order_by(Scene.act, Scene.scene).all()
     else:
         add_all_scenes(play)
+        parse_folger_scene_descriptions(play)
         scenes = Scene.query.filter(Scene.play_id == play.id).order_by(Scene.act, Scene.scene).all()
 
     return scenes
@@ -665,5 +652,11 @@ def calculate_age_during_film(person, film):
 def seed_play(play):
     scenes = get_all_scenes_by_play(play)
     characters = get_all_characters_by_play(play)
+    
+# def play_or_redirect(shortname, redirect):
+#     """Given a shortname and redirect path, return either a valid play or a return redirect."""
+
+#     if shortname in play_titles:
+#         play = get_play_by_shortname(shortname)
 
 # ----- END: MISC FUNCTIONS ----- #

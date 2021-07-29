@@ -13,8 +13,7 @@ from . import main
 @main.route("/")
 @main.route("/index/")
 def index():
-    from motiveandcue import send_email
-    # send_email("motiveandcue@gmail.com", "Test", "testemail")
+    """Display index page."""
 
     title = "Home"
     return render_template("index.html",
@@ -25,7 +24,7 @@ def index():
 @login_required
 @admin_required
 def admin_index():
-    """Display administrator-facing index page."""
+    """Display administrator-facing index page; return 403 if user not an admin."""
 
     title="Admin"
     return render_template("admin.html", title=title)
@@ -151,10 +150,11 @@ def add_scenes(shortname=None):
     """Add scenes by play shortname using Folger scene information. Prompt for play if not given in URL."""
 
     if shortname:
-        play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
             return redirect("/scenes/add/")
+        
+        play = get_play_by_shortname(shortname)
         scenes = parse_folger_scene_descriptions(play)
 
         title = "Add Scenes"
@@ -178,10 +178,11 @@ def edit_scenes(shortname=None, id=None):
     """Edit all scenes by play shortname, or a specific scene by scene id. Prompt for play if not given in URL."""
 
     if shortname and request.method == "POST": # If the user submitted scene information related to a given play, proces that information
-        play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
             return redirect("/scenes/edit/")
+
+        play = get_play_by_shortname(shortname)
         scene_count = request.form.get("scene_count")
         scene_count = int(scene_count) + 1
 
@@ -208,17 +209,12 @@ def edit_scenes(shortname=None, id=None):
         return redirect(f"/scenes/{shortname}/")
 
     elif shortname: # Edit all scenes for a given play
-        play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
-            return redirect("/scenes/")
-
-        existing_scenes = Scene.query.all()
-        if existing_scenes:
-            scenes = get_all_scenes_by_play(play)
-        else:
-            scenes = parse_folger_scene_descriptions(play)
-
+            return redirect("/scenes/")       
+     
+        play = get_play_by_shortname(shortname)
+        scenes = get_all_scenes_by_play(play)
         characters = get_all_characters_by_play(play)
 
         title = f"Edit {play.title} Scenes"
@@ -239,7 +235,7 @@ def edit_scenes(shortname=None, id=None):
         title = f"Edit Act {scene.act}, Scene {scene.scene} from {scene.play.title}"
         return render_template("scenes-edit.html", scene=scene, form=form, title=title)
 
-    else: # Choose a play to edit scenes for
+    else:
         form = ChoosePlayForm()
         if form.validate_on_submit():
             shortname = form.play.data
@@ -260,10 +256,11 @@ def view_characters(shortname=None, id=None):
     """Display all characters, characters by play shortname, or a specific character by character id. Prompt for play if not given in URL."""
 
     if shortname:
-        play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
             return redirect("/characters/")
+
+        play = get_play_by_shortname(shortname)
         characters = get_all_characters_by_play(play)
 
         title = f"{play.title} Characters"
@@ -279,9 +276,6 @@ def view_characters(shortname=None, id=None):
     if form.validate_on_submit():
         shortname = form.play.data
         play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
-            flash("Please select a valid play.")
-            return redirect("/characters/")
 
         return redirect(f"/characters/{shortname}/")
 
@@ -297,10 +291,11 @@ def add_characters(shortname=None):
     """Add characters by play shortname using Folger character information. Prompt for play if not given in URL."""
 
     if shortname:
-        play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
             return redirect("/characters/add/")
+
+        play = get_play_by_shortname(shortname)
         characters = get_all_characters_by_play(play)
         scenes = get_all_scenes_by_play(play)
 
@@ -351,11 +346,11 @@ def edit_characters(shortname=None, id=None):
         return redirect(f"/characters/{shortname}/")
 
     elif shortname:
-        play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
             return redirect("/characters/edit/")
 
+        play = get_play_by_shortname(shortname)
         characters = get_all_characters_by_play(play)
         scenes = get_all_scenes_by_play(play)
 
@@ -399,10 +394,11 @@ def view_questions(shortname=None, id=None):
     """Display all questions, questions by play shortname, or a specific question by question id. Prompt for play if not given in URL."""
 
     if shortname:
-        play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
             return redirect("/questions/")
+
+        play = get_play_by_shortname(shortname)
         questions = get_all_questions_by_play(play)
 
         title = f"Textual Questions from {play.title}"
@@ -418,7 +414,7 @@ def view_questions(shortname=None, id=None):
     if form.validate_on_submit():
         shortname = form.play.data
         play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
             return redirect("/questions/")
 
@@ -436,11 +432,11 @@ def add_questions(shortname=None):
     """Add questions by play shortname. Prompt for play if not given in URL."""
 
     if shortname:
-        play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
             return redirect("/questions/add/")
 
+        play = get_play_by_shortname(shortname)
         form = make_question_form(db_play=play)
 
         if form.is_submitted():
@@ -483,11 +479,11 @@ def edit_questions(shortname=None, id=None):
     """Edit all questions by play shortname, or a specific question by question id."""
 
     if shortname:
-        play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
             return redirect("/questions/edit/")
 
+        play = get_play_by_shortname(shortname)
         questions = get_all_questions_by_play(play)
 
         title = f"Edit Textual Questions from {play.title}"
@@ -541,10 +537,11 @@ def view_interpretations(shortname=None, id=None):
     """Display all interpretations, interpretations by play shortname, or a specific interpretation by interpretation id. Prompt for play if not given in URL."""
 
     if shortname:
-        play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
             return redirect("/interpretations/")
+
+        play = get_play_by_shortname(shortname)
         interpretations = get_all_interpretations_by_play(play)
 
         title = f"{play.title} Film Interpretations"
@@ -560,9 +557,6 @@ def view_interpretations(shortname=None, id=None):
     if form.validate_on_submit():
         shortname = form.play.data
         play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
-            flash("Please select a valid play.")
-            return redirect("/interpretations/")
 
         return redirect(f"/interpretations/{shortname}/")
 
@@ -580,19 +574,22 @@ def add_interpretations(shortname=None, question_id=None):
 
     if shortname or question_id: 
         if shortname:
-            play = get_play_by_shortname(shortname)
-            if not type(play) == Play:
+            if shortname not in play_titles.keys():
                 flash("Please select a valid play.")
                 return redirect("/interpretations/add/")
+
+            play = get_play_by_shortname(shortname)
             form = make_interpretation_form(db_play=play)
 
         if question_id:
             question = Question.query.get(question_id)
             play = question.play
             shortname = question.play.shortname
-            if not type(play) == Play:
+            if shortname not in play_titles.keys():
                 flash("Please select a valid play.")
                 return redirect("/interpretations/add/")
+
+            play = get_play_by_shortname(shortname)
             form = make_interpretation_form(db_play=play, db_question=question)              
         
         if form.is_submitted():
@@ -603,7 +600,8 @@ def add_interpretations(shortname=None, question_id=None):
             time_end = form.time_end.data  
             question = form.question.data
  
-            interpretation = add_interpretation(question=question, play=play, film=film, title=title, description=description, time_start=time_start, time_end=time_end)
+            interpretation = add_interpretation(question=question, play=play, film=film, title=title, 
+                                    description=description, time_start=time_start, time_end=time_end)
 
             return redirect(f"/interpretations/{interpretation.id}/")
 
@@ -676,17 +674,16 @@ def view_plays(shortname=None, id=None):
 
     if shortname or id:
         if shortname:
+            if shortname not in play_titles.keys():
+                flash("Please select a valid play.")
+                return redirect("/interpretations/add/")
             play = get_play_by_shortname(shortname)
+
         elif id:
             play = Play.query.get(id)
 
-        if not type(play) == Play:
-            flash("Please select a valid play.")
-            return redirect("/plays/")   
-        else:
-
-            title = play.title
-            return render_template("play.html", play=play, title=title)
+        title = play.title
+        return render_template("play.html", play=play, title=title)
         
     else:
         plays = Play.query.all()
@@ -706,11 +703,11 @@ def view_films(shortname=None, id=None):
     """Display all films, films by related play shortname, or a specific film by id."""
 
     if shortname:
-        play = get_play_by_shortname(shortname)
-        if not type(play) == Play:
+        if shortname not in play_titles.keys():
             flash("Please select a valid play.")
             return redirect("/films/")
-        
+
+        play = get_play_by_shortname(shortname)        
         films = get_films_by_play(play)
 
         title = f"{play.title} Films"
@@ -735,9 +732,9 @@ def view_films(shortname=None, id=None):
         form = ChoosePlayForm()
         if form.validate_on_submit():
             shortname = form.play.data
-            play = get_play_by_shortname(shortname)
-            if not type(play) == Play:
+            if shortname not in play_titles.keys():
                 flash("Please select a valid play.")
+                return redirect(f"/films/")
 
             return redirect(f"/films/{shortname}/")
 
