@@ -37,3 +37,15 @@ img.poster {
 img.tiny-poster {
     max-height: 250px;
 }
+
+img.portrait {
+    max-width: 50%;
+}
+
+img.poster {
+    max-width: 50%;
+}
+
+div.form-check.col-md-8 {
+    padding-left: calc(var(--bs-gutter-x) * 2);
+}
