@@ -1,3 +1,4 @@
+from re import escape
 from config import config
 from elasticsearch import Elasticsearch
 from flask import Flask, Blueprint

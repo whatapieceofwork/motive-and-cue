@@ -1,5 +1,6 @@
 # """Data model."""
 
+from app.search import add_to_index, remove_from_index, query_index
 from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import AnonymousUserMixin, UserMixin, login_manager
@@ -11,6 +12,46 @@ from datetime import datetime
 import os
 
 db = SQLAlchemy()
+
+class SearchableMixin(object):
+    @classmethod
+    def search(cls, expression, page, per_page):
+        ids, total = query_index(cls.__tablename__, expression, page, per_page)
+        if total == 0:
+            return cls.query.filter_by(id=0), 0
+        when = []
+        for i in range(len(ids)):
+            when.append((ids[i], i))
+        return cls.query.filter(cls.id.in_(ids)).order_by(db.case(when, value=cls.id)), total
+
+    @classmethod
+    def before_commit(cls, session):
+        session._changes = {
+            "add": list(session.new),
+            "update": list(session.dirty),
+            "delete": list(session.deleted)
+        }
+
+    @classmethod
+    def after_commit(cls, session):
+        for obj in session._changes["add"]:
+            if isinstance(obj, SearchableMixin):
+                add_to_index(obj.__tablename__, obj)
+        for obj in session._changes["update"]:
+            if isinstance(obj, SearchableMixin):
+                add_to_index(obj.__tablename__, obj)
+        for obj in session._changes["delete"]:
+            if isinstance(obj, SearchableMixin):
+                remove_from_index(obj.__tablename__, obj)
+        session._changes = None
+
+    @classmethod
+    def reindex(cls):
+        for obj in cls.query:
+            add_to_index(cls.__tablename__, obj)
+
+db.event.listen(db.session, "before_commit", SearchableMixin.before_commit)
+db.event.listen(db.session, "after_commit", SearchableMixin.after_commit)
 
 
 # ----- BEGIN DATA RELATIONSHIP MODELS ----- #
@@ -172,10 +213,11 @@ GENDERS = {
     0: "Other/NA"
 }
 
-class Character(db.Model):
+class Character(SearchableMixin, db.Model):
     """A character from the play."""
 
     __tablename__ = "characters"
+    __searchable__ = ["name"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -197,10 +239,11 @@ class Character(db.Model):
         return f"{self.name} ({self.play})"
 
 
-class Film(db.Model):
+class Film(SearchableMixin, db.Model):
     """A film adaptation."""
 
     __tablename__ = "films"
+    __searchable__ = ["moviedb_id", "imdb_id", "title", "release_date"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     moviedb_id = db.Column(db.Integer)
@@ -208,6 +251,8 @@ class Film(db.Model):
     title = db.Column(db.String(50), nullable=False, default="English")
     language = db.Column(db.String(15), nullable=False, default="English")
     length = db.Column(db.Integer)
+    overview = db.Column(db.Text)
+    tagline = db.Column(db.Text)
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     poster_path = db.Column(db.String(100))
     release_date = db.Column(db.Date, nullable=False)
@@ -223,10 +268,11 @@ class Film(db.Model):
         return f"{self.title}, {self.release_date}"
 
 
-class Interpretation(db.Model):
+class Interpretation(SearchableMixin, db.Model):
     """A film's specific interpretation of a question point."""
 
     __tablename__ = "interpretations"
+    __searchable__ = ["title", "description"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True, info={"label": "ID"})
     title = db.Column(db.String(100), info={"label": "Title"})
@@ -250,10 +296,11 @@ class Interpretation(db.Model):
         return f"{self.title} ({self.play.title})"
 
 
-class Job(db.Model):
+class Job(SearchableMixin, db.Model):
     """A role a person might serve in a film: actor, director, etc. One person can have many jobs."""
 
     __tablename__ = "jobs"
+    __searchable__ = ["title"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.String(50), nullable=False, unique=True)
@@ -267,10 +314,11 @@ class Job(db.Model):
         return f"{self.title}"
 
 
-class Person(db.Model):
+class Person(SearchableMixin, db.Model):
     """A single person. May have multiple jobs and parts across multiple films."""
 
     __tablename__ = "people"
+    __searchable__ = ["fname", "lname", "moviedb_id", "imdb_id"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     moviedb_id = db.Column(db.Integer)
@@ -293,10 +341,11 @@ class Person(db.Model):
         return f"{self.fname} {self.lname}"
 
 
-class Play(db.Model):
+class Play(SearchableMixin, db.Model):
     """A single play."""
 
     __tablename__ = "plays"
+    __searchable__ = ["title"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.String(50))
@@ -315,10 +364,11 @@ class Play(db.Model):
         return f"{self.title}"
 
 
-class Question(db.Model):
+class Question(SearchableMixin, db.Model):
     """A textual question in the play where multiple interpretations could be made."""
 
     __tablename__ = "questions"
+    __searchable__ = ["title", "description"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True, info={"label": "ID"})
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
@@ -336,10 +386,11 @@ class Question(db.Model):
         return f"{self.title}"
 
 
-class Scene(db.Model):
+class Scene(SearchableMixin, db.Model):
     """A scene from the play."""
 
     __tablename__ = "scenes"
+    __searchable__ = ["title", "description"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     act = db.Column(db.Integer, nullable=False)
@@ -363,10 +414,11 @@ class Scene(db.Model):
             return f"{self.play.title} ({self.act}.{self.scene})"
 
 
-class Topic(db.Model):
+class Topic(SearchableMixin, db.Model):
     """Topic categories for question points, ex: Madness, Casting."""
 
     __tablename__ = "topics"
+    __searchable__ = ["title", "description"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
@@ -381,10 +433,11 @@ class Topic(db.Model):
         return f"{self.title}"
 
 
-class Quote(db.Model):
+class Quote(SearchableMixin, db.Model):
     """A quote from a play."""
 
     __tablename__ = "quotes"
+    __searchable__ = ["text"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     text = db.Column(db.Text)

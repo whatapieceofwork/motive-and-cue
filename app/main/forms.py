@@ -1,5 +1,6 @@
 
 from app.models import *
+from flask import request
 from flask_wtf import FlaskForm
 from wtforms import BooleanField, IntegerField, SelectField, StringField, SubmitField, ValidationError
 from wtforms.fields.simple import TextAreaField
@@ -8,7 +9,6 @@ from wtforms_alchemy import model_form_factory
 from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 
 play_titles = {"AWW": "All's Well That Ends Well", "Ant": "Antony and Cleopatra", "AYL": "As You Like It", "Err": "The Comedy of Errors", "Cor": "Coriolanus", "Cym": "Cymbeline", "Ham": "Hamlet", "1H4": "Henry IV, Part 1", "2H4": "Henry IV, Part 2", "H5": "Henry V", "1H6": "Henry VI, Part 1", "2H6": "Henry VI, Part 2", "3H6": "Henry VI, Part 3", "H8": "Henry VIII", "JC": "Julius Caesar", "Jn": "King John", "Lr": "King Lear", "LLL": "Love's Labor's Lost", "Mac": "Macbeth", "MM": "Measure for Measure", "MV": "The Merchant of Venice", "Wiv": "The Merry Wives of Windsor", "MND": "A Midsummer Night's Dream", "Ado": "Much Ado About Nothing", "Oth": "Othello", "Per": "Pericles", "R2": "Richard II", "R3": "Richard III", "Rom": "Romeo and Juliet", "Shr": "The Taming of the Shrew", "Tmp": "The Tempest", "Tim": "Timon of Athens", "Tit": "Titus Andronicus", "Tro": "Troilus and Cressida", "TN": "Twelfth Night", "TGV": "The Two Gentlemen of Verona", "TNK": "The Two Noble Kinsmen", "WT": "The Winter's Tale"}
-
 
 BaseModelForm = model_form_factory(FlaskForm)
 
@@ -212,3 +212,17 @@ def make_interpretation_form(db_interpretation=None, db_play=None, db_question=N
     return form
 
 # ----- END: INTERPRETATION FORM ----- #
+
+class SearchForm(FlaskForm):
+
+    q = StringField("Search", validators=[DataRequired()])
+
+    def __init__(self, *args, **kwargs):
+        if "formdata" not in kwargs:
+            kwargs["formdata"] = request.args
+        
+        #bypass Flask-WTF's CSRF validation for this form
+        if "csrf_enabled" not in kwargs:
+            kwargs["csrf_enabled"] = False
+
+        super(SearchForm, self).__init__(*args, **kwargs)

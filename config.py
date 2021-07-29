@@ -2,7 +2,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config:
-    ELASTICSEARCH_URL = os.environ.get('ELASTICSEARCH_URL')
+    ELASTICSEARCH_URL = os.environ.get("ELASTICSEARCH_URL")
     HEAD_ADMIN = os.environ.get("ADMIN_EMAIL")
     JSORT_SORT_KEYS = False
     PRESERVE_CONTEXT_ON_EXCEPTION = True
@@ -20,6 +20,8 @@ class Config:
     MAIL_SUBJECT_PREFIX = os.environ.get("MAIL_SUBJECT_PREFIX")
     MAIL_SENDER = os.environ.get("MAIL_SENDER")
     MAIL_SUPPRESS_SEND = False
+
+    POSTS_PER_PAGE = 20
 
     @staticmethod
     def init_app(app):

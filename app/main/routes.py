@@ -6,9 +6,17 @@ from app.main.moviedb_parser import *
 from app.main.crud import *
 from app.models import *
 from datetime import datetime
-from flask import abort, flash, redirect, render_template, request, session, url_for, render_template_string
+from flask import abort, flash, g, redirect, render_template, request, session, url_for, render_template_string
 from flask_login import current_user, login_required
 from . import main
+
+
+@main.before_app_request
+def before_request():
+    if current_user.is_authenticated:
+        current_user.ping()
+    g.search_form = SearchForm()
+
 
 @main.route("/")
 @main.route("/index/")
@@ -104,6 +112,17 @@ def about():
     title = "About"
     return render_template("about.html", title=title)
 
+@main.route("/search")
+def search():
+    if not g.search_form.validate():
+        return redirect("/")
+    page = request.args.get("page", 1, type=int)
+    results, total = Character.search(g.search_form.q.data, page, current_app.config["POSTS_PER_PAGE"])
+    next_url = url_for("main.search", q=g.search_form.q.data, page=page+1) if total > page * current_app.config["POSTS_PER_PAGE"] else None
+    prev_url = url_for("main.search", q=g.search_form.q.data, page=page-1) if page > 1 else None
+
+    title = "Search"
+    return render_template("search.html", title=title, results=results, next_url=next_url, prev_url=prev_url)
 
 # ----- BEGIN: SCENE VIEWS ----- #
 
@@ -782,6 +801,8 @@ def add_film_to_db():
     film = {}
     film["play"] = request.form.get("play")
     film["title"] = request.form.get("title")
+    film["overview"] = request.form.get("overview")
+    film["tagline"] = request.form.get("tagline")
     film["poster_path"] = request.form.get("poster_path")
     film["release_date"] = request.form.get("release_date")
     film["language"] = request.form.get("language")
@@ -790,7 +811,9 @@ def add_film_to_db():
     film["film_imdb_id"] = request.form.get("film_imdb_id")
 
     play = get_play_by_title(film["play"])
-    db_film = get_film(play=play, moviedb_id=film["film_moviedb_id"], imdb_id=film["film_imdb_id"], title=film["title"], release_date=film["release_date"], language=film["language"], length=film["length"], poster_path=film["poster_path"])
+    db_film = get_film(play=play, moviedb_id=film["film_moviedb_id"], imdb_id=film["film_imdb_id"], title=film["title"], 
+                        release_date=film["release_date"], language=film["language"], length=film["length"], overview=film["overview"], 
+                        tagline=["tagline"], poster_path=film["poster_path"])
     
     people = []
     person_count = request.form.get("person_count")
@@ -820,7 +843,7 @@ def add_film_to_db():
             if person["parts"]:
                 get_job_held(db_person, db_film, "Actor")
             for part_name in person["parts"]:
-                get_part_played(person=db_person, character_name=part_name, film=db_film)
+                get_character_actor(person=db_person, character_name=part_name, film=db_film)
 
             people.append(person)
 

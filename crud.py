@@ -97,10 +97,10 @@ def add_question_scene(question, scene):
     return question_scene
 
 
-def add_film(play, moviedb_id, imdb_id, title, release_date, language, length, poster_path):
+def add_film(play, moviedb_id, imdb_id, title, release_date, language, length, overview, tagline, poster_path):
     """Create and return a new Film database record."""
 
-    film = Film(play_id=play.id, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, language=language, length=length, poster_path=poster_path)
+    film = Film(play_id=play.id, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, language=language, length=length, overview=overview, tagline=tagline, poster_path=poster_path)
 
     db.session.add(film)
     db.session.commit()
@@ -169,21 +169,21 @@ def add_scene_interpretation(interpretation, scene):
     return scene_interpretation
 
 
-def add_part_played(person, character_name, film):
-    """Create and return a new PartPlayed database relationship record."""
+def add_character_actor(person, character_name, film):
+    """Create and return a new CharacterActor database relationship record."""
 
     play = get_play_by_film(film)
     character = get_character(name=character_name, play=play)
 
-    print(f"**** IN ADD_PART_PLAYED, play = {play}, person={person}, character_name={character_name}")
+    print(f"**** IN ADD_CHARACTER_ACTOR, play = {play}, person={person}, character_name={character_name}")
 
-    part_played=PartPlayed(person_id=person.id, character_id=character.id, film_id=film.id)
+    character_actor=CharacterActor(person_id=person.id, character_id=character.id, film_id=film.id)
 
-    db.session.add(part_played)
+    db.session.add(character_actor)
     db.session.commit()
 
-    print(f"********* Created {part_played} *********")
-    return part_played
+    print(f"********* Created {character_actor} *********")
+    return character_actor
     
 
 def add_person(moviedb_id, imdb_id, fname, lname, birthday, gender, photo_path):
@@ -410,14 +410,14 @@ def get_job_held(person, film, job_title):
     return job_held
 
 
-def get_film(play, moviedb_id, imdb_id, title, release_date, language, length, poster_path):
+def get_film(play, moviedb_id, imdb_id, title, release_date, language, length, overview, tagline, poster_path):
 
     existing_film = db.session.query(exists().where(Film.moviedb_id == moviedb_id)).scalar()
     
     if existing_film:
         film = Film.query.filter(Film.moviedb_id == moviedb_id).first()
     else:
-        film = add_film(play, moviedb_id, imdb_id, title, release_date, language, length, poster_path)
+        film = add_film(play, moviedb_id, imdb_id, title, release_date, language, length, overview, tagline, poster_path)
     
     return film
 
@@ -460,20 +460,20 @@ def get_person(moviedb_id, imdb_id, fname, lname, birthday, gender, photo_path):
     return person
 
 
-def get_part_played(person, character_name, film):
+def get_character_actor(person, character_name, film):
     """Given a person's information, create (or return) a Person object."""
 
     play = get_play_by_film(film)
     character = get_character(name=character_name, play=play)
 
-    existing_part_played = db.session.query(exists().where((PartPlayed.person_id == person.id) & (PartPlayed.character_id == character.id) & (PartPlayed.film_id == film.id))).scalar()
+    existing_character_actor = db.session.query(exists().where((CharacterActor.person_id == person.id) & (CharacterActor.character_id == character.id) & (CharacterActor.film_id == film.id))).scalar()
 
-    if existing_part_played:
-        part_played = PartPlayed.query.filter((PartPlayed.person_id == person.id) & (PartPlayed.character_id == character.id) & (PartPlayed.film_id == film.id)).first()
+    if existing_character_actor:
+        character_actor = CharacterActor.query.filter((CharacterActor.person_id == person.id) & (CharacterActor.character_id == character.id) & (CharacterActor.film_id == film.id)).first()
     else:
-        part_played = add_part_played(person=person, character_name=character_name, film=film)
+        character_actor = add_character_actor(person=person, character_name=character_name, film=film)
     
-    return part_played
+    return character_actor
 
 
 def get_play_by_shortname(shortname):
@@ -653,10 +653,4 @@ def seed_play(play):
     scenes = get_all_scenes_by_play(play)
     characters = get_all_characters_by_play(play)
     
-# def play_or_redirect(shortname, redirect):
-#     """Given a shortname and redirect path, return either a valid play or a return redirect."""
-
-#     if shortname in play_titles:
-#         play = get_play_by_shortname(shortname)
-
 # ----- END: MISC FUNCTIONS ----- #
