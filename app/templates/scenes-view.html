@@ -3,7 +3,8 @@
 {% block page_content %}
     {% if play and current_user.is_admin() %}
         <p><em><a href="/scenes/edit/{{play.shortname}}">Edit scenes</a></em></p>
-    {% else %}    
+    {% endif %}
+    {% if form %}    
         {{ render_form(form) }}
     {% endif %}
 
