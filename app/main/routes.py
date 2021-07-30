@@ -118,7 +118,9 @@ def search():
         return redirect("/")
     page = request.args.get("page", 1, type=int)
     results, total = Character.search(g.search_form.q.data, page, current_app.config["POSTS_PER_PAGE"])
-    next_url = url_for("main.search", q=g.search_form.q.data, page=page+1) if total > page * current_app.config["POSTS_PER_PAGE"] else None
+    print(f"************************* RESULTS: {results}")
+    # next_url = url_for('main.search', q=g.search_form.q.data, page=page + 1) if total > page * current_app.config['POSTS_PER_PAGE'] else None
+    next_url = url_for("main.search", q=g.search_form.q.data, page=page+1)
     prev_url = url_for("main.search", q=g.search_form.q.data, page=page-1) if page > 1 else None
 
     title = "Search"

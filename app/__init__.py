@@ -13,6 +13,7 @@ from sqlalchemy.sql import exists
 
 # db = SQLAlchemy()
 bootstrap = Bootstrap()
+es = Elasticsearch()
 login_manager = LoginManager()
 mail = Mail()
 moment = Moment()
