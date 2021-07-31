@@ -2,8 +2,13 @@
     <a href="{{ object.__tablename__ }}/{{ object.id }}">
     {% if object.name %}
         {{ object.name }}
+    {% elif object.act %}
+        Act {{ object.act }}, Scene {{ object.scene }}
     {% elif object.title %}
         {{ object.title }}
     {% endif %}
     </a>
+    {% if object.description %}
+        {{ object.description }}
+    {% endif %}
 {%- endmacro %}

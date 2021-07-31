@@ -357,6 +357,7 @@ class Question(db.Model):
         return f"<CHOICE id={self.id} {self.title}>"
 
 
+@whooshee.register_model("title", "description")
 class Scene(db.Model):
     """A scene from the play."""
 

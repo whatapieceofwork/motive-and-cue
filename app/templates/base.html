@@ -75,10 +75,9 @@
                         <button class="btn btn-outline-success" type="submit">Search</button>
                     </form> -->
                     <form class="d-flex" method="get" action="/search">
-                        {{ g.search_form.q(size=20, class='form-control',
-                            placeholder=g.search_form.q.label.text) }}
-                        <!-- <input class="form-control me-2" id="search" type="text" placeholder="Search" aria-label="Search">
-                        <button class="btn btn-outline-success" type="submit">Search</button> -->
+                        {{ g.search_form.query(size=20, class='form-control',
+                            placeholder=g.search_form.query.label.text) }}
+                        <button class="btn btn-outline-success" type="submit">Search</button>
                     </form>
                 </div>
             </div>

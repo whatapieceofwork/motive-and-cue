@@ -114,23 +114,38 @@ def about():
 
 @main.route("/search", methods=["GET", "POST"])
 def search():
-    
-    form = SearchForm()
-    if not g.search_form.validate():
-        return redirect(url_for('main.index'))
-    q = form.q.data
-    results = []
-    results += Character.query.whooshee_search(q).order_by(Character.id.desc()).all()
-    results += Film.query.whooshee_search(q).order_by(Film.id.desc()).all()
-    results += Interpretation.query.whooshee_search(q).order_by(Interpretation.id.desc()).all()
-    results += Job.query.whooshee_search(q).order_by(Job.id.desc()).all()
-    results += Person.query.whooshee_search(q).order_by(Person.id.desc()).all()
-    results += Play.query.whooshee_search(q).order_by(Play.id.desc()).all()
-    results += Question.query.whooshee_search(q).order_by(Question.id.desc()).all()
 
     title = "Search"
+    advanced_search_form = AdvancedSearchForm()
+    results = []
 
-    return render_template("search.html", title=title, results=results)
+    if request.method == "POST" or request.method == "GET":
+        if not g.search_form.validate() and not advanced_search_form.validate():
+            flash("Search error. Please try again.", "error")
+            return redirect(url_for('main.index'))
+ 
+        # prioritize search queries made from the Search page
+        if advanced_search_form.search_field.query.data:
+            query = advanced_search_form.search_field.query.data
+            advanced_search_form.search_field.query.data = query #set default value of search to current query
+        else:
+            query = g.search_form.query.data
+            advanced_search_form.search_field.query.data = query
+
+        #####
+        # TO IMPLEMENT: NARROW SEARCH BY CHOSEN FACETS
+        #####
+
+        results += Character.query.whooshee_search(query).order_by(Character.id.desc()).all()
+        results += Film.query.whooshee_search(query).order_by(Film.id.desc()).all()
+        results += Interpretation.query.whooshee_search(query).order_by(Interpretation.id.desc()).all()
+        results += Job.query.whooshee_search(query).order_by(Job.id.desc()).all()
+        results += Person.query.whooshee_search(query).order_by(Person.id.desc()).all()
+        results += Play.query.whooshee_search(query).order_by(Play.id.desc()).all()
+        results += Question.query.whooshee_search(query).order_by(Question.id.desc()).all()
+        results += Scene.query.whooshee_search(query).order_by(Scene.id.desc()).all()
+    
+    return render_template("search.html", title=title, results=results, query=query, advanced_search_form=advanced_search_form)
 
 # ----- BEGIN: SCENE VIEWS ----- #
 

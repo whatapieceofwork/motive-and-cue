@@ -2,7 +2,7 @@
 from app.models import *
 from flask import request
 from flask_wtf import FlaskForm
-from wtforms import BooleanField, IntegerField, SelectField, StringField, SubmitField, ValidationError
+from wtforms import BooleanField, FormField, IntegerField, SelectField, StringField, SubmitField, ValidationError
 from wtforms.fields.simple import TextAreaField
 from wtforms.validators import DataRequired, Email, Length, Regexp
 from wtforms_alchemy import model_form_factory
@@ -181,15 +181,15 @@ def make_interpretation_form(db_interpretation=None, db_play=None, db_question=N
             order_after = ["scenes", "submit"]
 
         if db_interpretation: # Used when an existing Interpretation is used as the model object for the form
-            play = QuerySelectField('Play', 
+            play = QuerySelectField("Play", 
                                     query_factory=Play.query.all,
                                     default=db_interpretation.play) # Defaults to the existing Interpretation's play
-            question = QuerySelectField('Question', 
+            question = QuerySelectField("Question", 
                                     query_factory=Question.query.filter(Question.play_id == db_play.id).all,
                                     default=db_interpretation.question) # Defaults to the existing Interpretation's question
 
         else:
-            play = QuerySelectField('Play', 
+            play = QuerySelectField("Play", 
                                 query_factory=Play.query.all,
                                 default=db_play)
             question = QuerySelectField('Question', 
@@ -215,7 +215,8 @@ def make_interpretation_form(db_interpretation=None, db_play=None, db_question=N
 
 class SearchForm(FlaskForm):
 
-    q = StringField("Search", validators=[DataRequired()])
+    query = StringField("Search", validators=[DataRequired()])
+    # submit = SubmitField("Submit")
 
     def __init__(self, *args, **kwargs):
         if "formdata" not in kwargs:
@@ -226,3 +227,22 @@ class SearchForm(FlaskForm):
             kwargs["csrf_enabled"] = False
 
         super(SearchForm, self).__init__(*args, **kwargs)
+
+
+class SearchFacetsForm(FlaskForm):
+
+    character = BooleanField("Character", default="checked")
+    film = BooleanField("Film", default="checked")
+    interpretation = BooleanField("Interpretation", default="checked")
+    job = BooleanField("Job", default="checked")
+    person = BooleanField("Person", default="checked")
+    play = BooleanField("Play", default="checked")
+    scene = BooleanField("Scene", default="checked")
+    question = BooleanField("Question", default="checked")
+
+
+class AdvancedSearchForm(FlaskForm):
+
+    search_field = FormField(SearchForm)
+    search_facets = FormField(SearchFacetsForm)
+    submit = SubmitField("Submit")

@@ -49,3 +49,9 @@ img.poster {
 div.form-check.col-md-8 {
     padding-left: calc(var(--bs-gutter-x) * 2);
 }
+
+/* Hiding redundant labels on Search page */
+fieldset label[for="search_field"],
+fieldset label[for="search_facets"] {
+    display: none;
+}
