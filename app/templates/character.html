@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    {% if current_user.is_admin() %}
+    {% if current_user.is_admin() and character %}
         <p><em><a href="/characters/edit/{{character.id}}/">Edit Character</a></em></p>
     {% endif %}
 

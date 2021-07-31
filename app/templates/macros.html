@@ -1,0 +1,9 @@
+{% macro as_link(object) -%}
+    <a href="{{ object.__tablename__ }}/{{ object.id }}">
+    {% if object.name %}
+        {{ object.name }}
+    {% elif object.title %}
+        {{ object.title }}
+    {% endif %}
+    </a>
+{%- endmacro %}

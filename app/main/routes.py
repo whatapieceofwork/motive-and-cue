@@ -1,8 +1,8 @@
 from app import db
 from app.decorators import admin_required, permission_required
-from app.main.folger_parser import *
+from app.main.folger_parser import parse_folger_characters, parse_folger_scene_descriptions, parse_folger_scenes
 from app.main.forms import *
-from app.main.moviedb_parser import *
+from app.main.moviedb_parser import parse_moviedb_cast, parse_moviedb_crew, parse_moviedb_film, parse_moviedb_film_details, parse_moviedb_person
 from app.main.crud import *
 from app.models import *
 from datetime import datetime
@@ -112,19 +112,25 @@ def about():
     title = "About"
     return render_template("about.html", title=title)
 
-@main.route("/search")
+@main.route("/search", methods=["GET", "POST"])
 def search():
+    
+    form = SearchForm()
     if not g.search_form.validate():
-        return redirect("/")
-    page = request.args.get("page", 1, type=int)
-    results, total = Character.search(g.search_form.q.data, page, current_app.config["POSTS_PER_PAGE"])
-    print(f"************************* RESULTS: {results}")
-    # next_url = url_for('main.search', q=g.search_form.q.data, page=page + 1) if total > page * current_app.config['POSTS_PER_PAGE'] else None
-    next_url = url_for("main.search", q=g.search_form.q.data, page=page+1)
-    prev_url = url_for("main.search", q=g.search_form.q.data, page=page-1) if page > 1 else None
+        return redirect(url_for('main.index'))
+    q = form.q.data
+    results = []
+    results += Character.query.whooshee_search(q).order_by(Character.id.desc()).all()
+    results += Film.query.whooshee_search(q).order_by(Film.id.desc()).all()
+    results += Interpretation.query.whooshee_search(q).order_by(Interpretation.id.desc()).all()
+    results += Job.query.whooshee_search(q).order_by(Job.id.desc()).all()
+    results += Person.query.whooshee_search(q).order_by(Person.id.desc()).all()
+    results += Play.query.whooshee_search(q).order_by(Play.id.desc()).all()
+    results += Question.query.whooshee_search(q).order_by(Question.id.desc()).all()
 
     title = "Search"
-    return render_template("search.html", title=title, results=results, next_url=next_url, prev_url=prev_url)
+
+    return render_template("search.html", title=title, results=results)
 
 # ----- BEGIN: SCENE VIEWS ----- #
 
@@ -330,7 +336,7 @@ def add_characters(shortname=None):
         return redirect(f"/characters/add/{shortname}/")
 
     title = "Add Characters"
-    return render_template("choose-play.html", form=form, title=title)
+    return render_template("characters-edit.html", form=form, title=title)
 
 
 @main.route("/characters/edit/", methods=["GET", "POST"])
@@ -867,6 +873,7 @@ def test_reboot():
     db.session.commit() # closes existing database connections to prevent issues when dropping tables
     db.drop_all()
     db.create_all()
+    whooshee.reindex()
     make_admin()
     
     flash("Good job, you successfully broke everything!", "success")
@@ -879,6 +886,7 @@ def test_refresh():
     """A much less dangerous route to update tables."""
 
     db.create_all()
+    whooshee.reindex()
     flash("Tables re-created.", "success")
 
     return redirect("/index/")

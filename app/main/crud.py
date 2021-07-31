@@ -1,5 +1,5 @@
 from app import db
-from app.main.folger_parser import *
+from app.main.folger_parser import parse_folger_characters, parse_folger_scene_descriptions, parse_folger_scenes
 from app.main.forms import *
 from app.main.moviedb_parser import parse_moviedb_film_details
 from app.models import *

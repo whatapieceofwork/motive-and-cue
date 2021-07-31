@@ -1,24 +1,7 @@
 {% extends "base.html" %}
 
-{% block app_content %}
-{{results}}
+{% block page_content %}
     {% for result in results %}
-        {{ result }}
+        <p>{{(result).__class__.__name__}}: {{ macros.as_link(result) }}</p>
     {% endfor %}
-    <nav aria-label="...">
-        <ul class="pager">
-            <li class="previous{% if not prev_url %} disabled{% endif %}">
-                <a href="{{ prev_url or '#' }}">
-                    <span aria-hidden="true">&larr;</span>
-                    {{ Previous }}
-                </a>
-            </li>
-            <li class="next{% if not next_url %} disabled{% endif %}">
-                <a href="{{ next_url or '#' }}">
-                    {{ Next }}
-                    <span aria-hidden="true">&rarr;</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
 {% endblock %}

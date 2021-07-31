@@ -1,7 +1,7 @@
 """Classes and functions used for parsing Folger Shakespeare API data."""
 
 from bs4 import BeautifulSoup
-from crud import *
+
 import re
 import requests
 
@@ -24,6 +24,7 @@ def parse_folger_characters(play):
       characters[count] = (name, wordcount)
       count += 1
 
+  print(f"**********IN FOLGERPARSECHAR, CHAR: {characters}")
   return characters
 
 
@@ -52,8 +53,7 @@ def parse_folger_scenes(play):
 
 def parse_folger_scene_descriptions(play):
   """Retrieve the Folger API scene descriptions for a play and update any existing Scene objects without a description."""
-
-  from crud import get_scene, get_all_scenes_by_play, update_scene
+  from app.main.crud import get_scene, update_scene, get_all_scenes_by_play
 
   shortname = play.shortname
   synopses_page_url = f"https://folgerdigitaltexts.org/{shortname}/synopsis/"

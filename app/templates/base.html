@@ -70,17 +70,16 @@
                           </select>
                         </li>
                     </ul>
-                    <form class="d-flex">
+                    <!-- <form class="d-flex">
                         <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
                         <button class="btn btn-outline-success" type="submit">Search</button>
+                    </form> -->
+                    <form class="d-flex" method="get" action="/search">
+                        {{ g.search_form.q(size=20, class='form-control',
+                            placeholder=g.search_form.q.label.text) }}
+                        <!-- <input class="form-control me-2" id="search" type="text" placeholder="Search" aria-label="Search">
+                        <button class="btn btn-outline-success" type="submit">Search</button> -->
                     </form>
-                    {% if g.search_form %}
-                        <form class="navbar-form navbar-left" method="get" action="{{ url_for('main.search') }}">
-                            <div class="form-group">
-                                {{ g.search_form.q(size=20, class="form-control", placeholder=g.search_form.q.label.text) }}
-                            </div>
-                        </form>
-                    {% endif %}
                 </div>
             </div>
         </nav>

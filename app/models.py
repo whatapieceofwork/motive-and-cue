@@ -1,57 +1,20 @@
 # """Data model."""
 
-from app.search import add_to_index, remove_from_index, query_index
+# from app.search import add_to_index, remove_from_index, query_index
 from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import AnonymousUserMixin, UserMixin, login_manager
+from flask_whooshee import AbstractWhoosheer, Whooshee
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from sqlalchemy import *
-from sqlalchemy.orm import backref, relationship
+from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
+from sqlalchemy.orm import backref, relationship, reconstructor
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import os
 
 db = SQLAlchemy()
-
-class SearchableMixin(object):
-    @classmethod
-    def search(cls, expression, page, per_page):
-        ids, total = query_index(cls.__tablename__, expression, page, per_page)
-        if total == 0:
-            return cls.query.filter_by(id=0), 0
-        when = []
-        for i in range(len(ids)):
-            when.append((ids[i], i))
-        return cls.query.filter(cls.id.in_(ids)).order_by(db.case(when, value=cls.id)), total
-
-    @classmethod
-    def before_commit(cls, session):
-        session._changes = {
-            "add": list(session.new),
-            "update": list(session.dirty),
-            "delete": list(session.deleted)
-        }
-
-    @classmethod
-    def after_commit(cls, session):
-        for obj in session._changes["add"]:
-            if isinstance(obj, SearchableMixin):
-                add_to_index(obj.__tablename__, obj)
-        for obj in session._changes["update"]:
-            if isinstance(obj, SearchableMixin):
-                add_to_index(obj.__tablename__, obj)
-        for obj in session._changes["delete"]:
-            if isinstance(obj, SearchableMixin):
-                remove_from_index(obj.__tablename__, obj)
-        session._changes = None
-
-    @classmethod
-    def reindex(cls):
-        for obj in cls.query:
-            add_to_index(cls.__tablename__, obj)
-
-db.event.listen(db.session, "before_commit", SearchableMixin.before_commit)
-db.event.listen(db.session, "after_commit", SearchableMixin.after_commit)
+whooshee = Whooshee()
 
 
 # ----- BEGIN DATA RELATIONSHIP MODELS ----- #
@@ -213,7 +176,8 @@ GENDERS = {
     0: "Other/NA"
 }
 
-class Character(SearchableMixin, db.Model):
+@whooshee.register_model("name")
+class Character(db.Model):
     """A character from the play."""
 
     __tablename__ = "characters"
@@ -238,8 +202,8 @@ class Character(SearchableMixin, db.Model):
     def __str__(self):
         return f"{self.name} ({self.play})"
 
-
-class Film(SearchableMixin, db.Model):
+@whooshee.register_model("moviedb_id", "imdb_id", "title", "release_date")
+class Film(db.Model):
     """A film adaptation."""
 
     __tablename__ = "films"
@@ -268,7 +232,8 @@ class Film(SearchableMixin, db.Model):
         return f"{self.title}, {self.release_date}"
 
 
-class Interpretation(SearchableMixin, db.Model):
+@whooshee.register_model("title", "description")
+class Interpretation(db.Model):
     """A film's specific interpretation of a question point."""
 
     __tablename__ = "interpretations"
@@ -296,7 +261,8 @@ class Interpretation(SearchableMixin, db.Model):
         return f"{self.title} ({self.play.title})"
 
 
-class Job(SearchableMixin, db.Model):
+@whooshee.register_model("title")
+class Job(db.Model):
     """A role a person might serve in a film: actor, director, etc. One person can have many jobs."""
 
     __tablename__ = "jobs"
@@ -314,7 +280,8 @@ class Job(SearchableMixin, db.Model):
         return f"{self.title}"
 
 
-class Person(SearchableMixin, db.Model):
+@whooshee.register_model("fname", "lname", "moviedb_id", "imdb_id")
+class Person(db.Model):
     """A single person. May have multiple jobs and parts across multiple films."""
 
     __tablename__ = "people"
@@ -341,7 +308,8 @@ class Person(SearchableMixin, db.Model):
         return f"{self.fname} {self.lname}"
 
 
-class Play(SearchableMixin, db.Model):
+@whooshee.register_model("title")
+class Play(db.Model):
     """A single play."""
 
     __tablename__ = "plays"
@@ -364,7 +332,8 @@ class Play(SearchableMixin, db.Model):
         return f"{self.title}"
 
 
-class Question(SearchableMixin, db.Model):
+@whooshee.register_model("title", "description")
+class Question(db.Model):
     """A textual question in the play where multiple interpretations could be made."""
 
     __tablename__ = "questions"
@@ -378,15 +347,17 @@ class Question(SearchableMixin, db.Model):
     # scenes = db.relationship("Scene", secondary="scene_questions", back_populates="questions")
     # characters = db.relationship("Character", secondary="character_questions", back_populates="questions")
     interpretations = db.relationship("Interpretation", back_populates="question")
+    # url = db.Column(db.String(500))
+
+    # @reconstructor
+    # def init_on_load(self):
+    #     self.url = f"/{self.__tablename__}/{self.id}"
 
     def __repr__(self):
         return f"<CHOICE id={self.id} {self.title}>"
 
-    def __str__(self):
-        return f"{self.title}"
 
-
-class Scene(SearchableMixin, db.Model):
+class Scene(db.Model):
     """A scene from the play."""
 
     __tablename__ = "scenes"
@@ -414,7 +385,7 @@ class Scene(SearchableMixin, db.Model):
             return f"{self.play.title} ({self.act}.{self.scene})"
 
 
-class Topic(SearchableMixin, db.Model):
+class Topic(db.Model):
     """Topic categories for question points, ex: Madness, Casting."""
 
     __tablename__ = "topics"
@@ -433,7 +404,7 @@ class Topic(SearchableMixin, db.Model):
         return f"{self.title}"
 
 
-class Quote(SearchableMixin, db.Model):
+class Quote(db.Model):
     """A quote from a play."""
 
     __tablename__ = "quotes"
