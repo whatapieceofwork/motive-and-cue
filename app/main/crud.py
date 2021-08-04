@@ -39,6 +39,14 @@ def get_user_by_username(username):
     user = User.query.filter(User.username == username).first()
     return user
 
+
+def get_roles():
+    """Update and return the current list of roles."""
+
+    Role.insert_roles()
+    roles = Role.query.all()
+    return roles
+
 # ----- END USER AUTHENTICATION FUNCTIONS ----- #
 
 # ----- BEGIN: AUTHORIZATION FUNCTIONS ----- #
@@ -127,10 +135,12 @@ def add_question_scene(question, scene):
     return question_scene
 
 
-def add_film(play, moviedb_id, imdb_id, title, release_date, language, length, poster_path):
+def add_film(play, moviedb_id, imdb_id, title, release_date, language, tagline, overview, length, watch_providers, poster_path):
     """Create and return a new Film database record."""
 
-    film = Film(play_id=play.id, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, language=language, length=length, poster_path=poster_path)
+    film = Film(play_id=play.id, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, 
+                language=language, tagline=tagline, overview=overview, length=length, watch_providers=watch_providers,
+                poster_path=poster_path)
 
     db.session.add(film)
     db.session.commit()
@@ -438,29 +448,31 @@ def get_job_by_title(title):
     return job
 
 
-def get_job_held(person, film, job_title):
+def get_person_job(person, film, job_title):
     """Given a person, film and job title, return (or create and return) a PersonJob object."""
 
     job = get_job_by_title(job_title)
 
-    existing_job_held = db.session.query(exists().where((PersonJob.person_id == person.id) & (PersonJob.film_id == film.id) & (PersonJob.job_id == job.id))).scalar()
+    existing_person_job = db.session.query(exists().where((PersonJob.person_id == person.id) & (PersonJob.film_id == film.id) & (PersonJob.job_id == job.id))).scalar()
     
-    if existing_job_held:
-        job_held = PersonJob.query.filter((PersonJob.person_id == person.id) & (PersonJob.film_id == film.id) & (PersonJob.job_id == job.id)).first()
+    if existing_person_job:
+        person_job = PersonJob.query.filter((PersonJob.person_id == person.id) & (PersonJob.film_id == film.id) & (PersonJob.job_id == job.id)).first()
     else:
-        job_held = add_job_held(film, job, person)
+        person_job = add_person_job(film, job, person)
     
-    return job_held
+    return person_job
 
 
-def get_film(play, moviedb_id, imdb_id, title, release_date, language, length, poster_path):
+def get_film(play, moviedb_id, imdb_id, title, release_date, language, tagline, overview, length, watch_providers, poster_path):
 
     existing_film = db.session.query(exists().where(Film.moviedb_id == moviedb_id)).scalar()
     
     if existing_film:
         film = Film.query.filter(Film.moviedb_id == moviedb_id).first()
     else:
-        film = add_film(play, moviedb_id, imdb_id, title, release_date, language, length, poster_path)
+        film = add_film(play=play, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, 
+                        language=language, length=length, overview=overview, tagline=tagline, watch_providers=watch_providers,
+                        poster_path=poster_path)
     
     return film
 
@@ -521,6 +533,8 @@ def get_character_actor(person, character_name, film):
 
 def get_play_by_shortname(shortname):
     """Given a play's shortname, return the play."""
+
+    from app.main.forms import play_titles
 
     existing_play = db.session.query(exists().where(Play.shortname == shortname)).scalar()
 
@@ -693,8 +707,14 @@ def calculate_age_during_film(person, film):
 
     return age
 
+
 def seed_play(play):
     scenes = get_all_scenes_by_play(play)
     characters = get_all_characters_by_play(play)
+
+
+def delete_object(object):
+    db.session.delete(object)
+    db.session.commit()
 
 # ----- END: MISC FUNCTIONS ----- #

@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block h2 %}Hello{% if current_user.is_authenticated %}, {{ current_user.username }}{% endif %}.{% endblock %}
+{% block main_header %}Hello{% if current_user.is_authenticated %}, {{ current_user.username }}{% endif %}.{% endblock %}
 
 {% block page_content %}
     <div>
@@ -13,7 +13,7 @@
         <h2>Films</h2>
         <ul>
             <li><a href="/films">View Films</a></li>
-            <li><a href="/add-film">Add Film (via MovieDB)</a></li>
+            <li><a href="/films/add">Add Film (via MovieDB)</a></li>
         </ul>
     </div>
     <div>
@@ -48,7 +48,6 @@
             <li><a href="/interpretations">View Interpretations</a></li>
             <li><a href="/interpretations/add">Add Interpretation</a></li>
             <li><a href="/interpretations/edit">Edit Interpretations</a></li>
-    
         </ul>
     </div>
 {% endblock %}

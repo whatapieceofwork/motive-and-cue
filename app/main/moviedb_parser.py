@@ -39,6 +39,10 @@ def parse_moviedb_film_details(moviedb_id, play):
 
     details_request_url = "https://api.themoviedb.org/3/movie/" + str(moviedb_id) + "?api_key=" + MOVIEDB_API_KEY + "&language=en-US"
     details = requests.get(details_request_url).json()
+    # Watch provider information courtesy of JustWatch
+    watch_request_url = "https://api.themoviedb.org/3/movie/" + str(moviedb_id) + "/watch/providers?api_key=" + MOVIEDB_API_KEY + "&language=en-US"
+    watch_providers = requests.get(watch_request_url).json()
+    print(f"******************************* Watch providers: {watch_providers} ***************************")
 
     film["film_moviedb_id"] = moviedb_id
     film["film_imdb_id"] = details["imdb_id"]
@@ -48,16 +52,14 @@ def parse_moviedb_film_details(moviedb_id, play):
     film["language"] = details["original_language"]
     film["length"] = details["runtime"]
     film["overview"] = details["overview"]
-    film["tagline"] = details["tagline"]
+    film["tagline"] = str(details["tagline"])
+    print(f"******************************* Overview: {details['overview']} ***************************")
+    print(f"******************************* Tagline: {details['tagline']} ***************************")
     film["play_id"] = play.id
+    film["watch_providers"] = str(watch_providers)
     if details["poster_path"]:
         film["poster_path"] = "https://www.themoviedb.org/t/p/original" + details.get("poster_path")
 
-    # Watch provider information courtesy of JustWatch
-    watch_request_url = "https://api.themoviedb.org/3/movie/" + str(moviedb_id) + "/watch/providers?api_key=" + MOVIEDB_API_KEY + "&language=en-US"
-    watch_providers = details = requests.get(watch_request_url).json()
-
-    film["watch_providers"] = watch_providers
 
     return film
 

@@ -2,16 +2,16 @@
 
 {% block page_content %}
     {% if play and current_user.is_admin() %}
-        <p><em><a href="/choices/add/{{play.shortname}}/">Add {{play.title}} choices</a></em></p>
+        <p><em><a href="/questions/add/{{play.shortname}}/">Add {{play.title}} questions</a></em></p>
     {% endif %}
 
     {% if form %}
         {{ render_form(form) }}
-    {% elif choices %}
-    <div class="choices-list">
+    {% elif questions %}
+    <div class="questions-list">
         <ul>
-            {% for choice in choices %}
-                <li><a href="/choices/edit/{{choice.id}}/">{{choice.title}}</a></li>
+            {% for question in questions %}
+                <li><a href="/questions/edit/{{question.id}}/">{{question.title}}</a></li>
             {% endfor %}
         </ul>
     </div>

@@ -3,29 +3,29 @@
 {% block page_content %}
 
     {% if current_user.is_admin() %}
-        <p><em><a href="/choices/edit/{{choice.id}}">Edit choice</a></em><br/>
-        <em><a href="/interpretations/add/{{choice.id}}">Add interpretation</a></em></p>
+        <p><em><a href="/questions/edit/{{question.id}}">Edit question</a></em><br/>
+        <em><a href="/interpretations/add/{{question.id}}">Add interpretation</a></em></p>
     {% endif %}
 
-    <div id="choice-metadata">
+    <div id="question-metadata">
         <ul>
-            <li>ID: {{choice.id}}</li>
-            <li>Play: <a href="/plays/{{choice.play.id}}/">{{choice.play.title}}</a></li>
-            <li>Title: {{choice.title}}</li>
-            <li>Description: {{choice.description}}</li>
-            {% if choice['interpretations'] %}
+            <li>ID: {{question.id}}</li>
+            <li>Play: <a href="/plays/{{question.play.id}}/">{{question.play.title}}</a></li>
+            <li>Title: {{question.title}}</li>
+            <li>Description: {{question.description}}</li>
+            {% if question['interpretations'] %}
                 <li>Related Interpretations</li>
                     <ul>
-                        {% for interpretation in choice['interpretations'] %}
+                        {% for interpretation in question['interpretations'] %}
                             <li><a href="/interpretations/{{interpretation.id}}/">{{interpretation.title}}</a></li>
                         {% endfor %}
                     </ul>
                 </ul>
             {% endif %}
-            {% if choice['characters'] %}
+            {% if question['characters'] %}
             <li>Related Characters:
                 <ul>
-                {% for character in choice.characters%}
+                {% for character in question.characters%}
                     <li><a href="/characters/{{character.id}}/">{{character.name}}</a></li>
                 {% endfor %}
                 </ul>

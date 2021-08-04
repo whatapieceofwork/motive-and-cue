@@ -24,4 +24,7 @@ def make_admin():
         return admin
     else:
         admin = create_user(username=username, email=email, password_hash=password_hash, name=name, about=about)
+        admin.confirmed = True
+        db.session.add(admin)
+        db.session.commit()
         return admin

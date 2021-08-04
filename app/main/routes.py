@@ -2,7 +2,7 @@ from app import db
 from app.decorators import admin_required, permission_required
 from app.main.folger_parser import parse_folger_characters, parse_folger_scene_descriptions, parse_folger_scenes
 from app.main.forms import *
-from app.main.moviedb_parser import parse_moviedb_cast, parse_moviedb_crew, parse_moviedb_film, parse_moviedb_film_details, parse_moviedb_person
+from app.main.moviedb_parser import parse_moviedb_cast, parse_moviedb_crew, parse_moviedb_film, parse_moviedb_film_details, parse_moviedb_person, get_moviedb_film_id
 from app.main.crud import *
 from app.models import *
 from datetime import datetime
@@ -16,6 +16,7 @@ def before_request():
     if current_user.is_authenticated:
         current_user.ping()
     g.search_form = SearchForm()
+    g.plays = Play.query.all()
 
 
 @main.route("/")
@@ -27,6 +28,14 @@ def index():
     return render_template("index.html",
                             current_time=datetime.utcnow(), title=title)
  
+ 
+@main.route("/browse/")
+def browse():
+    """Display browse page."""
+
+    title = "Browse"
+    return render_template("browse.html")
+
 
 @main.route("/admin", methods=["GET", "POST"])
 @login_required
@@ -57,7 +66,7 @@ def profile_edit():
     form.about.data = current_user.about
 
     title="Edit Profile"
-    return render_template("profile_edit.html", form=form, title=title)
+    return render_template("profile-edit.html", form=form, title=title)
 
 
 @main.route("/edit-profile/<int:id>", methods=["GET", "POST"])
@@ -90,7 +99,7 @@ def profile_edit_admin(id):
     form.about.data = user.about
 
     title = "Edit User Profile"
-    return render_template("profile_edit.html", form=form, user=user, title=title)
+    return render_template("profile-edit.html", form=form, user=user, title=title)
 
 
 @main.route("/user/<username>")
@@ -412,7 +421,7 @@ def edit_characters(shortname=None, id=None):
 
             return redirect(f"/characters/{id}/")
     
-        title = f"Edit {character.title} from {character.play.title}"
+        title = f"Edit {character.name} from {character.play.title}"
         return render_template("characters-edit.html", character=character, form=form, title=title)
 
     else:
@@ -499,7 +508,7 @@ def add_questions(shortname=None):
         scenes = get_all_scenes_by_play(play)
         characters = get_all_characters_by_play(play)
 
-        title = f"Edit {play.title} Characters"
+        title = f"Edit {play.title} Questions"
         return render_template("questions-edit.html", form=form, play=play, questions=questions, 
                                 characters=characters, scenes=scenes, title=title)
 
@@ -724,8 +733,10 @@ def view_plays(shortname=None, id=None):
         elif id:
             play = Play.query.get(id)
 
+        scenes = get_all_scenes_by_play(play)
+
         title = play.title
-        return render_template("play.html", play=play, title=title)
+        return render_template("play.html", play=play, title=title, scenes=scenes)
         
     else:
         plays = Play.query.all()
@@ -783,17 +794,16 @@ def view_films(shortname=None, id=None):
         title = "Films"
         return render_template("films-view.html", films=films, form=form, title=title)
 
-# ----- END: PLAY VIEWS ----- #
 
-
-# ----- BEGIN: PROCESS FILM ----- #
-
-@main.route("/add-film/")
-def add_new_film():
+@main.route("/films/add")
+@main.route("/questions/add/<string:shortname>/", methods=["GET", "POST"])
+@login_required
+@admin_required
+def add_films():
     """Prompts user for play and MovieDB ID to add film information via API."""
 
     title = "Add a Film"
-    return render_template("film-add.html", play_titles=play_titles, title=title)
+    return render_template("films-add.html", play_titles=play_titles, title=title)
 
 
 @main.route("/process-film/")
@@ -813,7 +823,7 @@ def process_film():
     character_names.sort()
 
     title = "Verify Film Information"
-    return render_template("film-verify.html", details=details, cast=cast, crew=crew,
+    return render_template("films-verify.html", details=details, cast=cast, crew=crew,
                             play=play, genders=GENDERS, character_names=character_names, title=title)
 
 
@@ -825,18 +835,19 @@ def add_film_to_db():
     film["play"] = request.form.get("play")
     film["title"] = request.form.get("title")
     film["overview"] = request.form.get("overview")
-    film["tagline"] = request.form.get("tagline")
+    # film["tagline"] = request.form.get("tagline") # seeing persistent errors with tagline saving
     film["poster_path"] = request.form.get("poster_path")
     film["release_date"] = request.form.get("release_date")
     film["language"] = request.form.get("language")
     film["length"] = request.form.get("length")
     film["film_moviedb_id"] = request.form.get("film_moviedb_id")
     film["film_imdb_id"] = request.form.get("film_imdb_id")
+    # film["watch_providers"] = request.form.get("watch_providers") # seeing persistent errors with watch_providers saving
 
     play = get_play_by_title(film["play"])
     db_film = get_film(play=play, moviedb_id=film["film_moviedb_id"], imdb_id=film["film_imdb_id"], title=film["title"], 
                         release_date=film["release_date"], language=film["language"], length=film["length"], overview=film["overview"], 
-                        tagline=["tagline"], poster_path=film["poster_path"])
+                        poster_path=film["poster_path"])
     
     people = []
     person_count = request.form.get("person_count")
@@ -864,15 +875,52 @@ def add_film_to_db():
 
             db_person = get_person(person["moviedb_id"], person["imdb_id"], person["fname"], person["lname"], person["birthday"], person["gender"], person["photo_path"])
             if person["parts"]:
-                get_job_held(db_person, db_film, "Actor")
+                get_person_job(db_person, db_film, "Actor")
             for part_name in person["parts"]:
                 get_character_actor(person=db_person, character_name=part_name, film=db_film)
 
             people.append(person)
 
     title = "Add Film"
-    return render_template("submit-form.html", film=film, people=people, title=title)
+    return redirect(f"/films/{db_film.id}")
 
+
+@main.route("/films/edit/", methods=["GET", "POST"])
+@main.route("/films/edit/<string:shortname>/", methods=["GET", "POST"])
+@main.route("/films/edit/<int:id>/", methods=["GET", "POST"])
+def edit_films(shortname=None, id=None):
+    """Edit all films, films by play shortname, or a specific film by film id."""
+
+    films = Film.query.all()
+    form = None
+    
+    if id:
+        film = Film.query.get(id)
+        form = make_film_form(film)
+    elif shortname:
+        play = get_play_by_shortname(shortname)
+        films = Film.query.filter(Film.play_id == play.id).all()
+    else:
+        form = ChoosePlayForm()
+
+    if form.validate_on_submit():
+        film = Film.query.get(id)
+
+        film.title = form.title.data
+        film.moviedb_id = form.moviedb_id.data
+        film.imdb_id = form.imdb_id.data
+        film.play = form.play.data
+        film.overview = form.overview.data
+        # film.tagline = form.tagline.data
+        film.poster_path = form.poster_path.data
+        film.release_date = form.release_date.data
+        # film.watch_providers = form.watch_providers.data
+        db.session.merge(film)
+        db.session.commit()
+
+        return redirect(f"/films/{id}/")
+
+    return render_template("films-edit.html", films=films, form=form)
 # ----- END: PROCESS FILM ----- #
 
 

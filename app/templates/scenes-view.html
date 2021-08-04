@@ -20,11 +20,11 @@
                     {% if scene.description %}
                         <li>Description: {{scene.description}}</li>
                     {% endif %}
-                    {% if scene.choices %}
-                        <li>Related Choices:
+                    {% if scene.questions %}
+                        <li>Related Questions:
                             <ul>
-                            {% for choice in scene.choices %}
-                                <li><a href="/choices/{{choice.id}}">{{choice.title}}</a></li>
+                            {% for question in scene.questions %}
+                                <li><a href="/questions/{{question.id}}">{{question.title}}</a></li>
                             {% endfor %}
                             </ul>
                         </li>

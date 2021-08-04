@@ -9,11 +9,11 @@
             <li>ID: {{scene.id}}</li>
             <li>Title: {{scene.title}}</li>
             <li>Description: {{scene.description}}</li>
-            {% if scene['choices'] %}
-            <li>Related Choices</li>
+            {% if scene['questions'] %}
+            <li>Related Questions</li>
                 <ul>
-                    {% for choice in scene['choices'] %}
-                        <li><a href="/view-choice/{{choice.id}}">{{choice.title}}</a></li>
+                    {% for question in scene['questions'] %}
+                        <li><a href="/view-question/{{question.id}}">{{question.title}}</a></li>
                     {% endfor %}
                 </ul>
             </ul>

@@ -39,6 +39,7 @@ class CharacterActor(db.Model):
         return f"{self.person.fname} {self.person.lname}, {self.character.name}"
 
     def age_during_film(self):
+        from app.main.crud import calculate_age_during_film
         age = calculate_age_during_film(self.person, self.film)
         return age
 
@@ -66,7 +67,7 @@ class CharacterQuestion(db.Model):
     question_id = db.Column(db.Integer, db.ForeignKey("questions.id"), primary_key=True)
 
     def __repr__(self):
-            return f"<CHARACTERQUESTION id={self.id} {self.character_id} {self.scene_id}>"
+            return f"<CHARACTERQUESTION id={self.id} {self.character_id} {self.question_id}>"
 
 
 class CharacterQuote(db.Model): 
@@ -210,7 +211,7 @@ class Film(db.Model):
     __searchable__ = ["moviedb_id", "imdb_id", "title", "release_date"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    moviedb_id = db.Column(db.Integer)
+    moviedb_id = db.Column(db.String)
     imdb_id = db.Column(db.String)
     title = db.Column(db.String(50), nullable=False, default="English")
     language = db.Column(db.String(15), nullable=False, default="English")
@@ -220,6 +221,7 @@ class Film(db.Model):
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     poster_path = db.Column(db.String(100))
     release_date = db.Column(db.Date, nullable=False)
+    watch_providers = db.Column(db.Text)
     actors = db.relationship("Person", secondary="character_actors", back_populates="films")
     play = db.relationship("Play", back_populates="films")
     person_jobs = db.relationship("PersonJob", back_populates="film")
@@ -586,6 +588,13 @@ class Role(db.Model):
 
     def has_permission(self, perm): # bitwise operator: check if combined permission value includes given permission
         return self.permissions & perm == perm
+
+    @staticmethod
+    def return_role_choices():
+        """Return roles as a list of tuples with ID and name."""
+
+        role_choices = [(role.id, role.name) for role in Role.query.all()]
+        return role_choices
 
     def __repr__(self):
         return f"<ROLE id={self.id} {self.name}>"

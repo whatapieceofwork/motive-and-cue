@@ -1,11 +1,10 @@
 from marshmallow import Schema, fields
 
-
 class PlaySchema(Schema):
     """Marshmallow serialization schema for Play data objects."""
 
     characters = fields.Nested(lambda: CharacterSchema(many=True, only=["id", "name"]))
-    # choices = fields.Nested(lambda: ChoiceSchema(many=True, only=["id", "title"]))
+    # questions = fields.Nested(lambda: QuestionSchema(many=True, only=["id", "title"]))
     films = fields.Nested(lambda: FilmSchema(many=True, only=["id", "title", "release_date"]))
 
     class Meta:
@@ -29,8 +28,8 @@ character_schema = CharacterSchema()
 characters_schema = CharacterSchema(many=True)
 
 
-class ChoiceSchema(Schema):
-    """Marshmallow serialization schema for Choice data objects."""
+class QuestionSchema(Schema):
+    """Marshmallow serialization schema for Question data objects."""
 
     play = fields.Nested(lambda: PlaySchema(only=["id", "title"]))
 
@@ -38,8 +37,8 @@ class ChoiceSchema(Schema):
         fields = ("id", "title", "description", "play")
         ordered = True
 
-choice_schema = ChoiceSchema()
-choices_schema = ChoiceSchema(many=True)
+question_schema = QuestionSchema()
+questions_schema = QuestionSchema(many=True)
 
 
 class FilmSchema(Schema):
@@ -59,11 +58,11 @@ class InterpretationSchema(Schema):
     """Marshmallow serialization schema for Interpretation data objects."""
 
     play = fields.Nested(lambda: PlaySchema(only=["id", "title"]))
-    choice = fields.Nested(lambda: ChoiceSchema(only=["id", "title"]))
+    question = fields.Nested(lambda: QuestionSchema(only=["id", "title"]))
     film = fields.Nested(lambda: FilmSchema(only=["id", "title", "release_date"]))
 
     class Meta:
-        fields = ("id", "play", "film", "choice", "title", "description")
+        fields = ("id", "play", "film", "question", "title", "description")
         ordered = True
 
 interpretation_schema = InterpretationSchema()

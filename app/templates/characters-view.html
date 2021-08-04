@@ -22,11 +22,11 @@
                     {% else %}Unknown or N/A
                     {% endif %}
                 </li>
-                {% if character['choices'] %}
-                <li>Related Choices: 
+                {% if character['questions'] %}
+                <li>Related Questions: 
                     <ul>
-                    {% for choice in character['choices'] %}
-                        <li><a href="/view-choice/{{choice.id}}">{{choice.title}}</a></li>
+                    {% for question in character['questions'] %}
+                        <li><a href="/view-question/{{question.id}}">{{question.title}}</a></li>
                     {% endfor %}
                     </ul>
                 </li>
