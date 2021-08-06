@@ -17,9 +17,9 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         print(f"**********IN LOGIN. USER: {user}")
-        print(f"**********VERIFIED PASSWORD? {user.verify_password(form.password.data)}")
+        print(f"**********VERIFIED PASSWORD? {user.check_password(form.password.data)}")
 
-        if user is not None and user.verify_password(form.password.data):
+        if user is not None and user.check_password(form.password.data):
             login_user(user, form.remember_me.data)
             next = request.args.get("next")
 

@@ -5,6 +5,7 @@ from flask_bootstrap import Bootstrap
 from flask_login import LoginManager, login_required, set_login_view
 from flask_login.utils import login_user, current_user, logout_user, login_required
 from flask_mail import Mail
+from flask_migrate import Migrate
 from flask_moment import Moment
 from flask_msearch import Search
 from flask_sqlalchemy import SQLAlchemy
@@ -16,6 +17,7 @@ bootstrap = Bootstrap()
 msearch = Search()
 login_manager = LoginManager()
 mail = Mail()
+migrate = Migrate()
 moment = Moment()
 
 def create_app(config_name):
@@ -34,6 +36,7 @@ def create_app(config_name):
     db.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
+    migrate.init_app(app, db)
     moment.init_app(app)
     # msearch.init_app(app)
     whooshee.init_app(app)
