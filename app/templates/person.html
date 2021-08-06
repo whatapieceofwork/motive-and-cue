@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+    <p><a href="/people/">View All People</a></p>
+    <div id="person-metadata">
+        <img src="{{ person.photo_path }}" alt="{{ person.fname }} {{ person.lname }} portrait" class="portrait">
+        {% if person.parts %}
+        <div>
+            <h2>Parts</h2>
+            {% for part in person.character_actors %}
+                {{ macros.as_link(part.character) }} in {{ macros.as_link(part.film) }}
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if person.films %}
+        <div>
+            <h2>Films</h2>
+            {% for film in person.films %}
+                {{ macros.as_link(film) }}
+            {% endfor %}
+        </div>
+        {% endif %}
+{% endblock %}

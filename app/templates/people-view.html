@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+    {% if people %}
+        <div id="people-metadata">
+            <ul>
+            {% for person in people %}
+                <li>{{ macros.as_link(person) }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+{% endblock %}
