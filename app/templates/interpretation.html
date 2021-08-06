@@ -6,17 +6,17 @@
     {% endif %}
     <div id="interpretation-metadata">
         <ul>
-            <li>ID: {{interpretation.id}}</li>
-            <li>Play: <a href="/plays/{{interpretation.play.id}}">{{interpretation.play.title}}</a></li>
-            <li>Film: <a href="/films/{{interpretation.film.id}}">{{interpretation.film.title}}</a></li>
-            <li>Question: <a href="/questions/{{interpretation.question.id}}">{{interpretation.question.title}}</a></li>
+            <li>ID: {{ interpretation.id }}</li>
+            <li>Play: {{ macros.as_link(interpretation.play) }}</li>
+            <li>Film: {{ macros.as_link(interpretation.film) }}</li>
+            <li>Question: {{ macros.as_link(interpretation.question) }}</li>
             <li>Title: {{interpretation.title}}</li>
             <li>Description: {{interpretation.description}}</li>
             {% if interpretation['characters'] %}
             <li>Related Characters:
                 <ul>
                 {% for character in interpretation.characters%}
-                    <li><a href="/characters/{{character.id}}">{{character.name}}</a></li>
+                    <li>{{ macros.as_link(character) }}</li>
                 {% endfor %}
                 </ul>
             </li>

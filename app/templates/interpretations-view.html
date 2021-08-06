@@ -16,15 +16,12 @@
             <ul>
                 <li>Title: {{interpretation['title']}}</li>
                 <li>Description: {{interpretation['desc']}}</li>
-                <li>Question: <a href="/questions/{{interpretation.question.id}}">{{interpretation.question.title}}</a></li>
+                <li>Question: {{ macros.as_link(interpretation.question) }}</li>
                 {% if interpretation["quotes"] %}
                     <li>Quotes
                         <ul>
                             {% for quote in interpretation.quotes%}
-                            <figure class="quote">
-                                <blockquote>{{quote.text}}</blockquote>
-                                <figcaption><cite><a href="/characters/{{quote.character.id}}">{{quote.character.name}}</a> (<em>{{quote.play.title}}</em> <a href="/scenes/{{quote.scene.id}}">({{quote.scene.act}}.{{quote.scene.scene}})</a>)</cite></figcaption>
-                            </figure>
+                                {{ macros.format_quote(quote) }}
                             {% endfor %}
                         <ul>
                     </li>
@@ -33,7 +30,7 @@
                     <li>Related Scenes: 
                     <ul>
                     {% for scene in interpretation['scenes'] %}
-                        <li><a href="/scenes/{{scene.id}}">{{scene.act}}.{{scene.scene}}{% if scene.title %}: {{scene.title}}{% endif %}</a></li>
+                        <li>{{ macros.as_link(scene) }}</li>
                     {% endfor %}
                     </ul>
                 {% endif %}
@@ -41,7 +38,7 @@
                     <li>Related Characters: 
                         <ul>
                         {% for character in interpretation['characters'] %}
-                            <li><a href="/scenes/{{character.id}}">{{character.name}}</a></li>
+                            <li>{{ macros.as_link(character) }}</li>
                         {% endfor %}
                         </ul>
                     </li>

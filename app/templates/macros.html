@@ -8,3 +8,11 @@
     {% endif %}
 {%- endmacro %}
 
+
+{% macro format_quote(quote) -%}
+<figure class="quote">
+    <blockquote>{{ quote.text }}</blockquote>
+    <figcaption><cite>{{ macros.as_link(quote.character) }} (<em>{{ macros.as_link(quote.play) }}</em>
+        {{ macros.as_link(quote.scene) }})</cite></figcaption>
+</figure>
+{%- endmacro %}

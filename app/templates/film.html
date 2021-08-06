@@ -11,7 +11,7 @@
 
         <ul>
             <li>Overview: {{ film.overview }}</li>
-            <li>Play: <a href="/plays/{{ film.play.shortname }}">{{ film.play.title }}</a></li>
+            <li>Play: {{ macros.as_link(film.play) }}</a></li>
             <li>Release date: {{ film.release_date }}</li>
             <li>Language: {{ film.language }}</li>
             <li>Length: {{ film.length }} minutes</li>

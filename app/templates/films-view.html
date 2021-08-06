@@ -15,13 +15,13 @@
         {% for film in films %}
             <div id="film-metadata">
                 <ul>
-                    <h3><a href="/films/{{film.id}}">{{film.title}}</a></h3>
+                    <h3>{{ macros.as_link(film) }}</h3>
                     <div>
                         <a href="/films/{{film.id}}">
                             <img class="tiny-poster" src="{{film.poster_path}}" alt="{{film.title}} film poster"></div>
                         </a>
                         <ul>
-                        <li>Adaptation of: <em><a href="/plays/{{film.play.shortname}}">{{film.play.title}}</a></em>
+                        <li>Adaptation of: <em>{{ macros.as_link(film.play) }}</em>
                         <li>Release date: {{film.release_date}}
                         <li>Language: {{film.language}}</li>
                         <li>Length: {{film.length}} minutes</li>

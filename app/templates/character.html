@@ -5,12 +5,6 @@
         <p><em><a href="/characters/edit/{{character.id}}/">Edit Character</a></em></p>
     {% endif %}
 
-        <div id="character-quote">
-            {% if character['quote'] %}
-                <em>{{character['quote']}}</em>
-            {% endif %}
-        </div>
-
     <div id="character-metadata">
         <ul>
             <li>ID: {{character.id}}</li>
@@ -25,7 +19,7 @@
             <li>Related Questions: 
                 <ul>
                 {% for question in character['questions'] %}
-                    <li><a href="/questions/{{question.id}}/">{{question.title}}</a></li>
+                    <li>{{ macros.as_link(question) }}</li>
                 {% endfor %}
                 </ul>
             </li>
@@ -34,10 +28,7 @@
                 <li>Related Quotes:
                     <ul>
                     {% for quote in character.quotes%}
-                    <figure class="quote">
-                        <blockquote>{{quote.text}}</blockquote>
-                        <figcaption><cite><a href="/characters/{{quote.character.id}}/">{{quote.character.name}}</a> (<em>{{quote.play.title}}</em> <a href="/scenes/{{quote.scene.id}}">({{quote.scene.act}}.{{quote.scene.scene}})</a>)</cite></figcaption>
-                    </figure>
+                        {{ macros.format_quote(quote) }}
                     {% endfor %}
                     </ul>
                 </li>
