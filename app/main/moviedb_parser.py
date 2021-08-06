@@ -14,7 +14,7 @@ def get_moviedb_film_id(film_url):
     moviedb_regx = ("(?<=https:\/\/www\.themoviedb\.org\/movie\/)[0-9]*") #MovieDB film ID format
     moviedb_id = re.search(moviedb_regx, film_url)[0] #first result of regex search for MovieDB film ID format in URL
 
-    return int(moviedb_id)
+    return moviedb_id
 
 
 def parse_moviedb_film(moviedb_id, play):
