@@ -13,8 +13,8 @@ class UserModelTestCase(unittest.TestCase):
 
     def test_password_verification(self):
         u = User(email="joseph@example.com", username="joe", password="cat")
-        self.assertTrue(u.verify_password("cat"))
-        self.assertFalse(u.verify_password("dog"))
+        self.assertTrue(u.check_password("cat"))
+        self.assertFalse(u.check_password("dog"))
 
     def test_password_salts_are_random(self):
         u = User(email="john@example.com", username="john", password="cat")

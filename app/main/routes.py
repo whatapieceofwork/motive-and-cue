@@ -16,7 +16,6 @@ def before_request():
     if current_user.is_authenticated:
         current_user.ping()
     g.search_form = SearchForm()
-    g.plays = Play.query.all()
 
 
 @main.route("/")
@@ -715,6 +714,28 @@ def edit_interpretations(shortname=None, id=None):
 # ----- END: INTERPRETATION VIEWS ----- #
 
 
+# ----- BEGIN: PEOPLE VIEWS ----- #
+
+@main.route("/people/", methods=["GET", "POST"])
+@main.route("/people/<int:id>/", methods=["GET", "POST"])
+def view_people(shortname=None, id=None):
+    """Display all people, or a specific person by id."""
+
+    if id:
+        person = Person.query.get(id)
+
+        title = f"{person.fname} {person.lname}"
+        return render_template("person.html", person=person, title=title)
+        
+    else:
+        people = Person.query.all()
+
+        title = "People"
+        return render_template("people-view.html", people=people, title=title)
+
+# ----- END: PEOPLE VIEWS ----- #
+
+
 # ----- BEGIN: PLAY VIEWS ----- #
 
 @main.route("/plays/", methods=["GET", "POST"])
@@ -949,6 +970,8 @@ def test_refresh():
     """A much less dangerous route to update tables."""
 
     db.create_all()
+    os.system(f"flask db migrate -m 'Migration {datetime.utcnow()}'")
+    os.system("flask db upgrade")
     whooshee.reindex()
     flash("Tables re-created.", "success")
 
