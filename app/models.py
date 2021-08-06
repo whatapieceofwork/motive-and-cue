@@ -1,6 +1,7 @@
 # """Data model."""
 
 # from app.search import add_to_index, remove_from_index, query_index
+import base64
 from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import AnonymousUserMixin, UserMixin, login_manager
@@ -10,7 +11,7 @@ from sqlalchemy import *
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
 from sqlalchemy.orm import backref, relationship, reconstructor
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 db = SQLAlchemy()
@@ -196,6 +197,7 @@ class Character(db.Model):
     scenes = db.relationship("Scene", secondary="character_scenes", foreign_keys=[CharacterScene.character_id, CharacterScene.scene_id], backref="characters", lazy="dynamic", cascade="all")
     topics = db.relationship("Topic", secondary="character_topics", foreign_keys=[CharacterTopic.character_id, CharacterTopic.topic_id], backref="characters", lazy="dynamic", cascade="all")
     quotes = db.relationship("Quote", secondary="character_quotes", foreign_keys=[CharacterQuote.character_id, CharacterQuote.quote_id], backref="character", lazy="dynamic", cascade="all")
+    character_actors = db.relationship("CharacterActor")
 
     def __repr__(self):
         return f"<CHARACTER id={self.id} {self.name} ({self.play.title})>"
@@ -290,7 +292,7 @@ class Person(db.Model):
     __searchable__ = ["fname", "lname", "moviedb_id", "imdb_id"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    moviedb_id = db.Column(db.Integer)
+    moviedb_id = db.Column(db.String)
     imdb_id = db.Column(db.String)
     fname = db.Column(db.String(30))
     lname = db.Column(db.String(30))
@@ -449,6 +451,8 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
     member_since = db.Column(db.DateTime(), default=datetime.now)
     last_seen = db.Column(db.DateTime(), default=datetime.now)
+    api_token = db.Column(db.String(32), index=True, unique=True)
+    api_token_expiration = db.Column(db.DateTime)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -458,8 +462,7 @@ class User(UserMixin, db.Model):
                 print(f"Set {self}'s role as Admin")
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
-                print(f"Set {self}'s role as {self.role}")
-                
+                print(f"Set {self}'s role as {self.role}")       
 
     def can(self, perm):
         return self.role is not None and self.role.has_permission(perm)
@@ -475,7 +478,7 @@ class User(UserMixin, db.Model):
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
-    def verify_password(self, password):
+    def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
     def generate_token(self, expiration=3600):
@@ -516,6 +519,26 @@ class User(UserMixin, db.Model):
         self.last_seen = datetime.now()
         db.session.add(self)
         db.session.commit()
+
+    def get_api_token(self, expires_in=3600):
+        now = datetime.utcnow()
+        if self.api_token and self.api_token_expiration > now + timedelta(seconds=60):
+            return self.api_token
+        self.api_token = base64.b64encode(os.urandom(24)).decode("utf-8")
+        self.api_token_expiration = now + timedelta(seconds=expires_in)
+        db.session.add(self)
+        db.session.merge()
+        return self.api_token
+
+    def revoke_api_token(self):
+        self.api_token_expiration = datetime.utcnow() - timedelta(seconds=1)
+
+    @staticmethod
+    def check_api_token(api_token):
+        user = User.query.filter_by(api_token=api_token).first()
+        if user is None or user.api_token_expiration < datetime.utcnow():
+            return None
+        return user
 
     def __repr__(self):
         return f"<USER id={self.id} {self.name}>"
