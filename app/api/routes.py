@@ -2,12 +2,14 @@ from app import db
 from app.api import api
 from app.api.auth import token_auth
 from app.schemas import *
-from app.main.crud import get_play_by_shortname, add_character
+from app.main.crud import add_interpretation, add_question, get_play_by_shortname, add_character
 from app.main.forms import play_titles
 from app.models import *
 from flask import abort, request
 from marshmallow import ValidationError
 
+
+# ----- BEGIN: GET ROUTES ----- #
 
 @api.route("/characters/", methods=['GET'])
 @api.route("/characters/<int:id>/", methods=['GET'])
@@ -25,25 +27,6 @@ def api_get_characters(id=None, shortname=None):
     else:
         characters = characters_schema.dump(Character.query.all())
         return {"characters": characters}
-
-
-@api.route("/characters/", methods=["POST"])
-@token_auth.login_required
-def api_add_character():
-    data = request.get_json()
-    if not data:
-        return {"message": "No input data given"}, 400
-
-    name = data["name"]
-    play_shortname = data["play"]
-    play = get_play_by_shortname(play_shortname)
-    gender = data["gender"]
-    word_count = data["word_count"]
-    character = add_character(name=name, play=play, gender=gender, word_count=word_count)
-
-    result = character_schema.dump(Character.query.get(character.id))
-    return {"message": "Created new character.", "character": result}
-
 
 
 @api.route("/questions/", methods=['GET'])
@@ -129,3 +112,69 @@ def api_get_scenes(id=None, shortname=None):
     else:
         scenes = scenes_schema.dump(Scene.query.all())
         return {"scenes": scenes}
+
+# ----- END: GET ROUTES ----- #
+
+
+# ----- BEGIN: POST ROUTES ----- #
+
+@api.route("/characters/", methods=["POST"])
+@token_auth.login_required
+def api_add_character():
+    data = request.get_json()
+    if not data:
+        return {"message": "No input data given"}, 400
+
+    name = data["name"]
+    play_shortname = data["play"]
+    play = get_play_by_shortname(play_shortname)
+    gender = data["gender"]
+    word_count = data["word_count"]
+    character = add_character(name=name, play=play, gender=gender, word_count=word_count)
+
+    result = character_schema.dump(Character.query.get(character.id))
+    return {"message": "Created new character.", "character": result}
+
+
+@api.route("/questions/", methods=["POST"])
+@token_auth.login_required
+def api_add_question():
+    data = request.get_json()
+    if not data:
+        return {"message": "No input data given"}, 400
+    title = data["title"]
+    play_shortname = data["play"]
+    play = get_play_by_shortname(play_shortname)
+    description = data["description"]
+
+    question = add_question(title=title, play=play, description=description)
+
+    result = question_schema.dump(Question.query.get(question.id))
+    return {"message": "Created new question.", "question": result}
+
+
+@api.route("/interpretations/", methods=["POST"])
+@token_auth.login_required
+def api_add_interpretation():
+    data = request.get_json()
+    if not data:
+        return {"message": "No input data given"}, 400
+
+    question_id = data["question"]
+    question = Question.query.get(question_id)
+    play_shortname = data["play"]
+    play = get_play_by_shortname(play_shortname)
+    title = data["title"]
+    description = data["description"]
+    film_id = data["film"]
+    film = Film.query.get(film_id)
+    time_start = data["time_start"]
+    time_end = data["time_end"]
+
+    interpretation = add_interpretation(question=question, play=play, title=title, 
+                    description=description, film=film, time_start=time_start, time_end=time_end)
+
+    result = interpretation_schema.dump(Interpretation.query.get(interpretation.id))
+    return {"message": "Created new interpretation.", "interpretation": result}
+
+# ----- END: POST ROUTES ----- #
