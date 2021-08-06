@@ -1,10 +1,11 @@
 from app import db
 from app.api import api
+from app.api.auth import token_auth
 from app.schemas import *
 from app.main.crud import get_play_by_shortname, add_character
 from app.main.forms import play_titles
 from app.models import *
-from flask import request
+from flask import abort, request
 from marshmallow import ValidationError
 
 
@@ -27,6 +28,7 @@ def api_get_characters(id=None, shortname=None):
 
 
 @api.route("/characters/", methods=["POST"])
+@token_auth.login_required
 def api_add_character():
     data = request.get_json()
     if not data:

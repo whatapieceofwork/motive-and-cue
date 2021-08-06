@@ -527,7 +527,7 @@ class User(UserMixin, db.Model):
         self.api_token = base64.b64encode(os.urandom(24)).decode("utf-8")
         self.api_token_expiration = now + timedelta(seconds=expires_in)
         db.session.add(self)
-        db.session.merge()
+        db.session.merge(self)
         return self.api_token
 
     def revoke_api_token(self):
