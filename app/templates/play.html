@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block page_content %}
+    {% if play.img %}
+        <img class="small-portrait" src="{{ play.img }}" alt="{{ play.title }}">
+    {% endif %}
     <ul>
         <li><a href="/films/{{play.shortname}}">Film adaptations</a></li>
         <li><a href="/characters/{{play.shortname}}">Characters</a></li>

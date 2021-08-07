@@ -8,6 +8,9 @@
     {% endif %}
 
     <div id="question-metadata">
+        {% if question.img %}
+            <img class="small-portrait" src="{{ question.img }}" alt="{{ question.title }}">
+        {% endif %}
         <ul>
             <li>ID: {{question.id}}</li>
             <li>Play: <a href="/plays/{{question.play.id}}/">{{question.play.title}}</a></li>

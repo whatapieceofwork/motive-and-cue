@@ -31,7 +31,7 @@ cite {
 }
 
 img.poster {
-    max-height: 400px;
+    max-width: 50%;
 }
 
 img.tiny-poster {
@@ -42,8 +42,8 @@ img.portrait {
     max-width: 50%;
 }
 
-img.poster {
-    max-width: 50%;
+img.small-portrait {
+    max-width: 25%;
 }
 
 div.form-check.col-md-8 {

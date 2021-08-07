@@ -5,6 +5,9 @@
         <p><em><a href="/scenes/edit/{{scene.id}}">Edit Scene</a></em></p>
     {% endif %}
     <div id="scene-metadata">
+        {% if scene.img %}
+            <img class="small-portrait" src="{{ scene.img }}" alt="{{ scene.title }}">
+        {% endif %}
         <ul>
             <li>ID: {{scene.id}}</li>
             <li>Title: {{scene.title}}</li>

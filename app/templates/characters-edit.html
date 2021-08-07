@@ -7,7 +7,7 @@
 
     {% if characters %}
         <div id="characters-metadata">
-            <form action="/characters/edit/{{play.shortname}}/" method="post">
+            <form action="/characters/edit/{{play.shortname}}/" method="post-form-data" enctype="multipart/form-data">
                 <input type="hidden" id="play" name="play" value="{{play.title}}">
 
             {% for character in characters %}

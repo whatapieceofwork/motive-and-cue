@@ -32,6 +32,7 @@ class CharacterActor(db.Model):
     character = db.relationship("Character")
     film_id = db.Column(db.Integer, db.ForeignKey("films.id"))
     film = db.relationship("Film")
+    img = db.Column(db.String(500))
 
     def __repr__(self):
         return f"<CHARACTERACTOR id={self.id} {self.person.lname} {self.character.name} {self.film.title}>"
@@ -198,6 +199,8 @@ class Character(db.Model):
     topics = db.relationship("Topic", secondary="character_topics", foreign_keys=[CharacterTopic.character_id, CharacterTopic.topic_id], backref="characters", lazy="dynamic", cascade="all")
     quotes = db.relationship("Quote", secondary="character_quotes", foreign_keys=[CharacterQuote.character_id, CharacterQuote.quote_id], backref="character", lazy="dynamic", cascade="all")
     character_actors = db.relationship("CharacterActor")
+    img = db.Column(db.String(500))
+
 
     def __repr__(self):
         return f"<CHARACTER id={self.id} {self.name} ({self.play.title})>"
@@ -256,7 +259,7 @@ class Interpretation(db.Model):
     question_id = db.Column(db.Integer, db.ForeignKey("questions.id"), info={"label": "Question ID"})
     question = db.relationship("Question", info={"label": "Question"})
     scenes = db.relationship("Scene", secondary="scene_interpretations", foreign_keys=[SceneInterpretation.interpretation_id, SceneInterpretation.scene_id], info={"label": "Scenes"})
-
+    img = db.Column(db.String(500))
 
     def __repr__(self):
         return f"<INTERPRETATION id={self.id} {self.title}>"
@@ -328,6 +331,7 @@ class Play(db.Model):
     films = db.relationship("Film", back_populates="play")
     quotes = db.relationship("Quote", back_populates="play")
     interpretations = db.relationship("Interpretation", back_populates="play")
+    img = db.Column(db.String(500))
 
     def __repr__(self):
         return f"<PLAY id={self.id} {self.title}>"
@@ -352,10 +356,7 @@ class Question(db.Model):
     # characters = db.relationship("Character", secondary="character_questions", back_populates="questions")
     interpretations = db.relationship("Interpretation", back_populates="question")
     # url = db.Column(db.String(500))
-
-    # @reconstructor
-    # def init_on_load(self):
-    #     self.url = f"/{self.__tablename__}/{self.id}"
+    img = db.Column(db.String(500))
 
     def __repr__(self):
         return f"<CHOICE id={self.id} {self.title}>"
@@ -379,7 +380,8 @@ class Scene(db.Model):
     interpretations = db.relationship("Interpretation", secondary="scene_interpretations", foreign_keys=[SceneInterpretation.scene_id, SceneInterpretation.interpretation_id], back_populates="scenes", lazy="dynamic", cascade="all")
     topics = db.relationship("Topic", secondary="scene_topics", foreign_keys=[SceneTopic.scene_id, SceneTopic.topic_id], backref="scenes", lazy="dynamic", cascade="all")
     quotes = db.relationship("Quote", back_populates="scene")
-    
+    img = db.Column(db.String(500))
+
     def __repr__(self):
         return f"<SCENE id={self.id} {self.act}.{self.scene} {self.play.title}>"
 
@@ -401,6 +403,7 @@ class Topic(db.Model):
     description = db.Column(db.Text)
     # scenes = db.relationship("Scene", secondary="scene_topics", back_populates="topics")
     # characters = db.relationship("Character", secondary="character_topics", back_populates="topics")
+    img = db.Column(db.String(500))
 
     def __repr__(self):
         return f"<TOPIC id={self.topic_id} {self.title}>"
@@ -423,6 +426,7 @@ class Quote(db.Model):
     # character = db.relationship("Character", back_populates="quotes")
     scene_id = db.Column(db.Integer, db.ForeignKey("scenes.id"))
     scene = db.relationship("Scene", back_populates="quotes")
+    img = db.Column(db.String(500))
 
     def __repr__(self):
         return f"<QUOTE id={self.id} {self.character.name}>"

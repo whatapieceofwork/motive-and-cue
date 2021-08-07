@@ -7,24 +7,27 @@
 
     <div id="character-metadata">
         <ul>
+            {% if character.img %}
+                <img class="small-portrait" src="{{ character.img }}" alt="{{ character.name }}">
+            {% endif %}
             <li>ID: {{character.id}}</li>
             <li>Name: {{character.name}}</li>
             <li>Canonical Gender:
                 {% if character.gender|int == 2 %}Male
-                {% elif character['gender']|int == 1 %}Female
+                {% elif character["gender"]|int == 1 %}Female
                 {% else %}Unknown or N/A
                 {% endif %}
             </li>
-            {% if character['questions'] %}
-            <li>Related Questions: 
-                <ul>
-                {% for question in character['questions'] %}
-                    <li>{{ macros.as_link(question) }}</li>
-                {% endfor %}
-                </ul>
-            </li>
+            {% if character["questions"] %}
+                <li>Related Questions: 
+                    <ul>
+                    {% for question in character["questions"] %}
+                        <li>{{ macros.as_link(question) }}</li>
+                    {% endfor %}
+                    </ul>
+                </li>
             {% endif %}
-            {% if character['quotes'] %}
+            {% if character["quotes"] %}
                 <li>Related Quotes:
                     <ul>
                     {% for quote in character.quotes%}

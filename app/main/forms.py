@@ -3,11 +3,25 @@ from app.models import *
 from app.main.crud import get_roles
 from flask import current_app, request
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileAllowed, FileField, FileRequired
 from wtforms import BooleanField, FormField, IntegerField, SelectField, StringField, SubmitField, ValidationError
 from wtforms.fields.simple import TextAreaField
 from wtforms.validators import DataRequired, Email, Length, Regexp
 from wtforms_alchemy import model_form_factory
 from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
+import cloudinary.uploader
+
+def cloudinary_url(file):
+    """Upload file to Cloudinary, return Cloudinary image URL."""
+
+    result = cloudinary.uploader.upload(file,
+                    api_key = current_app.config["CLOUDINARY_KEY"],
+                    api_secret = current_app.config["CLOUDINARY_KEY_SECRET"],
+                    cloud_name = current_app.config["CLOUD_NAME"])
+    image_url = result["secure_url"]
+
+    return image_url
+
 
 play_titles = {"AWW": "All's Well That Ends Well", "Ant": "Antony and Cleopatra", "AYL": "As You Like It", "Err": "The Comedy of Errors", "Cor": "Coriolanus", "Cym": "Cymbeline", "Ham": "Hamlet", "1H4": "Henry IV, Part 1", "2H4": "Henry IV, Part 2", "H5": "Henry V", "1H6": "Henry VI, Part 1", "2H6": "Henry VI, Part 2", "3H6": "Henry VI, Part 3", "H8": "Henry VIII", "JC": "Julius Caesar", "Jn": "King John", "Lr": "King Lear", "LLL": "Love's Labor's Lost", "Mac": "Macbeth", "MM": "Measure for Measure", "MV": "The Merchant of Venice", "Wiv": "The Merry Wives of Windsor", "MND": "A Midsummer Night's Dream", "Ado": "Much Ado About Nothing", "Oth": "Othello", "Per": "Pericles", "R2": "Richard II", "R3": "Richard III", "Rom": "Romeo and Juliet", "Shr": "The Taming of the Shrew", "Tmp": "The Tempest", "Tim": "Timon of Athens", "Tit": "Titus Andronicus", "Tro": "Troilus and Cressida", "TN": "Twelfth Night", "TGV": "The Two Gentlemen of Verona", "TNK": "The Two Noble Kinsmen", "WT": "The Winter's Tale"}
 
@@ -101,6 +115,7 @@ class SceneForm(FlaskForm):
     title = StringField("Title", validators=[Length(1, 100)])
     description = TextAreaField("Description", validators=[Length(1, 1000)])
     quote = TextAreaField("Quote", validators=[Length(1, 1000)])
+    image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")])
     submit = SubmitField("Submit")
 
 
@@ -110,10 +125,8 @@ class CharacterForm(FlaskForm):
     id = StringField('ID')
     name = StringField('Name')
     gender = IntegerField("Gender")
+    image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")])
     submit = SubmitField("Submit")
-
-
-
 
 
 
@@ -153,6 +166,8 @@ def make_question_form(db_play=None, db_question=None):
 
         scenes = QuerySelectMultipleField('Related Scenes', 
                                 query_factory=Scene.query.filter(Scene.play_id == db_play.id).order_by(Scene.act, Scene.scene).all)
+        image = FileField("Image", validators=[FileAllowed("jpg", "jpeg", "png", "gif", "bmp"), 
+            "Image formats allowed: .bmp, .gif, .jpg, .jpeg, .png."])
 
         submit = SubmitField("Submit")
 
@@ -208,6 +223,7 @@ def make_interpretation_form(db_interpretation=None, db_play=None, db_question=N
                                 query_factory=Film.query.filter(Film.play_id == db_play.id).all)
         scenes = QuerySelectMultipleField('Related Scenes', 
                                 query_factory=Scene.query.filter(Scene.play_id == db_play.id).order_by(Scene.act, Scene.scene).all)
+        image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")])
 
         submit = SubmitField("Submit")
 
@@ -281,6 +297,7 @@ def make_film_form(db_film=None):
                                 default=db_film.play)
 
         delete = BooleanField(label="Delete record?")
+        image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")])
 
         submit = SubmitField("Submit")
 

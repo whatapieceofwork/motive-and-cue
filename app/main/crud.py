@@ -1,3 +1,4 @@
+from werkzeug.utils import ImportStringError
 from app import db
 from app.main.folger_parser import parse_folger_characters, parse_folger_scene_descriptions, parse_folger_scenes
 from app.main.forms import *
@@ -73,10 +74,10 @@ def username_taken(username):
 # ----- BEGIN: ADD FUNCTIONS ----- #
 # For creating new database records
 
-def add_character(name, play, gender=None, word_count=None):
+def add_character(name, play, gender=None, word_count=None, img=None):
     """Create and return a new Character database record."""
 
-    character = Character(name=name, gender=gender, play_id=play.id, word_count=word_count)
+    character = Character(name=name, gender=gender, play_id=play.id, word_count=word_count, img=img)
 
     db.session.add(character)
     db.session.commit()
@@ -99,10 +100,10 @@ def add_all_characters(play):
     return Character.query.filter(Character.play_id == play.id).all()
 
 
-def add_question(play, title, description):
+def add_question(play, title, description, img=None):
     """Create and return a new Question database record."""
 
-    question = Question(play_id=play.id, title=title, description=description)
+    question = Question(play_id=play.id, title=title, description=description, img=img)
 
     db.session.add(question)
     db.session.commit()
@@ -173,10 +174,11 @@ def add_person_job(film, job, person):
     return personjob
 
 
-def add_interpretation(question, play, title, description, film, time_start, time_end):
+def add_interpretation(question, play, title, description, film, time_start, time_end, img):
     """Create and return a new Interpretation database record."""
 
-    interpretation = Interpretation(question_id=question.id, play_id=play.id, film_id=film.id, title=title, description=description, time_start=time_start, time_end=time_end)
+    interpretation = Interpretation(question_id=question.id, play_id=play.id, film_id=film.id, 
+        title=title, description=description, time_start=time_start, time_end=time_end, img=img)
 
     db.session.add(interpretation)
     db.session.commit()
@@ -209,7 +211,7 @@ def add_scene_interpretation(interpretation, scene):
     return scene_interpretation
 
 
-def add_character_actor(person, character_name, film):
+def add_character_actor(person, character_name, film, img=None):
     """Create and return a new CharacterActor database relationship record."""
 
     play = get_play_by_film(film)
@@ -217,7 +219,7 @@ def add_character_actor(person, character_name, film):
 
     print(f"**** IN ADD_PART_PLAYED, play = {play}, person={person}, character_name={character_name}")
 
-    character_actor=CharacterActor(person_id=person.id, character_id=character.id, film_id=film.id)
+    character_actor=CharacterActor(person_id=person.id, character_id=character.id, film_id=film.id, img=img)
 
     db.session.add(character_actor)
     db.session.commit()
@@ -239,10 +241,10 @@ def add_person(moviedb_id, imdb_id, fname, lname, birthday, gender, photo_path):
     return person
 
 
-def add_play(title, shortname):
+def add_play(title, shortname, img=None):
     """Create and return a new Play database record."""
 
-    play = Play(title=title, shortname=shortname)
+    play = Play(title=title, shortname=shortname, img=img)
     db.session.add(play)
     db.session.commit()
 
@@ -250,18 +252,18 @@ def add_play(title, shortname):
     return play
 
 
-def add_quote(play, character, scene, text):
+def add_quote(play, character, scene, text, img=None):
     """Create and return a new Quote database record."""
 
-    quote = Quote(play_id=play.id, character_id=character.id, scene_id=scene.id, text=text)
+    quote = Quote(play_id=play.id, character_id=character.id, scene_id=scene.id, text=text, img=img)
     db.session.add(quote)
     db.session.commit()
 
 
-def add_scene(act, scene, play, title, description=None):
+def add_scene(act, scene, play, title, description=None, img=None):
     """Create and return a new Scene database record."""
 
-    scene = Scene(act=act, scene=scene, title=title, description=description, play_id=play.id)
+    scene = Scene(act=act, scene=scene, title=title, description=description, play_id=play.id, img=img)
     db.session.add(scene)
     db.session.commit()
 
@@ -283,10 +285,10 @@ def add_all_scenes(play):
     return Scene.query.filter(Scene.play_id == play.id).all()
 
 
-def add_topic(title, description):
+def add_topic(title, description, img=None):
     """Create and return a new Topic database record."""
 
-    topic = Topic(title=title, description=description)
+    topic = Topic(title=title, description=description, img=img)
 
     db.session.add(topic)
     db.session.commit()
@@ -300,7 +302,7 @@ def add_topic(title, description):
 # ----- BEGIN: GET FUNCTIONS ----- #
 # For retrieving existing database records or creating new ones
 
-def get_character(name, play, gender=2, word_count=None):
+def get_character(name, play, gender=2, word_count=None, img=None):
     """Given a character name, gender, and play, return the Character object."""
 
     existing_character = db.session.query(exists().where((Character.name == name) & (Character.play_id == play.id))).scalar()
@@ -308,7 +310,7 @@ def get_character(name, play, gender=2, word_count=None):
     if existing_character:
         character = Character.query.filter((Character.name == name) & (Character.play_id == play.id)).first()
     else:
-        character = add_character(name=name, play=play, gender=gender, word_count=word_count)
+        character = add_character(name=name, play=play, gender=gender, word_count=word_count, img=img)
     
     return character
 
@@ -422,19 +424,6 @@ def get_scene_interpretation(interpretation, scene):
     return scene_interpretation
 
 
-def get_interpretation_film(interpretation, film):
-    """Given an interpreation and film, return the related InterpretationFilm object."""
-
-    existing_interpretation_film = db.session.query(exists().where((InterpretationFilm.interpretation_id == interpretation.id) & (InterpretationFilm.film_id == film.id))).scalar()
-    
-    if existing_interpretation_film:
-        interpretation_film = InterpretationFilm.query.filter((InterpretationFilm.interpretation_id == interpretation.id) & (InterpretationFilm.film_id == film.id)).first()
-    else:
-        interpretation_film = add_interpretation_film(interpretation, film)
-
-    return interpretation_film
-
-
 def get_job_by_title(title):
     """Given a job title, return the Job object."""
 
@@ -515,7 +504,7 @@ def get_person(moviedb_id, imdb_id, fname, lname, birthday, gender, photo_path):
     return person
 
 
-def get_character_actor(person, character_name, film):
+def get_character_actor(person, character_name, film, img=None):
     """Given a person's information, create (or return) a Person object."""
 
     play = get_play_by_film(film)
@@ -526,7 +515,7 @@ def get_character_actor(person, character_name, film):
     if existing_character_actor:
         character_actor = CharacterActor.query.filter((CharacterActor.person_id == person.id) & (CharacterActor.character_id == character.id) & (CharacterActor.film_id == film.id)).first()
     else:
-        character_actor = add_character_actor(person=person, character_name=character_name, film=film)
+        character_actor = add_character_actor(person=person, character_name=character_name, film=film, img=img)
     
     return character_actor
 
@@ -571,20 +560,20 @@ def get_play_by_film(film):
     return play
 
 
-def get_scene(act, scene, play, title=None, description=None):
+def get_scene(act, scene, play, title=None, description=None, img=None):
     """Given an act, scene, and play, return the appropriate Scene object."""
 
     existing_scene = db.session.query(exists().where((Scene.act == act) & (Scene.scene == scene) & (Scene.play_id == play.id))).scalar()
 
     if existing_scene:
         scene = Scene.query.filter((Scene.act == act) & (Scene.scene == scene) & (Scene.play_id == play.id)).first()
-        if title != scene.title or description != scene.description:
-            updated_scene = update_scene(scene, title, description)
+        if title != scene.title or description != scene.description or img != scene.img:
+            updated_scene = update_scene(scene, title, description, img)
             return updated_scene
         else:
             return scene
     else:
-        new_scene = add_scene(act=act, scene=scene, play=play, title=title, description=description)
+        new_scene = add_scene(act=act, scene=scene, play=play, title=title, description=description, img=img)
         return new_scene
 
 
@@ -609,7 +598,7 @@ def get_all_scenes_by_play(play):
 # ----- BEGIN: UPDATE FUNCTIONS ----- #
 # For updating existing database records
 
-def update_character(character, name=None, gender=None):
+def update_character(character, name=None, gender=None, img=None):
     """Given a character, update the existing values."""
 
     db_character = Character.query.get(character.id)
@@ -618,13 +607,15 @@ def update_character(character, name=None, gender=None):
         db_character.name = name
     if gender != None:
         db_character.gender = gender
+    if img != None:
+        db_character.img = img
     
     db.session.merge(db_character)
     db.session.commit()
     return db_character
 
 
-def update_question(question, title=None, description=None):
+def update_question(question, title=None, description=None, img=None):
     """Given a question, update the existing values."""
 
     db_question = Question.query.get(question.id)
@@ -633,13 +624,15 @@ def update_question(question, title=None, description=None):
         db_question.title = title
     if description != None:
         db_question.description = description
+    if img != None:
+        db_question.img = img
     
     db.session.merge(db_question)
     db.session.commit()
     return db_question
 
 
-def update_interpretation(interpretation, play=None, film=None, title=None, description=None, time_start=None, time_end=None):
+def update_interpretation(interpretation, play=None, film=None, title=None, description=None, time_start=None, time_end=None, img=None):
     """Given an interpretation, update the existing values."""
 
     db_interpretation = Interpretation.query.get(interpretation.id)
@@ -656,13 +649,15 @@ def update_interpretation(interpretation, play=None, film=None, title=None, desc
         db_interpretation.time_start = time_start
     if time_end != None:
         db_interpretation.time_end = time_end
+    if img != None:
+        db_interpretation.img = img
     
     db.session.merge(db_interpretation)
     db.session.commit()
     return db_interpretation
 
 
-def update_scene(scene, title=None, description=None):
+def update_scene(scene, title=None, description=None, img=None):
     """Given a scene, update the existing values."""
 
     db_scene = Scene.query.get(scene.id)
@@ -671,6 +666,8 @@ def update_scene(scene, title=None, description=None):
         db_scene.title = title
     if description != None:
         db_scene.description = description
+    if img != None:
+        db_scene.img = img
     
     db.session.merge(db_scene)
     db.session.commit()

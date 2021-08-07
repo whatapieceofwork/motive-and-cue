@@ -5,9 +5,18 @@ from app.schemas import *
 from app.main.crud import add_interpretation, add_question, get_play_by_shortname, add_character
 from app.main.forms import play_titles
 from app.models import *
-from flask import abort, request
+from flask import abort, jsonify, request
 from marshmallow import ValidationError
 
+
+@api.route("/upload", methods=['POST'])
+def upload_file():
+
+  if request.method == 'POST':
+    file_to_upload = request.files['file']
+    if file_to_upload:
+      upload_result = cloudinary.uploader.upload(file_to_upload)
+      return jsonify(upload_result)
 
 # ----- BEGIN: GET ROUTES ----- #
 

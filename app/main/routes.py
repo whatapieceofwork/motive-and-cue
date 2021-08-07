@@ -385,7 +385,7 @@ def edit_characters(shortname=None, id=None):
 
             existing_character = Character.query.get(character_id)
             if existing_character:
-                character = update_character(character=existing_character, name=name, gender=gender)
+                character = update_character(character=existing_character, name=name, gender=gender, img=img)
             else:
                 character = add_character(name=name, play=play, gender=gender)
 
@@ -415,6 +415,10 @@ def edit_characters(shortname=None, id=None):
         if form.is_submitted():
             character.name = form.name.data
             character.gender = form.gender.data
+            img = request.files["image"]
+            if img:
+                img = cloudinary_url(img)
+                character.img = img
             db.session.merge(character)
             db.session.commit()
 
@@ -494,8 +498,11 @@ def add_questions(shortname=None):
             description = form.description.data
             db_characters = form.characters.data
             db_scenes = form.scenes.data
+            img = request.files["image"]
+            if img:
+                img = cloudinary_url(img)
 
-            question = add_question(play=play, title=title, description=description)
+            question = add_question(play=play, title=title, description=description, img=img)
             for character in db_characters:
                 get_question_character(question=question, character=character)
             for scene in db_scenes:
@@ -550,12 +557,15 @@ def edit_questions(shortname=None, id=None):
             description = form.description.data
             db_characters = form.characters.data
             db_scenes = form.scenes.data
+            img = request.files["image"]
+            if img:
+                img = cloudinary_url(img)
 
             existing_question = Question.query.get(question.id)
             if existing_question:
-                question = update_question(question=existing_question, title=title, description=description)
+                question = update_question(question=existing_question, title=title, description=description, img=img)
             else:
-               question = add_question(play=play, title=title, description=description)
+               question = add_question(play=play, title=title, description=description, img=img)
 
             for character in db_characters:
                 get_question_character(question=question, character=character)

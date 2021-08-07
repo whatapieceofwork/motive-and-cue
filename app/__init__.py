@@ -2,19 +2,19 @@ from re import escape
 from config import config
 from flask import Flask, Blueprint
 from flask_bootstrap import Bootstrap
+from flask_cors import CORS, cross_origin
 from flask_login import LoginManager, login_required, set_login_view
 from flask_login.utils import login_user, current_user, logout_user, login_required
 from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_moment import Moment
-from flask_msearch import Search
 from flask_sqlalchemy import SQLAlchemy
 from flask_whooshee import Whooshee
 from .models import db, AnonymousUser, whooshee
 from sqlalchemy.sql import exists
 
 bootstrap = Bootstrap()
-msearch = Search()
+cors = CORS()
 login_manager = LoginManager()
 mail = Mail()
 migrate = Migrate()
@@ -33,12 +33,12 @@ def create_app(config_name):
     login_manager.anonymous_user = AnonymousUser
 
     bootstrap.init_app(app)
+    cors.init_app(app)
     db.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
     migrate.init_app(app, db)
     moment.init_app(app)
-    # msearch.init_app(app)
     whooshee.init_app(app)
 
     from .api import api as api_blueprint

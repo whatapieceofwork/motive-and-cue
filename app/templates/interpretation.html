@@ -6,6 +6,9 @@
     {% endif %}
     <div id="interpretation-metadata">
         <ul>
+            {% if interpretation.img %}
+                <img class="small-portrait" src="{{ interpretation.img }}" alt="{{ interpretation.title }}">
+            {% endif %}
             <li>ID: {{ interpretation.id }}</li>
             <li>Play: {{ macros.as_link(interpretation.play) }}</li>
             <li>Film: {{ macros.as_link(interpretation.film) }}</li>
