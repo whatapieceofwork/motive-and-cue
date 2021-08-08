@@ -417,7 +417,7 @@ def edit_characters(shortname=None, id=None):
             character.gender = form.gender.data
             img = request.files["image"]
             if img:
-                img = cloudinary_url(img)
+                img = cloudinary_preset_url(img, "characters", filename=f"character-{to_filename(character.name)}")
                 character.img = img
             db.session.merge(character)
             db.session.commit()
@@ -500,7 +500,7 @@ def add_questions(shortname=None):
             db_scenes = form.scenes.data
             img = request.files["image"]
             if img:
-                img = cloudinary_url(img)
+                img = cloudinary_preset_url(img, "questions", filename=f"question-{to_filename(title)}")
 
             question = add_question(play=play, title=title, description=description, img=img)
             for character in db_characters:
@@ -559,7 +559,7 @@ def edit_questions(shortname=None, id=None):
             db_scenes = form.scenes.data
             img = request.files["image"]
             if img:
-                img = cloudinary_url(img)
+                img = cloudinary_preset_url(img, "questions", filename=f"question-{to_filename(title)}")
 
             existing_question = Question.query.get(question.id)
             if existing_question:
@@ -659,6 +659,9 @@ def add_interpretations(shortname=None, question_id=None):
             time_start = form.time_start.data
             time_end = form.time_end.data  
             question = form.question.data
+            img = request.files["image"]
+            if img:
+                img = cloudinary_preset_url(img, "interpretations", filename=f"interpretation-{to_filename(title)}")
  
             interpretation = add_interpretation(question=question, play=play, film=film, title=title, 
                                     description=description, time_start=time_start, time_end=time_end)
@@ -701,12 +704,17 @@ def edit_interpretations(shortname=None, id=None):
             description = form.description.data
             time_start = form.time_start.data
             time_end = form.time_end.data
+            img = request.files["image"]
+            if img:
+                img = cloudinary_preset_url(img, "interpretations", filename=f"interpretations-{to_filename(title)}")
 
             existing_interpretation = Interpretation.query.get(interpretation.id)
             if existing_interpretation:
-                interpretation = update_interpretation(interpretation=existing_interpretation, play=play, film=film, title=title, description=description, time_start=time_start, time_end=time_end)
+                interpretation = update_interpretation(interpretation=existing_interpretation, play=play, film=film, title=title, 
+                                    description=description, time_start=time_start, time_end=time_end, img=img)
             else:
-               interpretation = add_interpretation(question=question, play=play, film=film, title=title, description=description, time_start=time_start, time_end=time_end)
+               interpretation = add_interpretation(question=question, play=play, film=film, title=title, description=description, 
+                                    time_start=time_start, time_end=time_end, img=img)
 
             return redirect(f"/interpretations/{interpretation.id}/")
 

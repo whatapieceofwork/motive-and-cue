@@ -1,10 +1,14 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    {% if play and current_user.is_admin() %}
-        <p><em><a href="/interpretations/edit/{{play.shortname}}">Edit interpretations</a></em></br>
-        <em><a href="/interpretations/add/{{play.shortname}}">Add interpretations</a></em></p>
-    {% else %}    
+    {% if play %}
+        <em>{{ macros.as_link(play) }}</em>
+        {% if current_user.is_admin() %}
+            <p><em><a href="/interpretations/edit/{{play.shortname}}">Edit interpretations</a></em></br>
+            <em><a href="/interpretations/add/{{play.shortname}}">Add interpretations</a></em></p>
+        {% endif %}
+    {% endif %}
+    {% if form %}  
         {{ render_form(form) }}
     {% endif %}
 

@@ -40,7 +40,7 @@
                 <li>Played By:
                     <ul>
                     {% for part in character.character_actors %}
-                        <li>{{ macros.as_link(part.person) }}, {{ macros.as_link(part.film) }}</li>
+                        <li>{{ macros.as_link(part.person) }} - {{ macros.as_link(part.film) }}</li>
                     {% endfor %}
                     </ul>
                 </li>

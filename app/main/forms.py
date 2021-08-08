@@ -11,6 +11,16 @@ from wtforms_alchemy import model_form_factory
 from wtforms_sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 import cloudinary.uploader
 
+def cloudinary_preset_url(file, preset, filename):
+    result = cloudinary.uploader.unsigned_upload(file, preset,
+                    filename = filename,
+                    api_key = current_app.config["CLOUDINARY_KEY"],
+                    api_secret = current_app.config["CLOUDINARY_KEY_SECRET"],
+                    cloud_name = current_app.config["CLOUD_NAME"])
+    image_url = result["secure_url"]
+
+    return image_url
+
 def cloudinary_url(file):
     """Upload file to Cloudinary, return Cloudinary image URL."""
 
@@ -21,6 +31,22 @@ def cloudinary_url(file):
     image_url = result["secure_url"]
 
     return image_url
+
+def to_filename(title):
+    lower_title = title.lower()
+    title_words = lower_title.split()
+    file_words = []
+    for word in title_words:
+        tidy_word = ""
+        for character in word:
+            if character.isalpha() or character.isdigit():
+                tidy_word += character
+        file_words.append(tidy_word)
+    if len(file_words) > 5:
+        file_words = file_words[:5]
+    filename = file_words.join("-")
+    return filename
+
 
 
 play_titles = {"AWW": "All's Well That Ends Well", "Ant": "Antony and Cleopatra", "AYL": "As You Like It", "Err": "The Comedy of Errors", "Cor": "Coriolanus", "Cym": "Cymbeline", "Ham": "Hamlet", "1H4": "Henry IV, Part 1", "2H4": "Henry IV, Part 2", "H5": "Henry V", "1H6": "Henry VI, Part 1", "2H6": "Henry VI, Part 2", "3H6": "Henry VI, Part 3", "H8": "Henry VIII", "JC": "Julius Caesar", "Jn": "King John", "Lr": "King Lear", "LLL": "Love's Labor's Lost", "Mac": "Macbeth", "MM": "Measure for Measure", "MV": "The Merchant of Venice", "Wiv": "The Merry Wives of Windsor", "MND": "A Midsummer Night's Dream", "Ado": "Much Ado About Nothing", "Oth": "Othello", "Per": "Pericles", "R2": "Richard II", "R3": "Richard III", "Rom": "Romeo and Juliet", "Shr": "The Taming of the Shrew", "Tmp": "The Tempest", "Tim": "Timon of Athens", "Tit": "Titus Andronicus", "Tro": "Troilus and Cressida", "TN": "Twelfth Night", "TGV": "The Two Gentlemen of Verona", "TNK": "The Two Noble Kinsmen", "WT": "The Winter's Tale"}

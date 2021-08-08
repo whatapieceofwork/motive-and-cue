@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-
+    {% if play %}
+        <em>{{ macros.as_link(play) }}</em>
+    {% endif %}
     {% if current_user.is_admin() %}
         <p><em><a href="/questions/edit/{{question.id}}">Edit question</a></em><br/>
         <em><a href="/interpretations/add/{{question.id}}">Add interpretation</a></em></p>

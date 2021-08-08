@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    {% if play and current_user.is_admin() %}
-        <p><em><a href="/characters/edit/{{play.shortname}}/">Edit characters</a></em></p>
+    {% if play %}
+        <em>{{ macros.as_link(play) }}</em>
+        {% if current_user.is_admin() %}
+            <p><em><a href="/characters/edit/{{play.shortname}}/">Edit characters</a></em></p>
+        {% endif %}
     {% endif %}
     {% if form %}    
         {{ render_form(form) }}

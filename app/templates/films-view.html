@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block page_content %}
+    {% if play %}
+        <em>{{ macros.as_link(play) }}</em>
+    {% endif %}
     <p><em><a href="/films">View all films</a></em></br>
     {% if current_user.is_admin() %}
         <em><a href="/films/add">Add a film</a></em></p>

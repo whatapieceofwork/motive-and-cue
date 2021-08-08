@@ -136,12 +136,11 @@ def add_question_scene(question, scene):
     return question_scene
 
 
-def add_film(play, moviedb_id, imdb_id, title, release_date, language, tagline, overview, length, watch_providers, poster_path):
+def add_film(play, moviedb_id, imdb_id, title, release_date, language, overview, length, poster_path):
     """Create and return a new Film database record."""
 
     film = Film(play_id=play.id, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, 
-                language=language, tagline=tagline, overview=overview, length=length, watch_providers=watch_providers,
-                poster_path=poster_path)
+                language=language, overview=overview, length=length, poster_path=poster_path)
 
     db.session.add(film)
     db.session.commit()
@@ -452,7 +451,7 @@ def get_person_job(person, film, job_title):
     return person_job
 
 
-def get_film(play, moviedb_id, imdb_id, title, release_date, language, tagline, overview, length, watch_providers, poster_path):
+def get_film(play, moviedb_id, imdb_id, title, release_date, language, overview, length, poster_path):
 
     existing_film = db.session.query(exists().where(Film.moviedb_id == moviedb_id)).scalar()
     
@@ -460,8 +459,7 @@ def get_film(play, moviedb_id, imdb_id, title, release_date, language, tagline, 
         film = Film.query.filter(Film.moviedb_id == moviedb_id).first()
     else:
         film = add_film(play=play, moviedb_id=moviedb_id, imdb_id=imdb_id, title=title, release_date=release_date, 
-                        language=language, length=length, overview=overview, tagline=tagline, watch_providers=watch_providers,
-                        poster_path=poster_path)
+                        language=language, length=length, overview=overview, poster_path=poster_path)
     
     return film
 

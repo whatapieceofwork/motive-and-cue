@@ -1,9 +1,13 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    {% if play and current_user.is_admin() %}
-        <p><em><a href="/questions/edit/{{play.shortname}}/">Edit questions</a></em></p>
-    {% else %}    
+    {% if play %}
+        <em>Back to {{ macros.as_link(play) }}</em>
+        {% if play and current_user.is_admin() %}
+            <p><em><a href="/questions/edit/{{play.shortname}}/">Edit questions</a></em></p>
+        {% endif %}
+    {% endif %}
+    {% if form %}    
         {{ render_form(form) }}
     {% endif %}
 
@@ -36,7 +40,7 @@
                     <li>Related Characters: 
                         <ul>
                         {% for character in question['characters'] %}
-                            {{ macros as_link(character) }}</li>
+                            {{ macros.as_link(character) }}</li>
                         {% endfor %}
                         </ul>
                     </li>
