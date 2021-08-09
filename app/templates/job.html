@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+    <div id="job-metadata">
+        <ul>
+            <li>ID: {{ job.id }}</li>
+            <li>Title: {{ job.title }}</li>
+            {% if job.person_jobs %}
+                <li>Job-Holders:
+                    <ul>
+                    {% for person_job in job.person_jobs %}
+                        <li>{{ macros.as_link(person_job.people) }} - {{ macros.as_link(person_job.film) }}</li>
+                    {% endfor %}
+                    </ul>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+{% endblock %}

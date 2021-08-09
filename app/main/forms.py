@@ -326,8 +326,6 @@ def make_film_form(db_film=None):
                                 default=db_film.play)
 
         delete = BooleanField(label="Delete record?")
-        image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")],
-            render_kw={"class": "form-control"})
 
         submit = SubmitField("Submit")
 

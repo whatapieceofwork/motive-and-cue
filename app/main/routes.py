@@ -1,14 +1,15 @@
 from app import db
-from app.decorators import admin_required, permission_required
-from app.main.folger_parser import parse_folger_characters, parse_folger_scene_descriptions, parse_folger_scenes
+from app.decorators import admin_required
+from app.main.folger_parser import parse_folger_scene_descriptions
 from app.main.forms import *
-from app.main.moviedb_parser import parse_moviedb_cast, parse_moviedb_crew, parse_moviedb_film, parse_moviedb_film_details, parse_moviedb_person, get_moviedb_film_id
+from app.main.moviedb_parser import parse_moviedb_film, get_moviedb_film_id
 from app.main.crud import *
 from app.models import *
 from datetime import datetime
-from flask import abort, flash, g, redirect, render_template, request, session, url_for, render_template_string
+from flask import abort, flash, g, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 from markupsafe import Markup
+from mergedeep import merge
 from . import main
 
 
@@ -148,28 +149,23 @@ def search():
     if request.method == "POST" or request.method == "GET":
         if not g.search_form.validate() and not advanced_search_form.validate():
             flash("Search error. Please try again.", "error")
-            return redirect(url_for('main.index'))
+            return redirect(url_for('main.search'))
  
         # prioritize search queries made from the Search page
         if advanced_search_form.search_field.query.data:
             query = advanced_search_form.search_field.query.data
-            advanced_search_form.search_field.query.data = query #set default value of search to current query
-        else:
+            advanced_search_form.search_field.query.data = query # set default value of search to current query
+        else: # use navbar search information as fallback
             query = g.search_form.query.data
             advanced_search_form.search_field.query.data = query
 
-        #####
-        # TO IMPLEMENT: NARROW SEARCH BY CHOSEN FACETS
-        #####
+        facets = {"character": Character, "interpretation": Interpretation, "film": Film, "job": Job, "person": Person, "play": Play,
+                    "scene": Scene, "question": Question}
 
-        results += Character.query.whooshee_search(query).order_by(Character.id.desc()).all()
-        results += Film.query.whooshee_search(query).order_by(Film.id.desc()).all()
-        results += Interpretation.query.whooshee_search(query).order_by(Interpretation.id.desc()).all()
-        results += Job.query.whooshee_search(query).order_by(Job.id.desc()).all()
-        results += Person.query.whooshee_search(query).order_by(Person.id.desc()).all()
-        results += Play.query.whooshee_search(query).order_by(Play.id.desc()).all()
-        results += Question.query.whooshee_search(query).order_by(Question.id.desc()).all()
-        results += Scene.query.whooshee_search(query).order_by(Scene.id.desc()).all()
+        # include search results for each selected facet
+        for facet in facets.keys():
+            if advanced_search_form.search_facets[facet].data == True:
+                results += facets[facet].query.whooshee_search(query).order_by(facets[facet].id.desc()).all()
     
     return render_template("search.html", title=title, results=results, query=query, advanced_search_form=advanced_search_form)
 
@@ -875,13 +871,15 @@ def process_film():
 
     film_id = get_moviedb_film_id(film_url)
     details, cast, crew = parse_moviedb_film(film_id, play)
+    people = merge({}, cast, crew)
 
     character_names = [character.name for character in play.characters]
     character_names.sort()
+    crew_jobs = {"Director", "Cinematographer", "Executive Producer", "Writer"}
 
     title = "Verify Film Information"
-    return render_template("films-verify.html", details=details, cast=cast, crew=crew,
-                            play=play, genders=GENDERS, character_names=character_names, title=title)
+    return render_template("films-verify.html", details=details, people=people,
+                            play=play, genders=GENDERS, character_names=character_names, crew_jobs=crew_jobs, title=title)
 
 
 @main.route("/add-film-to-db/", methods = ["POST"])
@@ -906,7 +904,7 @@ def add_film_to_db():
                         release_date=film["release_date"], language=film["language"], length=film["length"], overview=film["overview"], 
                         poster_path=film["poster_path"])
     
-    people = []
+
     person_count = request.form.get("person_count")
     person_count = int(person_count) + 1
     for i in range(person_count):
@@ -926,17 +924,26 @@ def add_film_to_db():
 
             person["parts"] = []
             part_count = request.form.get(f"part_count-{i}")
-            part_count = int(part_count) + 1
-            for j in range(part_count):
-                person["parts"].append(request.form.get(f"part-{i}-{j}"))
+            if part_count:
+                part_count = int(part_count) + 1
+                for j in range(part_count):
+                    person["parts"].append(request.form.get(f"part-{i}-{j}"))
+
+            person["jobs"] = []
+            job_count = request.form.get(f"job_count-{i}")
+            if job_count:
+                job_count = int(job_count) + 1
+                for j in range(job_count):
+                    person["jobs"].append(request.form.get(f"job-{i}-{j}"))
 
             db_person = get_person(person["moviedb_id"], person["imdb_id"], person["fname"], person["lname"], person["birthday"], person["gender"], person["photo_path"])
             if person["parts"]:
                 get_person_job(db_person, db_film, "Actor")
-            for part_name in person["parts"]:
-                get_character_actor(person=db_person, character_name=part_name, film=db_film)
-
-            people.append(person)
+                for part_name in person["parts"]:
+                    get_character_actor(person=db_person, character_name=part_name, film=db_film)
+            if person["jobs"]:
+                for job in person["jobs"]:
+                    get_person_job(db_person, db_film, job)
 
     title = "Add Film"
     return redirect(f"/films/{db_film.id}")
@@ -960,9 +967,15 @@ def edit_films(shortname=None, id=None):
     else:
         form = ChoosePlayForm()
 
-    if form.validate_on_submit():
-        film = Film.query.get(id)
+    if form.validate_on_submit() and form.__class__ == ChoosePlayForm:
+        shortname = form.play.data
+        play = get_play_by_shortname(shortname)
+        if shortname not in play_titles.keys():
+            flash("Please select a valid play.")
+            return redirect("/films/")
+        return redirect(f"/films/{play.shortname}")
 
+    if form.validate_on_submit():
         film.title = form.title.data
         film.moviedb_id = form.moviedb_id.data
         film.imdb_id = form.imdb_id.data
@@ -979,6 +992,41 @@ def edit_films(shortname=None, id=None):
 
     return render_template("films-edit.html", films=films, form=form)
 # ----- END: PROCESS FILM ----- #
+
+
+# ----- BEGIN: JOB VIEWS ----- #
+
+@main.route("/jobs/", methods=["GET", "POST"])
+@main.route("/jobs/<string:shortname>/", methods=["GET", "POST"])
+@main.route("/jobs/<int:id>/", methods=["GET", "POST"])
+def view_jobs(shortname=None, id=None):
+    """Display all jobs, or a specific job by shortname or id."""
+
+    if shortname or id:
+        if shortname:
+            if shortname not in play_titles.keys():
+                flash("Please select a valid play.")
+                return redirect("/jobs/")
+
+            play = get_play_by_shortname(shortname)
+            jobs = Job.query.filter(Job.film.play.id == play.id)
+
+            title = Markup(f"<em>{play.title}</em> Jobs")
+            return render_template("jobs-view.html", play=play, title=title, jobs=jobs)
+
+        elif id:
+            job = Job.query.get(id)
+
+            title = f"{job.title}"
+            return render_template("job.html", job=job, title=title)
+        
+    else:
+        jobs = Job.query.all()
+
+        title = "Jobs"
+        return render_template("jobs-view.html", jobs=jobs, title=title)
+
+# ----- END: JOB VIEWS ----- #
 
 
 # ----- BEGIN: TEST ROUTES ----- #

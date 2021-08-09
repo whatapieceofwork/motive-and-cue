@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+    {% if play %}
+        <em>Back to {{ macros.as_link(play) }}</em>
+    {% endif %}
+    {% if form %}  
+        {{ render_form(form) }}
+    {% endif %}
+
+    <div id="jobs-metadata">
+        {% if jobs %}
+            {% for job in jobs %}
+                <div id="job-metadata">
+                    <ul>
+                        <li>Title: {{ macros.as_link(job) }}</li>
+                        {% if job.description %}
+                            <li>Description: {{ job.description }}</li>
+                        {% endif %}
+                        {% if job.person_jobs %}
+                            <li>Job-Holders:</li>
+                                <ul>
+                                    {% for person_job in job.person_jobs %}
+                                        <li>{{ macros.as_link(person_job.people) }} - {{ macros.as_link(person_job.film) }}</li>
+                                    {% endfor %}
+                                <ul>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>                    
+{% endblock %}

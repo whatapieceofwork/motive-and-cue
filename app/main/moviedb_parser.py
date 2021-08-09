@@ -23,6 +23,7 @@ def parse_moviedb_film(moviedb_id, play):
     moviedb_credits = "https://api.themoviedb.org/3/movie/" + str(moviedb_id) + "/credits?api_key=" + MOVIEDB_API_KEY
     credits = requests.get(moviedb_credits).json()
     cast_credits, crew_credits = credits["cast"], credits["crew"]
+    print(f"******************* CREWCREWCREW {crew_credits}")
 
     film_details = parse_moviedb_film_details(moviedb_id, play) #parse MovieDB film details and create Film database object
     cast = parse_moviedb_cast(moviedb_id, cast_credits) #parse MovieDB actor details and create Actor database objects
@@ -40,9 +41,9 @@ def parse_moviedb_film_details(moviedb_id, play):
     details_request_url = "https://api.themoviedb.org/3/movie/" + str(moviedb_id) + "?api_key=" + MOVIEDB_API_KEY + "&language=en-US"
     details = requests.get(details_request_url).json()
     # Watch provider information courtesy of JustWatch
-    watch_request_url = "https://api.themoviedb.org/3/movie/" + str(moviedb_id) + "/watch/providers?api_key=" + MOVIEDB_API_KEY + "&language=en-US"
-    watch_providers = requests.get(watch_request_url).json()
-    print(f"******************************* Watch providers: {watch_providers} ***************************")
+    # watch_request_url = "https://api.themoviedb.org/3/movie/" + str(moviedb_id) + "/watch/providers?api_key=" + MOVIEDB_API_KEY + "&language=en-US"
+    # watch_providers = requests.get(watch_request_url).json()
+    # print(f"******************************* Watch providers: {watch_providers} ***************************")
 
     film["film_moviedb_id"] = moviedb_id
     film["film_imdb_id"] = details["imdb_id"]
@@ -56,7 +57,7 @@ def parse_moviedb_film_details(moviedb_id, play):
     print(f"******************************* Overview: {details['overview']} ***************************")
     print(f"******************************* Tagline: {details['tagline']} ***************************")
     film["play_id"] = play.id
-    film["watch_providers"] = str(watch_providers)
+    # film["watch_providers"] = str(watch_providers)
     if details["poster_path"]:
         film["poster_path"] = "https://www.themoviedb.org/t/p/original" + details.get("poster_path")
 
@@ -110,14 +111,17 @@ def parse_moviedb_crew(moviedb_id, crew_credits):
     """Given a Movie record and crew credits JSON object, process crew info and return as dictionary of dictionaries."""
 
     crew = {}
-    important_crew_jobs = {"Director", "Cinematographer", "Executive Producer", "Writer"}
+    important_crew_jobs = {"Director", "Cinematographer", "Executive Producer", "Writer", "Screenplay"}
 
     for crewmember in crew_credits:
         if crewmember["job"] in important_crew_jobs:
             crew_id = crewmember["id"]
-            person_dict = parse_moviedb_person(crew_id)
-            crew[crew_id] = person_dict
-            crew[crew_id]["job"] = crewmember["job"]
+            if not crew_id in crew:
+                person_dict = parse_moviedb_person(crew_id)
+                crew[crew_id] = person_dict
+                crew[crew_id]["jobs"] = []
+                crew[crew_id]["moviedb_id"] = moviedb_id
+            crew[crew_id]["jobs"].append(crewmember["job"])
 
     print(f"*********** CREW: {crew}")
     return crew

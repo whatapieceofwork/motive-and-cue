@@ -3,8 +3,7 @@
 {% block page_content %}
     {% if form %}
         {{ render_form(form) }}
-    {% endif %}
-    {% if films %}
+    {% elif films %}
         {% for film in films %}
             <p>{{ macros.as_link(film) }}</p>
         {% endfor %}

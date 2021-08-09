@@ -15,6 +15,12 @@
                 {% endfor %}
             </datalist>
 
+            <datalist id="jobs">
+                {% for job in people_jobs %}
+                    <option value="{{ job }}"></option>
+                {% endfor %}
+            </datalist>
+
             <h3>{{ details['title'] }}</h3>
             <input type="hidden" id="play" name="play" value="{{ play.title }}">
 
@@ -51,41 +57,42 @@
                 <textarea name="overview" id="overview" class="form-control">{{ details['overview'] }}</textarea>
             </div>
 
-            {% for person in cast %}
+            {% for person in people %}
                 <div class="d-flex justify-content-center">
-                    {% if cast[person]['photo_path'] %}
-                        <img class="portrait" src="{{ cast[person]['photo_path'] }}" /><br/>
+                    {% if people[person]['photo_path'] %}
+                        <img class="portrait" src="{{ people[person]['photo_path'] }}" /><br/>
                     {% else %}
                         <p>[NO PROFILE IMAGE AVAILABLE.]</p>
                     {% endif %}
                 </div>
+                
+                <h3>{{ people[person]['full_name']|join(' ') }}</h3>
 
-                <h3>{{ cast[person]['full_name']|join(' ') }}</h3>
                 <div class="form-check col-md-8">
                     <label for="exclude" class="form-check-label">Exclude this entry from the database?</label>
                     <input type="checkbox" name="exclude-{{ loop.index0 }}" id="exclude-{{ loop.index0 }}" class="form-check-input">
                 </div>
                 <div class="col-md-6">
                     <label for="fname-{{ loop.index0 }}" class="form-label">First Name</label> 
-                    <input type="text" name="fname-{{ loop.index0 }}" id="fname-{{ loop.index0 }}" class="form-control" placeholder="{{ cast[person]['fname'] }}" value="{{ cast[person]['fname'] }}">
+                    <input type="text" name="fname-{{ loop.index0 }}" id="fname-{{ loop.index0 }}" class="form-control" placeholder="{{ people[person]['fname'] }}" value="{{ people[person]['fname'] }}">
                 </div>
                 <div class="col-md-6">
                     <label for="lname-{{ loop.index0 }}" class="form-label">Last Name</label> 
-                    <input type="text" name="lname-{{ loop.index0 }}" id="lname-{{ loop.index0 }}" class="form-control" placeholder="{{ cast[person]['lname'] }}" value="{{ cast[person]['lname'] }}">
+                    <input type="text" name="lname-{{ loop.index0 }}" id="lname-{{ loop.index0 }}" class="form-control" placeholder="{{ people[person]['lname'] }}" value="{{ people[person]['lname'] }}">
                 </div>
                 <div class="col-md-12">
                     <label for="photo_path-{{ loop.index0 }}" class="form-label">Photo Path</label>
-                    <input type="text" name="photo_path-{{ loop.index0 }}" id="photo_path-{{ loop.index0 }}" class="form-control" placeholder="{{ cast[person]['photo_path'] }}" value="{{ cast[person]['photo_path'] }}">
+                    <input type="text" name="photo_path-{{ loop.index0 }}" id="photo_path-{{ loop.index0 }}" class="form-control" placeholder="{{ people[person]['photo_path'] }}" value="{{ people[person]['photo_path'] }}">
                 </div>
                 <div class="col-md-6">
                     <label for="birthday-{{ loop.index0 }}" class="form-label">Birthday</label>
-                    <input type="date" name="birthday-{{ loop.index0 }}" id="birthday-{{ loop.index0 }}" class="form-control" {% if cast[person]['birthday'] %} placeholder="{{ cast[person]['birthday'].strftime('%Y-%m-%d') }}" value="{{ cast[person]['birthday'].strftime('%Y-%m-%d') }}" {% endif %}>
+                    <input type="date" name="birthday-{{ loop.index0 }}" id="birthday-{{ loop.index0 }}" class="form-control" {% if people[person]['birthday'] %} placeholder="{{ people[person]['birthday'].strftime('%Y-%m-%d') }}" value="{{ people[person]['birthday'].strftime('%Y-%m-%d') }}" {% endif %}>
                 </div>
                 <div class="col-md-6">
                     <label for="gender-{{ loop.index0 }}" class="form-label">Gender</label>
                     <select name="gender-{{ loop.index0 }}" id="gender-{{ loop.index0 }}" class="form-select">
                         {% for key, value in genders.items() %}
-                            {% if key == cast[person]['gender'] %}
+                            {% if key == people[person]['gender'] %}
                                 <option selected value="{{  key  }}">{{  value  }}</option>
                             {% else %}
                                 <option value="{{  key  }}">{{  value  }}</option>
@@ -94,32 +101,50 @@
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="person_moviedb_id-{{ loop.index0 }}" class="form-label"><a href="https://www.themoviedb.org/person/{{ cast[person]['person_moviedb_id'] }}">MovieDB ID</a></label>
-                    <input type="text" name="person_moviedb_id-{{ loop.index0 }}" id="person_moviedb_id-{{ loop.index0 }}" class="form-control" placeholder="{{ cast[person]['person_moviedb_id'] }}" value="{{ cast[person]['person_moviedb_id'] }}" required>
+                    <label for="person_moviedb_id-{{ loop.index0 }}" class="form-label"><a href="https://www.themoviedb.org/person/{{ people[person]['person_moviedb_id'] }}">MovieDB ID</a></label>
+                    <input type="text" name="person_moviedb_id-{{ loop.index0 }}" id="person_moviedb_id-{{ loop.index0 }}" class="form-control" placeholder="{{ people[person]['person_moviedb_id'] }}" value="{{ people[person]['person_moviedb_id'] }}" required>
                 </div>
                 <div class="col-md-6">
-                    <label for="person_imdb_id-{{ loop.index0 }}" class="form-label"><a href="https://www.imdb.com/name/{{ cast[person]['person_imdb_id'] }}">IMDB ID</a></label>
-                    <input type="text" name="person_imdb_id-{{ loop.index0 }}" id="person_imdb_id-{{ loop.index0 }}" class="form-control" placeholder="{{ cast[person]['person_imdb_id'] }}" value="{{ cast[person]['person_imdb_id'] }}" required>
+                    <label for="person_imdb_id-{{ loop.index0 }}" class="form-label"><a href="https://www.imdb.com/name/{{ people[person]['person_imdb_id'] }}">IMDB ID</a></label>
+                    <input type="text" name="person_imdb_id-{{ loop.index0 }}" id="person_imdb_id-{{ loop.index0 }}" class="form-control" placeholder="{{ people[person]['person_imdb_id'] }}" value="{{ people[person]['person_imdb_id'] }}" required>
                 </div>
                 {% set parent_loop = loop %}
-                {% for part in cast[person]["parts_played"] %}
-                    <div class="col-md-12">
-                        <label for="part-{{ loop.index0 }}" class="form-label">Part</label>
-                        {% if part in character_names %}
-                            <input type="search" list="parts" name="part-{{ parent_loop.index0 }}-{{ loop.index0 }}" id="part-{{ parent_loop.index0 }}-{{ loop.index0 }}" class="form-control" placeholder="{{ part }}" value="{{ part }}">    
-                        {% else %} 
-                            <input type="search" list="parts" name="part-{{ parent_loop.index0 }}-{{ loop.index0 }}" id="part-{{ parent_loop.index0 }}-{{ loop.index0 }}" class="form-control" placeholder="{{ part }}">                     
-                        {% endif %}
-                        {% if loop.last %}
-                            <input type="hidden" id="part_count-{{ parent_loop.index0 }}" name="part_count-{{ parent_loop.index0 }}" value="{{ loop.index0 }}">
-                        {% endif %}
-                    </div>
-                {% endfor %}
+                {% if people[person]["parts_played"] %}
+                    {% for part in people[person]["parts_played"] %}
+                        <div class="col-md-12">
+                            <label for="part-{{ loop.index0 }}" class="form-label">Part</label>
+                            {% if part in character_names %}
+                                <input type="search" list="parts" name="part-{{ parent_loop.index0 }}-{{ loop.index0 }}" id="part-{{ parent_loop.index0 }}-{{ loop.index0 }}" class="form-control" placeholder="{{ part }}" value="{{ part }}">    
+                            {% else %} 
+                                <input type="search" list="parts" name="part-{{ parent_loop.index0 }}-{{ loop.index0 }}" id="part-{{ parent_loop.index0 }}-{{ loop.index0 }}" class="form-control" placeholder="{{ part }}">                     
+                            {% endif %}
+                            {% if loop.last %}
+                                <input type="hidden" id="part_count-{{ parent_loop.index0 }}" name="part_count-{{ parent_loop.index0 }}" value="{{ loop.index0 }}">
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                {% if people[person]["jobs"] %}
+                    {% for job in people[person]["jobs"] %}
+	                    <div class="col-md-12">
+	                        <label for="job-{{ loop.index0 }}" class="form-label">Job</label>
+	                        {% if job in crew_jobs %}
+	                            <input type="search" name="job-{{ parent_loop.index0 }}-{{ loop.index0 }}" id="job-{{ parent_loop.index0 }}-{{ loop.index0 }}" class="form-control" placeholder="{{ job }}" value="{{ job }}">    
+	                        {% else %} 
+	                            <input type="search" list="jobs" name="job-{{ parent_loop.index0 }}-{{ loop.index0 }}" id="job-{{ parent_loop.index0 }}-{{ loop.index0 }}" class="form-control" placeholder="{{ job }}">                     
+	                        {% endif %}
+	                        {% if loop.last %}
+	                          	<input type="hidden" id="job_count-{{ parent_loop.index0 }}" name="job_count-{{ parent_loop.index0 }}" value="{{ loop.index0 }}">
+	                        {% endif %}
+	                    </div>
+	                {% endfor %}
+                {% endif %}
                 {% if loop.last %}
                     <input type="hidden" id="person_count" name="person_count" value="{{ loop.index0 }}">
                 {% endif %}
             {% endfor %}
-            <button type="submit" class="btn btn-primary">Submit</button>
+            
+        <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 </div>
 {% endblock %}
