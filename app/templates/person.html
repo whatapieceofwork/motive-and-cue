@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 
 {% block page_content %}
+    {% if current_user.is_admin() and person %}
+        <p><em><a href="/people/edit/{{ person.id }}/">Edit Person</a></em></p>
+    {% endif %}
     <p><a href="/people/">View All People</a></p>
     <div id="person-metadata">
         <div>

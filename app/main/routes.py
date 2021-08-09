@@ -434,6 +434,11 @@ def edit_characters(shortname=None, id=None):
             if img:
                 img = cloudinary_preset_url(img, "characters", filename=f"character-{to_filename(character.name)}")
                 character.img = img
+            if form.delete.data == True:
+                delete_object(character)
+                db.session.commit()
+                flash("Character has been deleted.", "success")
+                return redirect("/characters")
             db.session.merge(character)
             db.session.commit()
 
@@ -754,6 +759,8 @@ def edit_interpretations(shortname=None, id=None):
 def view_people(shortname=None, id=None):
     """Display all people, or a specific person by id."""
 
+    title = "People"
+
     if id:
         person = Person.query.get(id)
 
@@ -762,35 +769,117 @@ def view_people(shortname=None, id=None):
         
     else:
         form = make_person_facet_form()
+        # facets = {"play": Play, "character": Character, "job": Job, "film": Film}
+        play = False
+        character = False
+        job = False
+        film = False
 
-        if request.method == "POST" and form.film.data and form.film.data != "All":
-            film_id = form.film.data
-            film = Film.query.get(film_id)
-            people = db.session.query(Person).join(PersonJob, Film).filter((Person.id == PersonJob.person_id) & (PersonJob.film_id == film.id)).order_by(Person.lname).all()
-
-        if request.method == "POST" and form.play.data and form.play.data != "All":
-                play_id = form.play.data
+        if request.method == "POST":
+            if form.play.data != "All":
+                play_id = int(form.play.data)
                 play = Play.query.get(play_id)
                 form = make_person_facet_form(play)
-                parts = db.session.query(CharacterActor).join(Character).join(Film).filter(play == play).all()
-                people = db.session.query(Person).join(PersonJob, Film, Play).filter((Person.id == PersonJob.person_id) & (PersonJob.film_id == Film.id) & (Film.play_id == play.id)).order_by(Person.lname).all()
-
-        if request.method == "POST" and form.character.data and form.character.data != "All":
-                character_id = form.character.data
+            if form.character.data != "All":
+                character_id = int(form.character.data)
                 character = Character.query.get(character_id)
-                play = character.play
-                people = db.session.query(Person).join(CharacterActor, Character).filter((Person.id == CharacterActor.person_id) & (CharacterActor.character_id == character.id)).order_by(Person.lname).all()
+                if not play:
+                    play = Character.play
+                job = get_job_by_title("Actor")
+            if form.job.data != "All":
+                job_id = int(form.job.data)
+                job = Job.query.get(job_id)
+            if form.film.data != "All":
+                film_id = int(form.film.data)
+                film = Film.query.get(film_id)
 
-        if request.method == "POST" and form.job.data and form.job.data != "All":
-            job_id = form.job.data
-            job = Job.query.get(job_id)
-            people = db.session.query(Person).join(PersonJob, Job).filter((Person.id == PersonJob.person_id) & (PersonJob.job_id == job.id)).order_by(Person.lname).all()
+            if play and character and job and film:
+                people = db.session.query(Person).join(CharacterActor, Character, Film).filter((Person.id == CharacterActor.person_id) & (CharacterActor.character_id == character.id) & (CharacterActor.film_id == film.id)).order_by(Person.lname).all()
+            elif play and character and job and not film:
+                people = db.session.query(Person).join(CharacterActor, Character, Film).filter((Person.id == CharacterActor.person_id) & (CharacterActor.character_id == character.id)).order_by(Person.lname).all()
+            elif play and not character and job and not film:
+                people = db.session.query(Person).join(PersonJob, Job, Film, Play).filter((Person.id == PersonJob.person_id) & (PersonJob.job_id == job.id) & (PersonJob.film_id == Film.id) & (Film.play_id == play.id)).order_by(Person.lname).all()
+            elif play and not character and job and film:
+                print(f"***************PLAYJOBFILM {play, job, film}")
+                people = db.session.query(Person).join(PersonJob, Job, Film).filter((Person.id == PersonJob.person_id) & (PersonJob.job_id == job.id) & (PersonJob.film_id == film.id)).order_by(Person.lname).all()
+            elif play and not character and not job and film:
+                people = db.session.query(Person).join(PersonJob, Film).filter((Person.id == PersonJob.person_id) & (PersonJob.film_id == film.id) & (Film.play_id == play.id)).order_by(Person.lname).all()
+            elif play and not character and not job and not film:
+                people = db.session.query(Person).join(PersonJob, Film, Play).filter((Person.id == PersonJob.person_id) & (PersonJob.film_id == Film.id) & (Film.play_id == play.id)).order_by(Person.lname).all()
+            elif not play and not character and job and film:
+                people = db.session.query(Person).join(PersonJob, Film).filter((Person.id == PersonJob.person_id) & (PersonJob.film_id == film.id) & (PersonJob.job_id == job.id)).order_by(Person.lname).all()
+            elif not play and not character and not job and film:
+                people = db.session.query(Person).join(PersonJob, Film).filter((Person.id == PersonJob.person_id) & (PersonJob.film_id == film.id)).order_by(Person.lname).all()
+            elif not play and not character and job and not film:
+                people = db.session.query(Person).join(PersonJob).filter((Person.id == PersonJob.person_id) & (PersonJob.job_id == job.id)).order_by(Person.lname).all()
+
+            else:
+                people = Person.query.all()
+
+        # if request.method == "POST" and form.job.data and form.job.data != "All":
+        #     job_id = int(form.job.data)
+        #     job = Job.query.get(job_id)
+        #     people = db.session.query(Person).join(PersonJob, Job).filter((Person.id == PersonJob.person_id) & (PersonJob.job_id == job.id)).order_by(Person.lname).all()
+        #     return render_template("people-view.html", people=people, form=form, title=title)
+        
+        # if request.method == "POST" and form.character.data and form.character.data != "All":
+        #     character_id = int(form.character.data)
+        #     character = Character.query.get(character_id)
+        #     play = character.play
+        #     people = db.session.query(Person).join(CharacterActor, Character).filter((Person.id == CharacterActor.person_id) & (CharacterActor.character_id == character.id)).order_by(Person.lname).all()
+        #     print(f"***************CHARACTERPEOPLE: {people}")
+        #     return render_template("people-view.html", people=people, form=form, title=title)
+
+        # if request.method == "POST" and form.play.data and form.play.data != "All":
+        #     play_id = int(form.play.data)
+        #     play = Play.query.get(play_id)
+        #     form = make_person_facet_form(play)
+        #     parts = db.session.query(CharacterActor).join(Character).join(Film).filter(play == play).all()
+        #     people = db.session.query(Person).join(PersonJob, Film, Play).filter((Person.id == PersonJob.person_id) & (PersonJob.film_id == Film.id) & (Film.play_id == play.id)).order_by(Person.lname).all()
+        #     return render_template("people-view.html", people=people, form=form, title=title)
+
+        # if request.method == "POST" and form.film.data and form.film.data != "All":
+        #     film_id = int(form.film.data)
+        #     film = Film.query.get(film_id)
+        #     people = db.session.query(Person).join(PersonJob, Film).filter((Person.id == PersonJob.person_id) & (PersonJob.film_id == film.id)).order_by(Person.lname).all()
+        #     return render_template("people-view.html", people=people, form=form, title=title)
         
         else:
             people = Person.query.order_by(Person.lname).all()
 
-        title = "People"
         return render_template("people-view.html", people=people, form=form, title=title)
+
+
+@main.route("/people/edit/", methods=["GET", "POST"])
+@main.route("/people/edit/<int:id>/", methods=["GET", "POST"])
+def edit_people(id=None):
+    """Edit all people, or a specific person by person id."""
+
+    if id:
+        person = Person.query.get(id)
+        form = make_person_form(person)
+
+        if form.validate_on_submit():
+            person.fname = form.fname.data
+            person.lname = form.lname.data
+            person.gender = form.gender.data
+            person.birthday = form.birthday.data
+            person.photo_path = form.photo_path.data
+            
+            img = request.files["image"]
+            if img:
+                full_name = f"{person.fname} {person.lname}"
+                img = cloudinary_preset_url(img, "people", filename=f"people-{to_filename(full_name)}")
+                person.photo_path = img
+
+            db.session.merge(person)
+            db.session.commit()
+            return redirect(f"/people/{person.id}")
+
+        title = f"{person.fname} {person.lname}"
+        return render_template("people-edit.html", form=form, title=title)
+
+
 
 # ----- END: PEOPLE VIEWS ----- #
 

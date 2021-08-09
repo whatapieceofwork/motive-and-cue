@@ -709,7 +709,7 @@ def seed_play(play):
 
 
 def delete_object(object):
+    db.session.add(object)
     db.session.delete(object)
-    db.session.commit()
 
 # ----- END: MISC FUNCTIONS ----- #

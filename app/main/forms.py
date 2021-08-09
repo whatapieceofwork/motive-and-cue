@@ -46,7 +46,7 @@ def to_filename(title):
         file_words.append(tidy_word)
     if len(file_words) > 5:
         file_words = file_words[:5]
-    filename = file_words.join("-")
+    filename = ("-").join(file_words)
     return filename
 
 
@@ -156,34 +156,43 @@ class CharacterForm(FlaskForm):
     gender = IntegerField("Gender")
     image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")],
         render_kw={"class": "form-control"})
+    delete = BooleanField("Delete this Character", render_kw={"class": "form-check-input"})
     submit = SubmitField("Submit")
 
 
 def make_person_facet_form(chosen_play=None):
     characters = Character.query.order_by(Character.name).all()
-    character_choices = [(character.id, f"{character.name} ({character.play.title})") for character in characters]
+    character_choices = [("All", "All")]
+    film_choices = [("All", "All")]
     plays = Play.query.order_by(Play.title).all()
+    plays = db.session.query(Play).join(Film, PersonJob).filter((Film.play_id == Play.id) & (PersonJob.film_id == Film.id)).order_by(Play.title).all()
     play_choices = [("All", "All")]
     play_choices.extend([(play.id, play.title) for play in plays])
     jobs = Job.query.order_by(Job.title).all()
-    job_choices = [(job.id, job.title) for job in jobs]
+    job_choices = [("All", "All")]
+    job_choices.extend([(job.id, job.title) for job in jobs])
 
     class PersonFacetForm(FlaskForm):
 
         if chosen_play:
-            characters = get_all_characters_by_play(chosen_play)
+            characters = set()
+            for character_actor in db.session.query(CharacterActor).join(Character, Person, Film).filter((CharacterActor.character_id == Character.id) & (CharacterActor.person_id == Person.id) & (CharacterActor.film_id == Film.id) & (Film.play_id == chosen_play.id)).order_by(Person.lname).all():
+                characters.add(character_actor.character)
             films = Film.query.filter(Film.play_id == chosen_play.id)
         else:
-            characters = Character.query.order_by(Character.name).all()
+            character_actors = CharacterActor.query.all()
+            characters = set()
+            for character_actor in db.session.query(CharacterActor).join(Character, Person).filter((CharacterActor.character_id == Character.id) & (CharacterActor.person_id == Person.id)).order_by(Person.lname).all():
+                characters.add(character_actor.character)
             films = Film.query.order_by(Film.title).all()
 
-        character_choices = [(character.id, f"{character.name} ({character.play.title})") for character in characters]
-        film_choices = [(film.id, f"{film.title} ({film.release_date.year})") for film in films]
+        character_choices.extend([(character.id, f"{character.name} ({character.play.title})") for character in characters])
+        film_choices.extend([(film.id, f"{film.title} ({film.release_date.year})") for film in films])
 
         play = SelectField(label="Play", choices=play_choices, default="All")
-        character = SelectField(label="Character", choices=character_choices, coerce=int)
-        film = SelectField(label="Film", choices=film_choices, coerce=int)
-        job = SelectField(label="Job", choices=job_choices, coerce=int)
+        character = SelectField(label="Character", choices=character_choices, default="All")
+        film = SelectField(label="Film", choices=film_choices, default="All")
+        job = SelectField(label="Job", choices=job_choices, default="All")
         clear = SubmitField("Clear")
         search = SubmitField("Submit")
 
@@ -331,6 +340,7 @@ class AdvancedSearchForm(FlaskForm):
     search_facets = FormField(SearchFacetsForm)
     submit = SubmitField("Submit")
 
+# ----- BEGIN: FILM FORM ----- #
 
 def make_film_form(db_film=None): 
     """Create a dynamic Film form that narrows selections down by the given parameters."""
@@ -368,3 +378,33 @@ def make_film_form(db_film=None):
 
     return form
 
+# ----- END: FILM FORM ----- #
+
+# ----- BEGIN: PERSON FORM ----- #
+
+def make_person_form(db_person=None): 
+    """Create a dynamic Person form that narrows selections down by the given parameters."""
+    # Parameters are given a "db_" prefix to avoid confusion with form and object field names.
+
+    class PersonForm(OrderFormMixin, ModelForm):
+        """A dynamic Person form. Uses Person class fields as well as custom-ordered additional fields."""
+
+        def __init__(self, db_person=None):
+            super().__init__(obj=db_person)  # The parent FlaskWTForms-Alchemy ModelForm class accepts an existing database object as a form model
+            self.db_person =  db_person
+
+        class Meta: # Supplies parameters to OrderFormMixin to arrange additional fields
+            model = Person
+            order_after = ["image", "submit"]
+
+        image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")],
+            render_kw={"class": "form-control"})
+
+        submit = SubmitField("Submit")
+
+    if db_person:
+        form = PersonForm(db_person)
+    else:
+        form = PersonForm()
+
+    return form

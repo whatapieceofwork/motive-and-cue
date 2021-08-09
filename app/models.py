@@ -301,7 +301,7 @@ class Person(db.Model):
     lname = db.Column(db.String(30))
     birthday = db.Column(db.Date)
     gender = db.Column(db.String(10))
-    photo_path = db.Column(db.String(100))
+    photo_path = db.Column(db.String(500))
     jobs = db.relationship("Job", secondary="person_jobs", back_populates="people")
     person_jobs = db.relationship("PersonJob", back_populates="people")
     parts = db.relationship("Character", secondary="character_actors", back_populates="played_by", cascade="all")

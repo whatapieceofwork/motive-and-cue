@@ -50,8 +50,18 @@
             play.selectedIndex = "All" };
         if (character.selectedIndex) {
             character.selectedIndex = "All"};
+        if (film.selectedIndex) {
+            film.selectedIndex = "All"};
         if (job.selectedIndex) {
             job.selectedIndex = "All"};
+        document.forms["people-facets"].submit();
+    }
+    </script>
+
+    <script>
+        document.getElementById("search").onclick = function (event) {
+        event.preventDefault()
+        form = document.getElementsByClassName("form");
         document.forms["people-facets"].submit();
     }
     </script>
