@@ -2,7 +2,7 @@
 
 {% block page_content %}
     {% if play %}
-        <em>{{ macros.as_link(play) }}</em>
+        Back to <em>{{ macros.as_link(play) }}</em>
     {% endif %}
     <p><em><a href="/films">View all films</a></em></br>
     {% if current_user.is_admin() %}

@@ -10,21 +10,23 @@
         {% endif %}
         <ul>
             <li>ID: {{scene.id}}</li>
-            <li>Title: {{scene.title}}</li>
-            <li>Description: {{scene.description}}</li>
-            {% if scene['questions'] %}
-            <li>Related Questions</li>
-                <ul>
-                    {% for question in scene['questions'] %}
-                        <li>{{ macros.as_link(question) }}</li>
-                    {% endfor %}
-                </ul>
-            </ul>
+            {% if scene.title %}
+                <li>Title: {{scene.title}}</li>
             {% endif %}
-            {% if scene['quotes'] %}
+            <li>Description: {{scene.description}}</li>
+            {% if scene.questions.all() %}
+                <li>Related Questions:</li>
+                    <ul>
+                        {% for question in scene.questions %}
+                            <li>{{ macros.as_link(question) }}</li>
+                        {% endfor %}
+                    </ul>
+                </ul>
+            {% endif %}
+            {% if scene.quotes %}
                 <li>Related Quotes:
                     <ul>
-                    {% for quote in scene.quotes%}
+                    {% for quote in scene.quotes %}
                         {{ macros.format_quote(quote) }}
                     {% endfor %}
                     </ul>

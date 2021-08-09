@@ -3,7 +3,7 @@ from app.models import *
 from app.main.crud import get_roles
 from flask import current_app, request
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileAllowed, FileField, FileRequired
+from flask_wtf.file import FileAllowed, FileField
 from wtforms import BooleanField, FormField, IntegerField, SelectField, StringField, SubmitField, ValidationError
 from wtforms.fields.simple import TextAreaField
 from wtforms.validators import DataRequired, Email, Length, Regexp
@@ -129,29 +129,31 @@ class ChoosePlayForm(FlaskForm):
 
     title_list = [(key, value) for key, value in play_titles.items()]
     play = SelectField("Play", validators=[DataRequired()], choices=title_list, default="Ham")
-    submit = SubmitField("Submit")
+    submit = SubmitField("Submit", render_kw={"data-loading-text": "<i class='fa fa-spinner fa-spin '></i> Processing..."})
 
 
 class SceneForm(FlaskForm):
     """Edit the scene list for a play. Requires a list of scene numbers to be passed in when form is instantiated."""
 
-    id = IntegerField("ID")
+    # id = IntegerField("ID", render_kw={"readonly": True})
     act = IntegerField("Act", validators=[DataRequired(), Length(1, 3)])
     scene = IntegerField("Scene", validators=[DataRequired(), Length(1, 3)])
     title = StringField("Title", validators=[Length(1, 100)])
     description = TextAreaField("Description", validators=[Length(1, 1000)])
     quote = TextAreaField("Quote", validators=[Length(1, 1000)])
-    image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")])
+    image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")],
+        render_kw={"class": "form-control"})
     submit = SubmitField("Submit")
 
 
 class CharacterForm(FlaskForm):
     """Form to create or edit a Character object."""
 
-    id = StringField('ID')
-    name = StringField('Name')
+    # id = IntegerField("ID", render_kw={"readonly": True})
+    name = StringField("Name")
     gender = IntegerField("Gender")
-    image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")])
+    image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")],
+        render_kw={"class": "form-control"})
     submit = SubmitField("Submit")
 
 
@@ -176,24 +178,24 @@ def make_question_form(db_play=None, db_question=None):
             order_after = ["scenes", "characters", "submit"]
 
         if db_question: # Used when an existing Question is used as the model object for the form
-            play = QuerySelectField('Play', 
+            play = QuerySelectField("Play", 
                                     query_factory=Play.query.all,
                                     default=db_question.play) # Defaults to the existing Question's play
-            characters = QuerySelectMultipleField('Characters', 
+            characters = QuerySelectMultipleField("Characters", 
                                     query_factory=Character.query.filter(Character.play_id == db_play.id).order_by(Character.id).all,
                                     default=db_question.characters) # Defaults to the existing Question's question
         else:
-            play = QuerySelectField('Play', 
+            play = QuerySelectField("Play", 
                                 query_factory=Play.query.all,
                                 default=db_play)
-            characters = QuerySelectMultipleField('Characters', 
+            characters = QuerySelectMultipleField("Characters", 
                                     query_factory=Character.query.filter(Character.play_id == db_play.id).all,
                                     default=db_question)
 
-        scenes = QuerySelectMultipleField('Related Scenes', 
+        scenes = QuerySelectMultipleField("Related Scenes", 
                                 query_factory=Scene.query.filter(Scene.play_id == db_play.id).order_by(Scene.act, Scene.scene).all)
-        image = FileField("Image", validators=[FileAllowed("jpg", "jpeg", "png", "gif", "bmp"), 
-            "Image formats allowed: .bmp, .gif, .jpg, .jpeg, .png."])
+        image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")],
+            render_kw={"class": "form-control"})
 
         submit = SubmitField("Submit")
 
@@ -240,16 +242,17 @@ def make_interpretation_form(db_interpretation=None, db_play=None, db_question=N
             play = QuerySelectField("Play", 
                                 query_factory=Play.query.all,
                                 default=db_play)
-            question = QuerySelectField('Question', 
+            question = QuerySelectField("Question", 
                                     query_factory=Question.query.filter(Question.play_id == db_play.id).all,
                                     default=db_question)
 
         delete = BooleanField(label="Delete record?")
-        film = QuerySelectField('Related Film', 
+        film = QuerySelectField("Related Film", 
                                 query_factory=Film.query.filter(Film.play_id == db_play.id).all)
-        scenes = QuerySelectMultipleField('Related Scenes', 
+        scenes = QuerySelectMultipleField("Related Scenes", 
                                 query_factory=Scene.query.filter(Scene.play_id == db_play.id).order_by(Scene.act, Scene.scene).all)
-        image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")])
+        image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")],
+            render_kw={"class": "form-control"})
 
         submit = SubmitField("Submit")
 
@@ -323,7 +326,8 @@ def make_film_form(db_film=None):
                                 default=db_film.play)
 
         delete = BooleanField(label="Delete record?")
-        image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")])
+        image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")],
+            render_kw={"class": "form-control"})
 
         submit = SubmitField("Submit")
 

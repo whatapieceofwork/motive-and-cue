@@ -2,7 +2,7 @@
 
 {% block page_content %}
     {% if play %}
-        <em>{{ macros.as_link(play) }}</em>
+        <em>Back to {{ macros.as_link(play) }}</em>
         {% if current_user.is_admin() %}
             <p><em><a href="/interpretations/edit/{{play.shortname}}">Edit interpretations</a></em></br>
             <em><a href="/interpretations/add/{{play.shortname}}">Add interpretations</a></em></p>
@@ -18,10 +18,10 @@
         {% for interpretation in interpretations %}
         <div id="interpretation-metadata">
             <ul>
-                <li>Title: {{interpretation['title']}}</li>
-                <li>Description: {{interpretation['desc']}}</li>
+                <li>Title: {{ interpretation.title }}</li>
+                <li>Description: {{ interpretation.description }}</li>
                 <li>Question: {{ macros.as_link(interpretation.question) }}</li>
-                {% if interpretation["quotes"] %}
+                {% if interpretation.quotes %}
                     <li>Quotes
                         <ul>
                             {% for quote in interpretation.quotes%}
@@ -30,18 +30,18 @@
                         <ul>
                     </li>
                 {% endif %}
-                {% if interpretation['scenes'] %}
+                {% if interpretation.scenes %}
                     <li>Related Scenes: 
                     <ul>
-                    {% for scene in interpretation['scenes'] %}
+                    {% for scene in interpretation.scenes %}
                         <li>{{ macros.as_link(scene) }}</li>
                     {% endfor %}
                     </ul>
                 {% endif %}
-                {% if interpretation['characters'] %}
+                {% if interpretation.characters %}
                     <li>Related Characters: 
                         <ul>
-                        {% for character in interpretation['characters'] %}
+                        {% for character in interpretation.characters %}
                             <li>{{ macros.as_link(character) }}</li>
                         {% endfor %}
                         </ul>

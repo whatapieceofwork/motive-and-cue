@@ -4,7 +4,9 @@
     {% if play %}
         <em>Back to {{ macros.as_link(play) }}</em>
         {% if play and current_user.is_admin() %}
-            <p><em><a href="/questions/edit/{{play.shortname}}/">Edit questions</a></em></p>
+            <p><em><a href="/questions/add/{{ play.shortname }}/">Add a  question</a></em><br />
+            <em><a href="/questions/edit/{{ play.shortname }}/">Edit questions</a></em></p>
+            
         {% endif %}
     {% endif %}
     {% if form %}    
@@ -18,7 +20,7 @@
         <div id="question-metadata">
             <ul>
                 <li>Title: {{ macros.as_link(question) }}</li>
-                <li>Description: {{question['desc']}}</li>
+                <li>Description: {{ question.desc }}</li>
                 {% if question["quotes"] %}
                     <li>Quotes
                         <ul>

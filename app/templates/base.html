@@ -17,7 +17,7 @@
 
             <title>
                 {% block title %}
-                    Motive and Cue - {% block page_title %}{{ title }}{% endblock %}
+                    Motive and Cue - {% block page_title %}{{ title|striptags }}{% endblock %}
                 {% endblock %}
             </title>
         {% endblock %}
@@ -53,6 +53,15 @@
                     link.className += " active"
                 });
             </script>
+            <script>submitButton = document.getElementById("submit");
+                submitButton.onclick = function() {
+                    submitButton.value = "Loading..."
+                };
+                searchButton = document.getElementById("search-button");
+                searchButton.onclick = function() {
+                    searchButton.innerText = "Searching..."
+                };
+            </script>            
         {% endblock %}
     </body>
 </html>

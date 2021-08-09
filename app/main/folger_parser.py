@@ -63,6 +63,7 @@ def parse_folger_scene_descriptions(play):
   act_scene_synopses = re.findall('(?P<act>(?<=<p>Act )\d+).*(?P<scene>(?<=, Scene )\d+): (?P<synopsis>.*)(?=</p>)', str(soup))
 
   for act, scene, synopsis in act_scene_synopses:
+    synopsis = synopsis.replace("¶", "")
     db_scene = get_scene(act=act, scene=scene, play=play, description=synopsis)
     db_scene = update_scene(scene=db_scene, description=synopsis)
 

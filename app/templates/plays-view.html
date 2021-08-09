@@ -3,13 +3,13 @@
 {% block page_content %}
     <ul>
         {% for play in plays %}
-            <li><strong><a href="/plays/{{play.shortname}}">{{play.title}}</a></strong></li>
+            <li><strong><a href="/plays/{{ play.shortname }}">{{play.title}}</a></strong></li>
             <ul>
-                    <li><a href="/films/{{play.shortname}}">Film adaptations</a></li>
-                    <li><a href="/characters/{{play.shortname}}">Characters</a></li>
-                    <li><a href="/scenes/{{play.shortname}}">Scenes</a></li>
-                    <li><a href="/questions/{{play.shortname}}">Questions</a></li>
-                    <li><a href="/interpretations/{{play.shortname}}">Interpretations</li>
+                    <li><a href="/films/{{ play.shortname }}">Film adaptations</a></li>
+                    <li><a href="/characters/{{ play.shortname }}">Characters</a></li>
+                    <li><a href="/scenes/{{ play.shortname }}">Scenes</a></li>
+                    <li><a href="/questions/{{ play.shortname }}">Questions</a></li>
+                    <li><a href="/interpretations/{{ play.shortname }}">Interpretations</li>
             </ul>
             <br />
         {% endfor %}

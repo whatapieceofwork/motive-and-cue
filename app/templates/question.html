@@ -2,11 +2,11 @@
 
 {% block page_content %}
     {% if play %}
-        <em>{{ macros.as_link(play) }}</em>
+        Back to <em>{{ macros.as_link(play) }}</em>
     {% endif %}
     {% if current_user.is_admin() %}
-        <p><em><a href="/questions/edit/{{question.id}}">Edit question</a></em><br/>
-        <em><a href="/interpretations/add/{{question.id}}">Add interpretation</a></em></p>
+        <p><em><a href="/questions/edit/{{ question.id }}">Edit question</a></em><br/>
+        <em><a href="/interpretations/add/{{ question.id }}">Add interpretation</a></em></p>
     {% endif %}
 
     <div id="question-metadata">
@@ -15,23 +15,23 @@
         {% endif %}
         <ul>
             <li>ID: {{question.id}}</li>
-            <li>Play: <a href="/plays/{{question.play.id}}/">{{question.play.title}}</a></li>
-            <li>Title: {{question.title}}</li>
-            <li>Description: {{question.description}}</li>
-            {% if question['interpretations'] %}
+            <li>Play: <a href="/plays/{{ question.play.id }}/">{{question.play.title}}</a></li>
+            <li>Title: {{ question.title }}</li>
+            <li>Description: {{ question.description }}</li>
+            {% if question.interpretations %}
                 <li>Related Interpretations</li>
                     <ul>
-                        {% for interpretation in question['interpretations'] %}
-                            <li><a href="/interpretations/{{interpretation.id}}/">{{interpretation.title}}</a></li>
+                        {% for interpretation in question.interpretations %}
+                            <li><a href="/interpretations/{{ interpretation.id }}/">{{ interpretation.title }}</a></li>
                         {% endfor %}
                     </ul>
                 </ul>
             {% endif %}
-            {% if question['characters'] %}
+            {% if question.characters %}
             <li>Related Characters:
                 <ul>
-                {% for character in question.characters%}
-                    <li><a href="/characters/{{character.id}}/">{{character.name}}</a></li>
+                {% for character in question.characters %}
+                    <li><a href="/characters/{{ character.id }}/">{{ character.name }}</a></li>
                 {% endfor %}
                 </ul>
             </li>

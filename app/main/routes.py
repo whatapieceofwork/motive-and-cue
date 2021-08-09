@@ -8,6 +8,7 @@ from app.models import *
 from datetime import datetime
 from flask import abort, flash, g, redirect, render_template, request, session, url_for, render_template_string
 from flask_login import current_user, login_required
+from markupsafe import Markup
 from . import main
 
 
@@ -120,6 +121,23 @@ def about():
     title = "About"
     return render_template("about.html", title=title)
 
+
+@main.route("/acknowledgments")
+def acknowledgments():
+    """Display the Acknowledgments page."""
+
+    title = "Acknowledgments"
+    return render_template("acknowledgments.html", title=title)
+
+
+@main.route("/contact")
+def contact():
+    """Display the Contact page."""
+
+    title = "Contact"
+    return render_template("contact.html", title=title)
+
+
 @main.route("/search", methods=["GET", "POST"])
 def search():
 
@@ -170,12 +188,12 @@ def view_scenes(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         scenes = get_all_scenes_by_play(play)
 
-        title = f"{play.title} Scenes"
+        title = Markup(f"<em>{play.title}</em> Scenes")
         return render_template("scenes-view.html", play=play, scenes=scenes, title=title)
 
     elif id:
         scene = Scene.query.get(id)
-        title = f"Act {scene.act}, Scene {scene.scene} from {scene.play.title}"
+        title = Markup(f"Act {scene.act}, Scene {scene.scene} from <em>{scene.play.title}</em>")
         return render_template("scene.html", scene=scene, title=title)
 
     form = ChoosePlayForm()
@@ -267,7 +285,7 @@ def edit_scenes(shortname=None, id=None):
         scenes = get_all_scenes_by_play(play)
         characters = get_all_characters_by_play(play)
 
-        title = f"Edit {play.title} Scenes"
+        title = Markup(f"Edit <em>{play.title}</em> Scenes")
         return render_template("scenes-edit.html", play=play, scenes=scenes, characters=characters, title=title)
     
     elif id: # Edit a single scene
@@ -282,7 +300,7 @@ def edit_scenes(shortname=None, id=None):
 
             return redirect(f"/scenes/{id}/")
     
-        title = f"Edit Act {scene.act}, Scene {scene.scene} from {scene.play.title}"
+        title = Markup(f"Edit Act {scene.act}, Scene {scene.scene} from <em>{scene.play.title}</em>")
         return render_template("scenes-edit.html", scene=scene, form=form, title=title)
 
     else:
@@ -292,7 +310,7 @@ def edit_scenes(shortname=None, id=None):
             return redirect(f"/scenes/edit/{shortname}/")
 
     title = "Edit Scenes"
-    return render_template("choose-play.html", form=form, title=title)
+    return render_template("scenes-edit.html", form=form, title=title)
 
 # ----- END: SCENE ROUTES ----- #
 
@@ -313,13 +331,13 @@ def view_characters(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         characters = get_all_characters_by_play(play)
 
-        title = f"{play.title} Characters"
+        title = Markup(f"<em>{play.title}</em> Characters")
         return render_template("characters-view.html", play=play, characters=characters, title=title)
         
     elif id:
         character = Character.query.get(id)
 
-        title = f"{character.name} from {character.play.title}"
+        title = Markup(f"{character.name} from <em>{character.play.title}</em>")
         return render_template("character.html", character=character, title=title)
 
     form = ChoosePlayForm()
@@ -349,7 +367,7 @@ def add_characters(shortname=None):
         characters = get_all_characters_by_play(play)
         scenes = get_all_scenes_by_play(play)
 
-        title = f"Add {play.title} Characters"
+        title = Markup(f"Add <em>{play.title}</em> Characters")
         return render_template("characters-edit.html", play=play, characters=characters, 
                                 genders=GENDERS, scenes=scenes, title=title)
 
@@ -392,7 +410,7 @@ def edit_characters(shortname=None, id=None):
             if quote and scene:
                 add_quote(play=play, character=character, scene=scene, text=quote)
 
-        title = f"Edit {play.title} Characters"
+        title = Markup(f"Edit <em>{play.title}</em> Characters")
         return redirect(f"/characters/{shortname}/")
 
     elif shortname:
@@ -404,7 +422,7 @@ def edit_characters(shortname=None, id=None):
         characters = get_all_characters_by_play(play)
         scenes = get_all_scenes_by_play(play)
 
-        title = f"Edit {play.title} Characters"
+        title = Markup(f"Edit <em>{play.title}</em> Characters")
         return render_template("characters-edit.html", play=play, scenes=scenes, 
                                 characters=characters, genders=GENDERS, title=title)
     
@@ -424,7 +442,7 @@ def edit_characters(shortname=None, id=None):
 
             return redirect(f"/characters/{id}/")
     
-        title = f"Edit {character.name} from {character.play.title}"
+        title = Markup(f"Edit {character.name} from <em>{character.play.title}</em>")
         return render_template("characters-edit.html", character=character, form=form, title=title)
 
     else:
@@ -455,7 +473,7 @@ def view_questions(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         questions = get_all_questions_by_play(play)
 
-        title = f"Textual Questions from {play.title}"
+        title = Markup(f"Textual Questions from <em>{play.title}</em>")
         return render_template("questions-view.html", play=play, questions=questions, title=title)
         
     elif id:
@@ -514,7 +532,7 @@ def add_questions(shortname=None):
         scenes = get_all_scenes_by_play(play)
         characters = get_all_characters_by_play(play)
 
-        title = f"Edit {play.title} Questions"
+        title = Markup(f"Edit <em>{play.title}</em> Questions")
         return render_template("questions-edit.html", form=form, play=play, questions=questions, 
                                 characters=characters, scenes=scenes, title=title)
 
@@ -524,7 +542,7 @@ def add_questions(shortname=None):
         return redirect(f"/questions/add/{shortname}/")
 
     title = "Textual Questions"
-    return render_template("choose-play.html", form=form, title=title)
+    return render_template("questions-edit.html", form=form, title=title)
 
 
 @main.route("/questions/edit/", methods=["GET", "POST"])
@@ -543,7 +561,7 @@ def edit_questions(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         questions = get_all_questions_by_play(play)
 
-        title = f"Edit Textual Questions from {play.title}"
+        title = Markup(f"Edit Textual Questions from <em>{play.title}</em>")
         return render_template("/questions-edit.html", questions=questions, play=play, title=title)
     
     elif id:
@@ -604,7 +622,7 @@ def view_interpretations(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         interpretations = get_all_interpretations_by_play(play)
 
-        title = f"{play.title} Film Interpretations"
+        title = Markup(f"<em>{play.title}</em> Film Interpretations")
         return render_template("interpretations-view.html", play=play, interpretations=interpretations, title=title)
         
     elif id:
@@ -688,7 +706,7 @@ def edit_interpretations(shortname=None, id=None):
         play = get_play_by_shortname(shortname)
         interpretations = get_all_interpretations_by_play(play)
 
-        title = f"Edit {play.title} Film Interpretations"
+        title = Markup(f"Edit <em>{play.title}</em> Film Interpretations")
         return render_template("/interpretations-edit.html", interpretations=interpretations,
                                 play=play, title=title)
 
@@ -774,7 +792,7 @@ def view_plays(shortname=None, id=None):
 
         scenes = get_all_scenes_by_play(play)
 
-        title = play.title
+        title = Markup(f"<em>{play.title}</em>")
         return render_template("play.html", play=play, title=title, scenes=scenes)
         
     else:
@@ -802,7 +820,7 @@ def view_films(shortname=None, id=None):
         play = get_play_by_shortname(shortname)        
         films = get_films_by_play(play)
 
-        title = f"{play.title} Films"
+        title = Markup(f"<em>{play.title}</em> Films")
         return render_template("films-view.html", films=films, play=play, title=title)
 
     elif id:

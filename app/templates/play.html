@@ -5,17 +5,17 @@
         <img class="small-portrait" src="{{ play.img }}" alt="{{ play.title }}">
     {% endif %}
     <ul>
-        <li><a href="/films/{{play.shortname}}">Film adaptations</a></li>
-        <li><a href="/characters/{{play.shortname}}">Characters</a></li>
-        <li><a href="/scenes/{{play.shortname}}">Scenes</a></li>
-        <li><a href="/questions/{{play.shortname}}">Questions</a></li>
-        <li><a href="/interpretations/{{play.shortname}}">Interpretations</li></a>
+        <li><a href="/films/{{ play.shortname }}">Film adaptations</a></li>
+        <li><a href="/characters/{{ play.shortname }}">Characters</a></li>
+        <li><a href="/scenes/{{ play.shortname }}">Scenes</a></li>
+        <li><a href="/questions/{{ play.shortname }}">Questions</a></li>
+        <li><a href="/interpretations/{{ play.shortname }}">Interpretations</li></a>
     </ul>
 
     <h3>Scene List</h3>
     
     {% if current_user.is_admin() %}
-        <p><em><a href="/scenes/edit/{{play.shortname}}">Edit Scenes</a></em></p>
+        <p><em><a href="/scenes/edit/{{ play.shortname }}">Edit Scenes</a></em></p>
     {% endif %}
 
     {% if scenes %}
@@ -23,18 +23,18 @@
             {% for scene in scenes %}
                 <div id="scene-metadata">
                     <ul>
-                        <li><a href="/scenes/{{scene.id}}">Act {{scene.act}}, Scene {{scene.scene}}</a></li>
+                        <li><a href="/scenes/{{ scene.id }}">Act {{ scene.act }}, Scene {{ scene.scene }}</a></li>
                         {% if scene.title %}
-                            <li>Title: {{scene.title}}</li>
+                            <li>Title: {{ scene.title }}</li>
                         {% endif %}
                         {% if scene.description %}
-                            <li>Description: {{scene.description}}</li>
+                            <li>Description: {{ scene.description }}</li>
                         {% endif %}
                         {% if scene.questions %}
                             <li>Related Questions:
                                 <ul>
                                 {% for question in scene.questions %}
-                                    <li><a href="/questions/{{question.id}}">{{question.title}}</a></li>
+                                    <li><a href="/questions/{{ question.id }}">{{ question.title }}</a></li>
                                 {% endfor %}
                                 </ul>
                             </li>

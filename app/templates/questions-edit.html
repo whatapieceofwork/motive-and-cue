@@ -2,9 +2,9 @@
 
 {% block page_content %}
     {% if play %}
-    <em>{{ macros.as_link(play) }}</em>
+        Back to <em>{{ macros.as_link(play) }}</em>
         {% if current_user.is_admin() %}
-            <p><em><a href="/questions/add/{{play.shortname}}/">Add {{play.title}} questions</a></em></p>
+            <p><em><a href="/questions/add/{{ play.shortname }}/">Add {{ play.title }} questions</a></em></p>
         {% endif %}
     {% endif %}
 
@@ -14,7 +14,7 @@
     <div class="questions-list">
         <ul>
             {% for question in questions %}
-                <li><a href="/questions/edit/{{question.id}}/">{{question.title}}</a></li>
+                <li><a href="/questions/edit/{{ question.id }}/">{{ question.title }}</a></li>
             {% endfor %}
         </ul>
     </div>

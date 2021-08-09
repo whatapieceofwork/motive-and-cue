@@ -2,7 +2,7 @@
 
 {% block page_content %}
     {% if play %}
-        <em>{{ macros.as_link(play) }}</em>
+        <em> Back to {{ macros.as_link(play) }}</em>
     {% endif %}
     {% if play and current_user.is_admin() %}
         <p><em><a href="/interpretations/add/{{play.shortname}}">Add {{play.title}} interpretations</a></em></p>
