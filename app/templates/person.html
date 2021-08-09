@@ -27,9 +27,11 @@
         {% if person.films %}
             <div>
                 <h2>Films</h2>
+                <ul>
                 {% for film in person.films %}
-                    {{ macros.as_link(film) }}
+                    <li>{{ macros.as_link(film) }}</li>
                 {% endfor %}
+                </ul>
             </div>
         {% endif %}
 {% endblock %}
