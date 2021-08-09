@@ -61,7 +61,8 @@
                 searchButton.onclick = function() {
                     searchButton.innerText = "Searching..."
                 };
-            </script>            
+            </script>
+            {% block page_scripts %}{% endblock%}           
         {% endblock %}
     </body>
 </html>

@@ -30,7 +30,7 @@
                         {% if scene.description %}
                             <li>Description: {{ scene.description }}</li>
                         {% endif %}
-                        {% if scene.questions %}
+                        {% if scene.questions.all() %}
                             <li>Related Questions:
                                 <ul>
                                 {% for question in scene.questions %}

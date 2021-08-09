@@ -5,11 +5,19 @@
         {% for play in plays %}
             <li><strong><a href="/plays/{{ play.shortname }}">{{play.title}}</a></strong></li>
             <ul>
+                {% if play.films %}
                     <li><a href="/films/{{ play.shortname }}">Film adaptations</a></li>
+                {% endif %}
                     <li><a href="/characters/{{ play.shortname }}">Characters</a></li>
+                {% if play.scenes %}
+                {% endif %}
                     <li><a href="/scenes/{{ play.shortname }}">Scenes</a></li>
+                {% if play.questions %}
                     <li><a href="/questions/{{ play.shortname }}">Questions</a></li>
+                {% endif %}
+                {% if play.interpretations %}
                     <li><a href="/interpretations/{{ play.shortname }}">Interpretations</li>
+                {% endif %}
             </ul>
             <br />
         {% endfor %}

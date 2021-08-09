@@ -9,7 +9,7 @@
         <ul>
             <input type="hidden" id="play" name="play" value="{{play.title}}">
             <li><label for "name">Name</label> 
-                <input type="text" name="name-{{loop.index0}}" id="name-{{loop.index0}}" placeholder="{{character}}" value="{{character}}"></li>
+                <input type="text" name="name-{{loop.index0}}" id="name-{{loop.index0}}" class="form-control" placeholder="{{character}}" value="{{character}}"></li>
             <li><label for "gender">Canonical Gender</label><br />
                     {% set character_loop = loop %}
                     {% for key, value in genders.items() %}

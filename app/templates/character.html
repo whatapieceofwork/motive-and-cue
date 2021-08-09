@@ -2,6 +2,9 @@
 
 {% block page_content %}
     {% if current_user.is_admin() and character %}
+        <p><em><a href="/characters/{{character.id}}/">Back to {{ macros.as_link(character.play) }}</em></p>
+    {% endif %}
+    {% if current_user.is_admin() and character %}
         <p><em><a href="/characters/edit/{{character.id}}/">Edit Character</a></em></p>
     {% endif %}
 
@@ -18,25 +21,25 @@
                 {% else %}Unknown or N/A
                 {% endif %}
             </li>
-            {% if character["questions"] %}
+            {% if character.questions.all() %}
                 <li>Related Questions: 
                     <ul>
-                    {% for question in character["questions"] %}
+                    {% for question in character.questions.all() %}
                         <li>{{ macros.as_link(question) }}</li>
                     {% endfor %}
                     </ul>
                 </li>
             {% endif %}
-            {% if character["quotes"] %}
+            {% if character.quotes.all() %}
                 <li>Related Quotes:
                     <ul>
-                    {% for quote in character.quotes%}
+                    {% for quote in character.quotes.all() %}
                         {{ macros.format_quote(quote) }}
                     {% endfor %}
                     </ul>
                 </li>
             {% endif %}
-            {% if character.played_by %}
+            {% if character.played_by.all() %}
                 <li>Played By:
                     <ul>
                     {% for part in character.character_actors %}
