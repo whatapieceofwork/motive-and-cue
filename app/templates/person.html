@@ -3,7 +3,13 @@
 {% block page_content %}
     <p><a href="/people/">View All People</a></p>
     <div id="person-metadata">
-        <img src="{{ person.photo_path }}" alt="{{ person.fname }} {{ person.lname }} portrait" class="portrait">
+        <div>
+            {% if person.photo_path == "None" %}
+                    <img class="portrait" src="/static/assets/person-placeholder.jpg" alt="Placeholder image">
+            {% else %}
+                <img src="{{ person.photo_path }}" alt="{{ person.fname }} {{ person.lname }} portrait" class="portrait">
+            {% endif %}
+        </div>
         {% if person.parts %}
             <div>
                 <h2>Parts</h2>

@@ -1,25 +1,58 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    {% if people %}
-        <div id="people-metadata">
-            <ul>
-            {% for person in people %}
-                <li>{{ macros.as_link(person) }}
-                    <ul>
-                        {% for character in person.character_actors %}
-                            <li>{{ character.character.name }} in {{ macros.as_link(character.film) }}</li>
-                        {% endfor %}
-                        {% for job in person.person_jobs %}
-                            {% if job.job.title != "Actor" %}
-                                <li>{{ job.job.title }} - {{ macros.as_link(job.film) }}</li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                </li>
-            {% endfor %}
-            </ul>
-        </div>
+    {% if form %}
+    <div class="container">
+        {{ render_form(form, id="people-facets") }}
+    </div>
     {% endif %}
+    {% if people %}
+    <div class="container">
+        <div id="people-deck" class="row row-cols-1 row-cols-md-2 g-4">
+            {% for person in people %}
+                <div class="card" style="width: 18rem;">
+                    <a href="/characters/{{ person.id }}">
+                        {% if person.photo_path == "None" %}
+                            <div id="placeholder">
+                                <img class="card-img-top" src="/static/assets/person-placeholder.jpg" alt="{{ person.fname }} {{ person.lname }}">
+                            </div>
+                        {% else %}
+                        <img class="card-img-top" src="{{ person.photo_path }}" alt="{{ person.fname }} {{ person.lname }}">
+                        
+                        {% endif %}
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ macros.as_link(person) }}</h5>
+                        <ul class="list-group list-group-flush">
+                            {% for character in person.character_actors %}
+                                <li class="list-group-item">{{ macros.as_link(character.character) }} in {{ macros.as_link(character.film) }}</li>
+                            {% endfor %}
+                            {% for job in person.person_jobs %}
+                                {% if job.job.title != "Actor" %}
+                                    <li class="list-group-item">{{ macros.as_link(job.job) }} - {{ macros.as_link(job.film) }}</li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>  
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}
 
+{% block page_scripts %}
+    <script>
+        document.getElementById("clear").onclick = function (event) {
+        event.preventDefault()
+        form = document.getElementsByClassName("form");
+        if (play.selectedIndex) {
+            play.selectedIndex = "All" };
+        if (character.selectedIndex) {
+            character.selectedIndex = "All"};
+        if (job.selectedIndex) {
+            job.selectedIndex = "All"};
+        document.forms["people-facets"].submit();
+    }
+    </script>
 {% endblock %}

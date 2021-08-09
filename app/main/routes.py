@@ -1,3 +1,4 @@
+from sqlalchemy.sql.operators import notendswith_op
 from app import db
 from app.decorators import admin_required
 from app.main.folger_parser import parse_folger_scene_descriptions
@@ -760,10 +761,36 @@ def view_people(shortname=None, id=None):
         return render_template("person.html", person=person, title=title)
         
     else:
-        people = Person.query.all()
+        form = make_person_facet_form()
+
+        if request.method == "POST" and form.film.data and form.film.data != "All":
+            film_id = form.film.data
+            film = Film.query.get(film_id)
+            people = db.session.query(Person).join(PersonJob, Film).filter((Person.id == PersonJob.person_id) & (PersonJob.film_id == film.id)).order_by(Person.lname).all()
+
+        if request.method == "POST" and form.play.data and form.play.data != "All":
+                play_id = form.play.data
+                play = Play.query.get(play_id)
+                form = make_person_facet_form(play)
+                parts = db.session.query(CharacterActor).join(Character).join(Film).filter(play == play).all()
+                people = db.session.query(Person).join(PersonJob, Film, Play).filter((Person.id == PersonJob.person_id) & (PersonJob.film_id == Film.id) & (Film.play_id == play.id)).order_by(Person.lname).all()
+
+        if request.method == "POST" and form.character.data and form.character.data != "All":
+                character_id = form.character.data
+                character = Character.query.get(character_id)
+                play = character.play
+                people = db.session.query(Person).join(CharacterActor, Character).filter((Person.id == CharacterActor.person_id) & (CharacterActor.character_id == character.id)).order_by(Person.lname).all()
+
+        if request.method == "POST" and form.job.data and form.job.data != "All":
+            job_id = form.job.data
+            job = Job.query.get(job_id)
+            people = db.session.query(Person).join(PersonJob, Job).filter((Person.id == PersonJob.person_id) & (PersonJob.job_id == job.id)).order_by(Person.lname).all()
+        
+        else:
+            people = Person.query.order_by(Person.lname).all()
 
         title = "People"
-        return render_template("people-view.html", people=people, title=title)
+        return render_template("people-view.html", people=people, form=form, title=title)
 
 # ----- END: PEOPLE VIEWS ----- #
 

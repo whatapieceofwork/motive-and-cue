@@ -1,10 +1,12 @@
-
 from app.models import *
-from app.main.crud import get_roles
+from app.main.crud import get_all_characters_by_play, get_roles
 from flask import current_app, request
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileField
+from markupsafe import Markup
 from wtforms import BooleanField, FormField, IntegerField, SelectField, StringField, SubmitField, ValidationError
+from wtforms.fields.core import SelectMultipleField
+from wtforms.fields.html5 import SearchField
 from wtforms.fields.simple import TextAreaField
 from wtforms.validators import DataRequired, Email, Length, Regexp
 from wtforms_alchemy import model_form_factory
@@ -157,6 +159,36 @@ class CharacterForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
+def make_person_facet_form(chosen_play=None):
+    characters = Character.query.order_by(Character.name).all()
+    character_choices = [(character.id, f"{character.name} ({character.play.title})") for character in characters]
+    plays = Play.query.order_by(Play.title).all()
+    play_choices = [("All", "All")]
+    play_choices.extend([(play.id, play.title) for play in plays])
+    jobs = Job.query.order_by(Job.title).all()
+    job_choices = [(job.id, job.title) for job in jobs]
+
+    class PersonFacetForm(FlaskForm):
+
+        if chosen_play:
+            characters = get_all_characters_by_play(chosen_play)
+            films = Film.query.filter(Film.play_id == chosen_play.id)
+        else:
+            characters = Character.query.order_by(Character.name).all()
+            films = Film.query.order_by(Film.title).all()
+
+        character_choices = [(character.id, f"{character.name} ({character.play.title})") for character in characters]
+        film_choices = [(film.id, f"{film.title} ({film.release_date.year})") for film in films]
+
+        play = SelectField(label="Play", choices=play_choices, default="All")
+        character = SelectField(label="Character", choices=character_choices, coerce=int)
+        film = SelectField(label="Film", choices=film_choices, coerce=int)
+        job = SelectField(label="Job", choices=job_choices, coerce=int)
+        clear = SubmitField("Clear")
+        search = SubmitField("Submit")
+
+    form = PersonFacetForm()
+    return form
 
 # ----- BEGIN: QUESTION FORM ----- #
 
@@ -335,3 +367,4 @@ def make_film_form(db_film=None):
         form = FilmForm()
 
     return form
+
