@@ -15,6 +15,7 @@
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="accountDropdown">
                         <li><a class="dropdown-item" href="{{ url_for('main.view_plays') }}">Plays</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('main.view_scenes') }}">Scenes</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('main.view_films') }}">Films</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('main.view_characters') }}">Characters</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('main.view_people') }}">People</a></li>
@@ -33,11 +34,20 @@
                     </ul>
                 </li>
                 {% if current_user.is_admin() %}
-                <li class="nav-item">
-                    <a class="nav-link" id="nav-admin" aria-current="page" href="{{ url_for('main.admin_index') }}">Admin</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="/" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Admin
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="adminDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('main.admin_index') }}">Admin Index</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.edit_scenes') }}">Edit Scenes</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.edit_characters') }}">Edit Characters</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.edit_questions') }}">Edit Questions</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.edit_interpretations') }}">Edit Interpretations</a></li>
+                    </ul>
                 </li>
                 {% endif %}
-                
             </ul>
             <ul class="navbar-nav flex-row flex-wrap ms-md-auto">
                 {% if current_user.is_authenticated %}
