@@ -3,18 +3,144 @@
 {% block main_header %}Hello{% if current_user.is_authenticated %}, {{ current_user.username }}{% endif %}.{% endblock %}
 
 {% block page_content %}
-    <div>
+    <!-- <div>
         <p>The local date and time is {{ moment(current_time).format("LLL") }}.</p>
         <p>That was {{ moment(current_time).fromNow(refresh=True) }}.</p>
-    </div>
-    <div>
-        <ul>
-            <li><a href="/plays">Plays</a></li>
-            <li><a href="/scenes">Scenes</a></li>
-            <li><a href="/films">Films</a></li>
-            <li><a href="/characters">Characters</a></li>
-            <li><a href="/questions/">Textual Questions</a></li>
-            <li><a href="/interpretations">Interpretations</a></li>
-        </ul>
+    </div> -->
+    <!-- {% for option in random_options %}
+        {{ macros.as_image(random_options[option]) }}
+    {% endfor %} -->
+    <div class="row row-cols-2 row-cols-md-3 g-4" id="index-deck">
+        <div class="col">
+            {% set play = random_options["plays"] %}
+            {% set play_image = macros.as_image_url(play) %}
+            {% if play_image|length < 2 %}
+                {% set play_image = "/static/assets/first_folio.jpeg" %} 
+            {% endif %}
+            <div class="card mb-3 h-100" style="max-width: 450px;">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <a href="/plays"><img src="{{ play_image }}" class="img-fluid rounded-start" alt="{{ macros.as_title(play) }}"></a>
+                        <p class="card-text"><small class="text-muted"><em>{{ macros.just_link(play) }}</em></small></p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="/plays">Plays</a></h5>
+                            <p class="card-text">View all scenes, characters, films, questions, and interpretations related to a Shakespearean play.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- <div class="col">
+            {% set scene = random_options["scenes"] %}
+            <div class="card mb-3 h-100" style="max-width: 540px;">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <a href="/scenes"><img src="{{ macros.as_image_url(scene) }}" class="img-fluid rounded-start" alt="{{ macros.as_title(scene) }}"></a>
+                        <p class="card-text"><small class="text-muted"><em>{{ macros.just_link(scene) }}</em></small></p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="/scenes">Scenes</a></h5>
+                            <p class="card-text">View all scenes, characters, films, questions, and interpretations related to a scene.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+        <div class="col">
+            {% set film = random_options["films"] %}
+            <div class="card mb-3 h-100" style="max-width: 450;">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <a href="/films"><img src="{{ macros.as_image_url(film) }}" class="img-fluid rounded-start" alt="{{ macros.as_title(film) }}"></a>
+                        <p class="card-text"><small class="text-muted"><em>{{ macros.just_link(film) }}</em></small></p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="/films">Films</a></h5>
+                            <p class="card-text">View all film adaptations of Shakespeare plays in the directory.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            {% set character = random_options["characters"] %}
+            <div class="card mb-3 h-100" style="max-width: 450px;">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <a href="/characters"><img src="{{ macros.as_image_url(character) }}" class="img-fluid rounded-start" alt="{{ macros.as_title(character) }}"></a>
+                        <p class="card-text"><small class="text-muted"><em>{{ macros.just_link(character) }}</em></small></p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="/characters">Characters</a></h5>
+                            <p class="card-text">Browse Shakespearean characters and the actors who have played them on film.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            {% set question = random_options["questions"] %}
+            {% set question_image = macros.as_image_url(question) %}
+            {% if question_image|length < 2 %}
+                {% set question_image = "/static/assets/question_book.jpg" %} 
+            {% endif %}
+            <div class="card mb-3 h-100" style="max-width: 450;">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <a href="/questions"><img src="{{ question_image }}" class="img-fluid rounded-start" alt="{{ macros.as_title(question) }}"></a>
+                        <p class="card-text"><small class="text-muted"><em>{{ macros.just_link(question) }}</em></small></p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="/questions">Questions</a></h5>
+                            <p class="card-text">Examine textual questions from the plays which have been interpreted in multiple ways.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            {% set interpretation = random_options["interpretations"] %}
+            {% set interpretation_image = macros.as_image_url(interpretation) %}
+            {% if not interpretation_image %}
+                {% set interpretation_image = "/static/assets/film_reel.jpeg" %} 
+            {% endif %}
+            <div class="card mb-3 h-100" style="max-width: 450;">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <a href="/interpretations"><img src="{{ interpretation_image }}" class="img-fluid rounded-start" alt="{{ macros.as_title(interpretation) }}"></a>
+                        <p class="card-text"><small class="text-muted"><em>{{ macros.just_link(interpretation) }}</em></small></p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="/interpretations">Interpretations</a></h5>
+                            <p class="card-text">Browse film interpretations of textual questions from the plays.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            {% set person = random_options["people"] %}
+            <div class="card mb-3 h-100" style="max-width: 450;">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <a href="/people"><img src="{{ macros.as_image_url(person) }}" class="img-fluid rounded-start" alt="{{ macros.as_title(person) }}"></a>
+                        <p class="card-text"><small class="text-muted"><em>{{ macros.just_link(person) }}</em></small></p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h5 class="card-title"><a href="/people">People</a></h5>
+                            <p class="card-text">View actors, directors, and other crew associated with Shakespeare film adaptations. Browse by play, film, character, or job title.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}

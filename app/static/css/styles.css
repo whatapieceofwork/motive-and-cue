@@ -1,3 +1,6 @@
+@import url('http://fonts.cdnfonts.com/css/bardolatry');
+
+
 #flash-alerts.alert {
     display: flex;
     flex-flow: row;
@@ -64,4 +67,27 @@ div.card {
     margin: 10px
 }
 
+div#scene-image a {
+    display: flex;
+    justify-content: center;
+}
 
+div#scene-image img {
+    width: 33%;
+}
+
+div#index-deck .col-md-4 {
+    display: flex;
+    flex-flow: column;
+    justify-content: space-evenly;
+    padding: 10px;
+}
+
+div#index-deck .col-md-4 p {
+    margin-left: .25em;
+    margin-top: .5em;
+}
+
+div#index-deck .card {
+    margin: 0px;
+}
