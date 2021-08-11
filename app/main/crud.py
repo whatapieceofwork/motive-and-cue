@@ -717,21 +717,21 @@ def get_random_image(type):
 
     options = []
     if type is Film:
-        type_has_img = db.session.query(exists().where(type.poster_path != None)).scalar()
+        type_has_img = db.session.query(exists().where((type.poster_path != None) & (type.poster_path != "None"))).scalar()
         if type_has_img: 
-            options = type.query.filter(type.poster_path != None).all()
+            options = type.query.filter((type.poster_path != None) & (type.poster_path != "None")).all()
         elif Film.query.all():
             options = random.choice(Film.query.all())
     elif type is Person:
-        type_has_img = db.session.query(exists().where(type.photo_path != None)).scalar()
+        type_has_img = db.session.query(exists().where((type.photo_path != None) & (type.photo_path != "None"))).scalar()
         if type_has_img: 
-            options = type.query.filter(type.photo_path != None).all()
+            options = type.query.filter((type.photo_path != None) & (type.photo_path != "None")).all()
         elif Person.query.all():
             options = random.choice(Person.query.all())
     else:
-        type_has_img = db.session.query(exists().where(type.img != None)).scalar()
+        type_has_img = db.session.query(exists().where((type.img != None) & (type.img != "None"))).scalar()
         if type_has_img:
-            options = type.query.filter(type.img != None).all()
+            options = type.query.filter((type.img != None) & (type.img != "None")).all()
         elif type.query.all():
             options = type.query.all()
 
