@@ -70,6 +70,12 @@
     {% if shortname in languages %}{{ languages[shortname] }}{% else %}{{ shortname }}{% endif %}
 {%- endmacro %}
 
+{% macro get_gender(gender) -%}
+    {% set genders  =  ({1: "Female", 2: "Male", 3: "Unknown or N/A"}) %}
+    {% set gender = gender|int %}
+    {{ genders[gender] }}
+{%- endmacro %}
+
 
 {% macro flag_icon(flag) -%}
     {% if flag == "danger" %}

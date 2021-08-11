@@ -795,7 +795,7 @@ def view_people(shortname=None, id=None):
         person = Person.query.get(id)
 
         title = f"{person.fname} {person.lname}"
-        return render_template("person.html", person=person, title=title)
+        return render_template("person.html", person=person, genders=GENDERS, title=title)
         
     else:
         form = make_person_facet_form()
