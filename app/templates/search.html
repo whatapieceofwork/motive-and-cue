@@ -3,7 +3,7 @@
 
 {% block page_content %}
     <div class="form-group">
-        {{ render_form(advanced_search_form, form_type="inline") }}
+        {{ render_form(advanced_search_form, form_type="inline", id="search-facets") }}
     </div>
     <hr>
     <div>
@@ -11,4 +11,16 @@
         <p>{{ (result).__class__.__name__ }}: {{ macros.as_link(result) }}</p>
     {% endfor %}
     </div>
+{% endblock %}
+
+{% block page_scripts %}
+    <script>
+        selectAll = document.getElementById("search_facets-select_all")
+        selectAll.onclick = function() {
+            facets = document.querySelectorAll("form#search-facets input[type='checkbox']");
+            for (var facet of facets) {
+                facet.checked = this.checked;
+            }
+        }
+    </script>
 {% endblock %}

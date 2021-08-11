@@ -26,9 +26,17 @@ def before_request():
 def index():
     """Display index page."""
 
+    index_options = {"plays": Play, "scenes": Scene, "characters": Character, "films": Film, 
+                "people": Person, "questions": Question, "interpretations": Interpretation}
+    random_options = {}
+
+    for key, value in index_options.items():
+        print(key, value)
+        random_options[key] = get_random_image(index_options[key])
+
     title = "Home"
     return render_template("index.html",
-                            current_time=datetime.utcnow(), title=title)
+                            current_time=datetime.utcnow(), random_options=random_options, title=title)
  
  
 @main.route("/browse/")
@@ -292,6 +300,13 @@ def edit_scenes(shortname=None, id=None):
         if form.is_submitted():
             scene.title = form.title.data
             scene.description = form.description.data
+            img = request.files["image"]
+            image_url = form.image_url.data
+            if img:
+                scene.img = cloudinary_preset_url(img, "scenes", filename=f"scene-{to_filename(scene.title)}")
+            elif image_url:
+                scene.img = cloudinary_preset_url(image_url, "scenes", filename=f"scene-{to_filename(scene.title)}")
+            
             db.session.merge(scene)
             db.session.commit()
 
@@ -431,9 +446,12 @@ def edit_characters(shortname=None, id=None):
             character.name = form.name.data
             character.gender = form.gender.data
             img = request.files["image"]
+            image_url = form.image_url.data
             if img:
-                img = cloudinary_preset_url(img, "characters", filename=f"character-{to_filename(character.name)}")
-                character.img = img
+                character.img = cloudinary_preset_url(img, "characters", filename=f"character-{to_filename(character.name)}")
+            elif image_url:
+                character.img = cloudinary_preset_url(image_url, "characters", filename=f"character-{to_filename(character.name)}")
+
             if form.delete.data == True:
                 delete_object(character)
                 db.session.commit()
@@ -519,8 +537,11 @@ def add_questions(shortname=None):
             db_characters = form.characters.data
             db_scenes = form.scenes.data
             img = request.files["image"]
+            image_url = form.image_url.data
             if img:
                 img = cloudinary_preset_url(img, "questions", filename=f"question-{to_filename(title)}")
+            elif image_url:
+                img = cloudinary_preset_url(image_url, "questions", filename=f"question-{to_filename(title)}")
 
             question = add_question(play=play, title=title, description=description, img=img)
             for character in db_characters:
@@ -578,8 +599,11 @@ def edit_questions(shortname=None, id=None):
             db_characters = form.characters.data
             db_scenes = form.scenes.data
             img = request.files["image"]
+            image_url = form.image_url.data
             if img:
                 img = cloudinary_preset_url(img, "questions", filename=f"question-{to_filename(title)}")
+            elif image_url:
+                img = cloudinary_preset_url(image_url, "questions", filename=f"question-{to_filename(title)}")
 
             existing_question = Question.query.get(question.id)
             if existing_question:
@@ -680,8 +704,11 @@ def add_interpretations(shortname=None, question_id=None):
             time_end = form.time_end.data  
             question = form.question.data
             img = request.files["image"]
+            image_url = form.image_url.data
             if img:
-                img = cloudinary_preset_url(img, "interpretations", filename=f"interpretation-{to_filename(title)}")
+                img = cloudinary_preset_url(img, "interpretation", filename=f"interpretation-{to_filename(title)}")
+            elif image_url:
+                img = cloudinary_preset_url(image_url, "interpretation", filename=f"interpretation-{to_filename(title)}")
  
             interpretation = add_interpretation(question=question, play=play, film=film, title=title, 
                                     description=description, time_start=time_start, time_end=time_end)
@@ -725,8 +752,11 @@ def edit_interpretations(shortname=None, id=None):
             time_start = form.time_start.data
             time_end = form.time_end.data
             img = request.files["image"]
+            image_url = form.image_url.data
             if img:
-                img = cloudinary_preset_url(img, "interpretations", filename=f"interpretations-{to_filename(title)}")
+                img = cloudinary_preset_url(img, "questions", filename=f"question-{to_filename(title)}")
+            elif image_url:
+                img = cloudinary_preset_url(image_url, "questions", filename=f"question-{to_filename(title)}")
 
             existing_interpretation = Interpretation.query.get(interpretation.id)
             if existing_interpretation:
@@ -865,12 +895,14 @@ def edit_people(id=None):
             person.gender = form.gender.data
             person.birthday = form.birthday.data
             person.photo_path = form.photo_path.data
-            
+            full_name = f"{person.fname} {person.lname}"
+
             img = request.files["image"]
+            image_url = form.image_url.data
             if img:
-                full_name = f"{person.fname} {person.lname}"
-                img = cloudinary_preset_url(img, "people", filename=f"people-{to_filename(full_name)}")
-                person.photo_path = img
+                img = cloudinary_preset_url(img, "people", filename=f"person-{to_filename(full_name)}")
+            elif image_url:
+                img = cloudinary_preset_url(image_url, "people", filename=f"person-{to_filename(full_name)}")
 
             db.session.merge(person)
             db.session.commit()
@@ -1149,7 +1181,10 @@ def view_jobs(shortname=None, id=None):
 
 #  REMOVE BEFORE LAUNCH!!
 @main.route("/reboot")
+@login_required
+@admin_required
 def test_reboot():
+    
     """A wonderfully dangerous route to dump and rebuild the database for testing."""
 
     from app.main.seed import make_admin
@@ -1176,5 +1211,17 @@ def test_refresh():
     flash("Tables re-created.", "success")
 
     return redirect("/index/")
+
+
+@main.route("/upload")
+@login_required
+@admin_required
+def upload_page():
+    """A page to test the Cloudinary upload widget."""
+
+    GOOGLE_SEARCH_API_KEY = current_app.config["GOOGLE_SEARCH_API_KEY"]
+
+    title = "Upload"
+    return render_template("upload.html", GOOGLE_API_KEY=GOOGLE_SEARCH_API_KEY, title=title)
 
 # ----- END: TEST ROUTES ----- #

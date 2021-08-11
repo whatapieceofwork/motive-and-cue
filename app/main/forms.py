@@ -145,6 +145,7 @@ class SceneForm(FlaskForm):
     quote = TextAreaField("Quote", validators=[Length(1, 1000)])
     image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")],
         render_kw={"class": "form-control"})
+    image_url = StringField("Image URL")
     submit = SubmitField("Submit")
 
 
@@ -156,6 +157,7 @@ class CharacterForm(FlaskForm):
     gender = IntegerField("Gender")
     image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")],
         render_kw={"class": "form-control"})
+    image_url = StringField("Image URL")
     delete = BooleanField("Delete this Character", render_kw={"class": "form-check-input"})
     submit = SubmitField("Submit")
 
@@ -237,6 +239,7 @@ def make_question_form(db_play=None, db_question=None):
                                 query_factory=Scene.query.filter(Scene.play_id == db_play.id).order_by(Scene.act, Scene.scene).all)
         image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")],
             render_kw={"class": "form-control"})
+        image_url = StringField("Image URL")
 
         submit = SubmitField("Submit")
 
@@ -294,6 +297,7 @@ def make_interpretation_form(db_interpretation=None, db_play=None, db_question=N
                                 query_factory=Scene.query.filter(Scene.play_id == db_play.id).order_by(Scene.act, Scene.scene).all)
         image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")],
             render_kw={"class": "form-control"})
+        image_url = StringField("Image URL")
 
         submit = SubmitField("Submit")
 
@@ -332,6 +336,7 @@ class SearchFacetsForm(FlaskForm):
     play = BooleanField("Play", default="checked")
     scene = BooleanField("Scene", default="checked")
     question = BooleanField("Question", default="checked")
+    select_all = BooleanField("Select All", default="checked")
 
 
 class AdvancedSearchForm(FlaskForm):
@@ -399,6 +404,7 @@ def make_person_form(db_person=None):
 
         image = FileField("Image", validators=[FileAllowed(["jpg", "jpeg", "png", "bmp", "gif"], "Images files only.")],
             render_kw={"class": "form-control"})
+        image_url = StringField("Image URL")
 
         submit = SubmitField("Submit")
 

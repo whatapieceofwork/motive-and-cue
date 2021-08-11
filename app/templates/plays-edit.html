@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+    {% if form %}
+        {{ render_form(form) }}
+    {% elif plays %}
+    <div class="plays-list">
+        <ul>
+            {% for play in plays %}
+                <li>{{ macros.as_link(play) }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+{% endblock %}

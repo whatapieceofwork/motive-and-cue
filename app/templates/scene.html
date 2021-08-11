@@ -6,7 +6,9 @@
     {% endif %}
     <div id="scene-metadata">
         {% if scene.img %}
-            <img class="small-portrait" src="{{ scene.img }}" alt="{{ scene.title }}">
+        <div class="d-flex justify-content-center" id="scene-image">
+                <a href="{{ scene.img }}"><img class="justify-content-center" src="{{ scene.img }}" alt="{{ scene.title }}"></a>
+        </div>
         {% endif %}
         <ul>
             <li>ID: {{scene.id}}</li>

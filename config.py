@@ -9,6 +9,7 @@ class Config:
     SECURITY_PASSWORD_SALT = os.environ.get("SECURITY_PASSWORD_SALT")
     SQLALCHEMY_POOL_RECYCLE = 54000 #Recycle connection pool every 15 minutes
     SQLALCHEMY_POOL_SIZE = 10
+    GOOGLE_SEARCH_API_KEY = os.environ.get("GOOGLE_SEARCH_API_KEY")
 
     CLOUDINARY_KEY = os.environ.get("CLOUDINARY_KEY")
     CLOUDINARY_KEY_SECRET = os.environ.get("CLOUDINARY_KEY_SECRET")
