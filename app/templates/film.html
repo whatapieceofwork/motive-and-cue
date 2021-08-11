@@ -3,9 +3,14 @@
 {% block page_content %}
 <div id="film-page">
     <div id="film-card">
-        {% if current_user.is_admin() %}
-            <p><em><a href="/films/edit/{{ film.id }}/">Edit Film</a></em></p>
-        {% endif %}
+        <div>
+            <p><em><a href="/films/{{ film.play.shortname }}">{{ film.play.title }} Films</em></a>
+            <br/><em><a href="/films">All Films</em></a>
+            {% if current_user.is_admin() %}
+                <br><em><a href="/films/edit/{{ film.id }}/">Edit Film</a></em>
+            {% endif %}
+            </p>
+        </div>
         <div class="card mb-3" style="max-width: 100%;">
             <div class="row g-0">
                 <div class="col-md-4">
@@ -29,6 +34,12 @@
                                     <p class="card-text">
                                         <dt>Length:</dt>
                                         <dd>{{ film.length }} minutes</dd>
+                                    </p>
+                                    <p class="card-text">
+                                        <dt>Directed By:</dt>
+                                        {% for director in film.get_director() %}
+                                            <dd>{{ macros.as_link(director) }}</dd>
+                                        {% endfor %}
                                     </p>
                             </div>
                             <div class="col-6">
@@ -56,10 +67,10 @@
     <div id="film-tabs">
         <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
             <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="pills-gallery-tab" data-bs-toggle="pill" data-bs-target="#pills-gallery" type="button" role="tab" aria-controls="pills-gallery" aria-selected="true">Cast and Crew Gallery</button>
+            <button class="nav-link active" id="pills-gallery-tab" data-bs-toggle="pill" data-bs-target="#pills-gallery" type="button" role="tab" aria-controls="pills-gallery" aria-selected="true">Cast Gallery</button>
             </li>
             <li class="nav-item" role="presentation">
-            <button class="nav-link" id="pills-table-tab" data-bs-toggle="pill" data-bs-target="#pills-table" type="button" role="tab" aria-controls="pills-table" aria-selected="false">Cast and Crew Table</button>
+            <button class="nav-link" id="pills-table-tab" data-bs-toggle="pill" data-bs-target="#pills-table" type="button" role="tab" aria-controls="pills-table" aria-selected="false">Cast Table</button>
             </li>
             <li class="nav-item" role="presentation">
             <button class="nav-link" id="pills-interpretations-tab" data-bs-toggle="pill" data-bs-target="#pills-interpretations" type="button" role="tab" aria-controls="pills-interpretations" aria-selected="false">Interpretations</button>

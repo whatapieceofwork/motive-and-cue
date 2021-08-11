@@ -8,33 +8,103 @@
     {% if current_user.is_admin() %}
         <em><a href="/films/add">Add a film</a></em></p>
     {% endif %}
-    {% if form %}
-        <p>View films by play
-        {{ render_form(form) }}</p>
-    {% endif %}
+
+
+    <div class="container">
+        {% if form %}
+            <form method="post", form_type="inline", id="search-facets", class="row g-3">
+                {{ form.csrf_token() }}
+                {% if not play %}
+                    <div class="col-md-4">{{ render_field(form.play) }}</div>
+                {% endif %}
+                    <div class="col-md-4">{{ render_field(form.sort_order) }}</div>
+                    <div class="col-md-1">{{ render_field(form.search) }}</div>
+                    <div class="col-md-1">{{ render_field(form.clear) }}</div>
+            </form>
+        {% endif %}
 
     {% if films %}
         <div id="films-metadata">
         {% for film in films %}
             <div id="film-metadata">
-                <ul>
-                    <h3>{{ macros.as_link(film) }}</h3>
-                    <div>
-                        <a href="/films/{{film.id}}">
-                            <img class="tiny-poster" src="{{film.poster_path}}" alt="{{film.title}} film poster"></div>
-                        </a>
-                        <ul>
-                        <li>Adaptation of: <em>{{ macros.as_link(film.play) }}</em>
-                        <li>Release date: {{film.release_date}}
-                        <li>Language: {{film.language}}</li>
-                        <li>Length: {{film.length}} minutes</li>
-                        <li><a href="https://www.themoviedb.org/movie/{{film.moviedb_id}}">MovieDB page</a>
-                        <li><a href="https://www.imdb.com/title/{{film.imdb_id}}">IMDB page</a>
-                    </ul>
-                </ul>
+                <div class="card mb-3 h-100" style="max-width: 100%;">
+                    <div class="row g-0">
+                        <div class="col-md-4">
+                            <a href="/films/{{film.id}}">
+                                <img src="{{ film.poster_path }}" class="img-fluid rounded-start" style="max-height: 400px" alt="{{ film.title }} poster">
+                            </a>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="card-body">
+                                <h2 class="h3 card-title"><em>{{ macros.as_link(film) }}</em></h5>
+                                <p class="lead">{{ film.overview }}</p>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <dl>
+                                            <p class="card-text">
+                                                <dt>Adaptation of:</dt>
+                                                <dd>{{ macros.as_link(film.play) }}</dd>
+                                            </p>
+                                            {% if film.play.title == "Hamlet" %}
+                                                <p class="card-text">
+                                                    <dt>Starring:</dt>
+                                                    {% set actor = film.get_actor("Hamlet") %}
+                                                    <dd>{{ macros.as_link(actor) }}</dd>
+                                                </p>
+                                            {% endif %}
+                                            <p class="card-text">
+                                                <dt>Released:</dt>
+                                                <dd>{{ macros.format_date(film.release_date) }}</dd>
+                                            </p>
+                                            <p class="card-text">
+                                                <dt>Language:</dt>
+                                                <dd>{{ macros.as_language(film.language) }}</dd>
+                                            </p>
+                                            <p class="card-text">
+                                                <dt>Length:</dt>
+                                                <dd>{{ film.length }} minutes</dd>
+                                            </p>
+                                    </div>
+                                    <div class="col-6">
+                                        <dl>
+                                            <p class="card-text">
+                                                <dt>MovieDB Page:</dt>
+                                                <dd><a href="https://www.themoviedb.org/movie/{{ film.moviedb_id }}">MovieDB page</a></dd>
+                                            </p>
+                                            <p class="card-text">
+                                                <dt>IMDB Page:</dt>
+                                                <dd><a href="https://www.imdb.com/title/{{ film.imdb_id }}">IMDB page</a></dd>
+                                            </p>
+                                            <p class="card-text">
+                                                <dt>Directed By:</dt>
+                                                {% for director in film.get_director() %}
+                                                    <dd>{{ macros.as_link(director) }}</dd>
+                                                {% endfor %}
+                                            </p>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         {% endfor %}
         </div>
     {% endif %}
 
+{% endblock %}
+
+{% block page_scripts %}
+    <script>
+        document.getElementById("clear").onclick = function (event) {
+        event.preventDefault()
+        form = document.getElementsByClassName("form");
+        if (play.selectedIndex) {
+            play.selectedIndex = "All" };
+        if (sort_order.selectedIndex) {
+            sort_order.selectedIndex = false};
+        document.forms["search-facets"].submit();
+    }
+    </script>
 {% endblock %}
