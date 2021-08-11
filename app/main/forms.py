@@ -162,6 +162,30 @@ class CharacterForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
+def make_film_facet_form(given_sort_order=None, given_play=None):
+    
+    plays = db.session.query(Play).join(Film).filter((Film.play_id == Play.id) & (PersonJob.film_id == Film.id)).order_by(Play.title).all()
+    play_choices = [("All", "All")]
+    play_choices.extend([(play.shortname, play.title) for play in plays])
+
+    class FilmFacetForm(FlaskForm):
+
+        sort_order_choices = [("year_asc", "Year Ascending"), ("year_desc", "Year Descending")]
+
+        if given_play:
+            play = SelectField(label="Play", choices=play_choices, default=given_play, render_kw={"onchange": "this.form.submit()"})
+        else:
+            play = SelectField(label="Play", choices=play_choices, default="All", render_kw={"onchange": "this.form.submit()"})
+        if given_sort_order:
+            sort_order = SelectField(label="Sort Order", choices=sort_order_choices, default=given_sort_order, render_kw={"onchange": "this.form.submit()"})
+        else:
+            sort_order = SelectField(label="Sort Order", choices=sort_order_choices, default="year_asc", render_kw={"onchange": "this.form.submit()"})
+        clear = SubmitField("Clear")
+        search = SubmitField("Submit")
+
+    form = FilmFacetForm()
+    return form
+
 def make_person_facet_form(chosen_play=None):
     characters = Character.query.order_by(Character.name).all()
     character_choices = [("All", "All")]
@@ -195,10 +219,10 @@ def make_person_facet_form(chosen_play=None):
         character_choices.extend([(character.id, f"{character.name} ({character.play.title})") for character in characters])
         film_choices.extend([(film.id, f"{film.title} ({film.release_date.year})") for film in films])
 
-        play = SelectField(label="Play", choices=play_choices, default="All")
-        character = SelectField(label="Character", choices=character_choices, default="All")
-        film = SelectField(label="Film", choices=film_choices, default="All")
-        job = SelectField(label="Job", choices=job_choices, default="All")
+        play = SelectField(label="Play", choices=play_choices, default="All", render_kw={"onchange": "this.form.submit()"})
+        character = SelectField(label="Character", choices=character_choices, default="All", render_kw={"onchange": "this.form.submit()"})
+        film = SelectField(label="Film", choices=film_choices, default="All", render_kw={"onchange": "this.form.submit()"})
+        job = SelectField(label="Job", choices=job_choices, default="All", render_kw={"onchange": "this.form.submit()"})
         clear = SubmitField("Clear")
         search = SubmitField("Submit")
 
