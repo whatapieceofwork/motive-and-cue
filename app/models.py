@@ -216,7 +216,7 @@ class Film(db.Model):
     __searchable__ = ["moviedb_id", "imdb_id", "title", "release_date"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    moviedb_id = db.Column(db.String)
+    moviedb_id = db.Column(db.String, unique=True)
     imdb_id = db.Column(db.String)
     title = db.Column(db.String(50), nullable=False, default="English")
     language = db.Column(db.String(15), nullable=False, default="English")
@@ -227,7 +227,7 @@ class Film(db.Model):
     poster_path = db.Column(db.String(100))
     release_date = db.Column(db.Date, nullable=False)
     # watch_providers = db.Column(db.Text)
-    actors = db.relationship("Person", secondary="character_actors", back_populates="films")
+    actors = db.relationship("Person", secondary="character_actors", back_populates="films", cascade="all")
     play = db.relationship("Play", back_populates="films")
     person_jobs = db.relationship("PersonJob", back_populates="film")
     interpretations = db.relationship("Interpretation", back_populates="film")
@@ -295,7 +295,7 @@ class Person(db.Model):
     __searchable__ = ["fname", "lname", "moviedb_id", "imdb_id"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    moviedb_id = db.Column(db.String)
+    moviedb_id = db.Column(db.String, unique=True)
     imdb_id = db.Column(db.String)
     fname = db.Column(db.String(30))
     lname = db.Column(db.String(30))
