@@ -238,6 +238,15 @@ class Film(db.Model):
     def __str__(self):
         return f"{self.title}, {self.release_date}"
 
+    def get_director(self):
+        directors = db.session.query(Person).join(PersonJob, Film, Job).filter((Person.id == PersonJob.person_id) & (PersonJob.job_id == Job.id) & (Job.title == "Director") & (PersonJob.film_id == self.id)).order_by(Person.lname).all()
+    
+        return directors
+
+    def get_actor(self, name):
+        actor = db.session.query(Person).join(CharacterActor, Character, Film).filter((Person.id == CharacterActor.person_id) & (Film.id == CharacterActor.film_id) & (CharacterActor.character_id == Character.id) & (Character.name == name) & (CharacterActor.film_id == self.id)).first()
+        
+        return actor
 
 @whooshee.register_model("title", "description")
 class Interpretation(db.Model):
