@@ -66,7 +66,7 @@
 
 
 {% macro as_language(shortname) -%}
-    {% set languages  =  ({"en": "English"}) %}
+    {% set languages  =  ({"en": "English", "ru": "Russian"}) %}
     {% if shortname in languages %}{{ languages[shortname] }}{% else %}{{ shortname }}{% endif %}
 {%- endmacro %}
 
@@ -79,9 +79,9 @@
 
 {% macro flag_icon(flag) -%}
     {% if flag == "danger" %}
-        <button type="button" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-html="true" title="Problematic age difference"><i class="bi bi-exclamation-triangle-fill"></i></button>
+        <button type="button" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-html="true" title="Potentially problematic age difference"><i class="bi bi-exclamation-triangle-fill"></i></button>
     {% elif flag == "warning" %}
-        <button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-html="true" title="Doubtful age difference"><i class="bi bi-exclamation-circle-fill"></i></button>
+        <button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-html="true" title="Potentially doubtful age difference"><i class="bi bi-exclamation-circle-fill"></i></button>
     {% elif flag == "success" %}
         <button type="button" class="btn btn-success" data-bs-toggle="tooltip" data-bs-html="true" title="Healthy age difference"><i class="bi bi-check-circle-fill"></i></button>
     {% endif %}

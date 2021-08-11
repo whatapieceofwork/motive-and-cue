@@ -98,8 +98,8 @@
                                         ) %}
                                             {% set flag = "warning" %}
                                     {% elif ( 
-                                        (character.name == "Ophelia" and age_diff and age_diff < -7) or
-                                        (character.name == "Gertrude" and age_diff and age_diff >= 18 )
+                                        (character.name == "Ophelia" and age_diff and age_diff >= -8) or
+                                        (character.name == "Gertrude" and age_diff and age_diff > 15 )
                                         ) %}
                                             {% set flag = "success" %}
                                     {% endif %}

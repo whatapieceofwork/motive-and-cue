@@ -1,22 +1,27 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    <form method="GET" action="/process-film/">
-        <label for="play_titles">Select a play:</label>
-        <select name="play_titles" id="play_titles">
-            {% for key, value in play_titles.items() %}
-                {% if key == "Ham" %}
-                    <option selected value="{{ key }}">{{ value }}</option>
-                {% else %}
-                    <option value="{{ key }}">{{ value }}</option>
-                {% endif %}
-            {% endfor %}
-        </select>
-
-
-        <label for="film-url">Enter the URL of a film on <a href="https://www.themoviedb.org/">https://www.themoviedb.org/</a>:</label>
-        <input type="url" id="film-url" name="film-url">
-        
-        <input type="submit" value="Submit">
+    <form method="GET" id="add-film" action="/process-film/">
+        <div class="row">
+            <div class="col-md-3">
+                <label for="play_titles" class="form-label">Select a play:</label>
+                <select name="play_titles" id="play_titles" class="form-select">
+                    {% for key, value in play_titles.items() %}
+                        {% if key == "Ham" %}
+                            <option selected value="{{ key }}">{{ value }}</option>
+                        {% else %}
+                            <option value="{{ key }}">{{ value }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-7">
+                <label for="film-url" class="form-label">Enter the URL of a film on <a href="https://www.themoviedb.org/">https://www.themoviedb.org/</a>:</label>
+                    <input type="url" id="film-url" class="form-control" name="film-url">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
     </form>
 {% endblock %}
