@@ -386,7 +386,7 @@ def add_characters(shortname=None):
     form = ChoosePlayForm()
     if form.validate_on_submit():
         shortname = form.play.data
-        return redirect(f"/characters/add/{shortname}/")
+        return redirect(f"/characters/{shortname}/")
 
     title = "Add Characters"
     return render_template("characters-edit.html", form=form, title=title)
@@ -970,7 +970,9 @@ def view_films(shortname=None, id=None):
     elif id:
         film = Film.query.get(id)
         play = film.play
-        parts_played = CharacterActor.query.filter(CharacterActor.film_id == film.id).all()
+        cast = db.session.query(CharacterActor).join(Person, Character).filter((Person.id == CharacterActor.person_id) & (CharacterActor.film_id == film.id)).order_by(Character.id).all()
+        crew = db.session.query(PersonJob).join(Film, Job, Person).filter((PersonJob.person_id == Person.id) & (PersonJob.film_id == film.id) & (PersonJob.job_id == Job.id) & (Job.title != "Actor")).order_by(Person.lname).all()
+        # cast = [(castmember.person, castmember.character) for castmember in cast]
         hamlet_age = None
         if play.title == "Hamlet":
             hamlet = Character.query.filter(Character.name == "Hamlet").first()
@@ -979,7 +981,8 @@ def view_films(shortname=None, id=None):
             hamlet_age = calculate_age_during_film(hamlet_actor, film)
 
         title = f"{film.title} - {film.release_date}"
-        return render_template("film.html", film=film, play=play, parts_played=parts_played, hamlet_age=hamlet_age, title=title)
+        return render_template("film.html", film=film, play=play, cast=cast, crew=crew, 
+                    hamlet_age=hamlet_age, title=title)
         
     else:
         films = Film.query.all()
