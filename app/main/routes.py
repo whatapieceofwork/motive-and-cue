@@ -963,21 +963,29 @@ def view_films(shortname=None, id=None):
 
         play = get_play_by_shortname(shortname)        
         films = get_films_by_play(play)
+        form = make_film_facet_form(play)
+        form.play.data = play.shortname
+
+        if form.validate_on_submit():
+            sort_order = form.sort_order.data
+            if sort_order:
+                if sort_order == "year_asc":
+                        films = Film.query.filter(Film.play_id == play.id).order_by(Film.release_date).all()
+                elif sort_order == "year_desc":
+                        films = Film.query.filter(Film.play_id == play.id).order_by(Film.release_date.desc()).all()
 
         title = Markup(f"<em>{play.title}</em> Films")
-        return render_template("films-view.html", films=films, play=play, title=title)
+        return render_template("films-view.html", form=form, films=films, play=play, title=title)
 
-    elif id:
+    if id:
         film = Film.query.get(id)
         play = film.play
         cast = db.session.query(CharacterActor).join(Person, Character).filter((Person.id == CharacterActor.person_id) & (CharacterActor.film_id == film.id)).order_by(Character.id).all()
         crew = db.session.query(PersonJob).join(Film, Job, Person).filter((PersonJob.person_id == Person.id) & (PersonJob.film_id == film.id) & (PersonJob.job_id == Job.id) & (Job.title != "Actor")).order_by(Person.lname).all()
-        # cast = [(castmember.person, castmember.character) for castmember in cast]
         hamlet_age = None
         if play.title == "Hamlet":
             hamlet = Character.query.filter(Character.name == "Hamlet").first()
-            hamlet_actor = CharacterActor.query.filter((CharacterActor.film_id == film.id) & (CharacterActor.character == hamlet)).first()
-            hamlet_actor = hamlet_actor.person
+            hamlet_actor = film.get_actor("Hamlet")
             hamlet_age = calculate_age_during_film(hamlet_actor, film)
 
         title = f"{film.title} - {film.release_date}"
@@ -985,18 +993,38 @@ def view_films(shortname=None, id=None):
                     hamlet_age=hamlet_age, title=title)
         
     else:
-        films = Film.query.all()
-        form = ChoosePlayForm()
+        form = make_film_facet_form(given_play=shortname)
         if form.validate_on_submit():
-            shortname = form.play.data
-            if shortname not in play_titles.keys():
-                flash("Please select a valid play.")
-                return redirect(f"/films/")
+            form_shortname = form.play.data
+            form.play.value = form_shortname
+            play = get_play_by_shortname(form_shortname)
+            if not form_shortname and shortname:
+                play = get_play_by_shortname(shortname)
+                form.play.data = play.shortname
+ 
+            sort_order = form.sort_order.data
+            if sort_order and play:
+                if sort_order == "year_asc":
+                    films = Film.query.filter(Film.play_id == play.id).order_by(Film.release_date).all()
+                elif sort_order == "year_desc":
+                    films = Film.query.filter(Film.play_id == play.id).order_by(Film.release_date.desc()).all()
+            elif sort_order:   
+                if sort_order == "year_asc":
+                    films = Film.query.order_by(Film.release_date).all()
+                elif sort_order == "year_desc":
+                    films = Film.query.order_by(Film.release_date.desc()).all()
+            elif play:
+                films = Film.query.filter(Film.play_id == play.id).order_by(Film.release_date).all()
+            else:
+                films = Film.query.order_by(Film.release_date).all()
 
-            return redirect(f"/films/{shortname}/")
+            title = "Films"
+            return render_template("films-view.html", films=films, form=form, title=title)
 
-        title = "Films"
-        return render_template("films-view.html", films=films, form=form, title=title)
+
+    films = Film.query.all()
+    title = "Films"
+    return render_template("films-view.html", films=films, form=form, title=title)
 
 
 @main.route("/films/add")
