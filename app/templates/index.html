@@ -68,10 +68,14 @@
         </div>
         <div class="col">
             {% set character = random_options["characters"] %}
+            {% set character_image = macros.as_image_url(character) %}
+            {% if character_image|length < 2 %}
+                {% set character_image = "/static/assets/character_placeholder.jpeg" %} 
+            {% endif %}
             <div class="card mb-3 h-100" style="max-width: 450px;">
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <a href="/characters"><img src="{{ macros.as_image_url(character) }}" class="img-fluid rounded-start" alt="{{ macros.as_title(character) }}"></a>
+                        <a href="/characters"><img src="{{ character_image }}" class="img-fluid rounded-start" alt="{{ macros.as_title(character) }}"></a>
                         <p class="card-text"><small class="text-muted"><em>{{ macros.just_link(character) }}</em></small></p>
                     </div>
                     <div class="col-md-8">
@@ -127,10 +131,14 @@
         </div>
         <div class="col">
             {% set person = random_options["people"] %}
+            {% set person_image = macros.as_image_url(person) %}
+            {% if person_image|length < 2 or person_image == "None" %}
+                {% set person_image = "/static/assets/person-placeholder.jpg" %} 
+            {% endif %}
             <div class="card mb-3 h-100" style="max-width: 450;">
                 <div class="row g-0">
                     <div class="col-md-4">
-                        <a href="/people"><img src="{{ macros.as_image_url(person) }}" class="img-fluid rounded-start" alt="{{ macros.as_title(person) }}"></a>
+                        <a href="/people"><img src="{{ person_image }}" class="img-fluid rounded-start" alt="{{ macros.as_title(person) }}"></a>
                         <p class="card-text"><small class="text-muted"><em>{{ macros.just_link(person) }}</em></small></p>
                     </div>
                     <div class="col-md-8">
