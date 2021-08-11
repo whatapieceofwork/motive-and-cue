@@ -178,14 +178,18 @@ def make_person_facet_form(chosen_play=None):
 
         if chosen_play:
             characters = set()
-            for character_actor in db.session.query(CharacterActor).join(Character, Person, Film).filter((CharacterActor.character_id == Character.id) & (CharacterActor.person_id == Person.id) & (CharacterActor.film_id == Film.id) & (Film.play_id == chosen_play.id)).order_by(Person.lname).all():
+            for character_actor in db.session.query(CharacterActor).join(Character, Person, Film).filter((CharacterActor.character_id == Character.id) & (CharacterActor.person_id == Person.id) & (CharacterActor.film_id == Film.id) & (Film.play_id == chosen_play.id)).order_by(Character.name).all():
                 characters.add(character_actor.character)
+            characters = list(characters)
+            characters.sort(key = lambda character: character.name)
             films = Film.query.filter(Film.play_id == chosen_play.id)
         else:
             character_actors = CharacterActor.query.all()
             characters = set()
-            for character_actor in db.session.query(CharacterActor).join(Character, Person).filter((CharacterActor.character_id == Character.id) & (CharacterActor.person_id == Person.id)).order_by(Person.lname).all():
+            for character_actor in db.session.query(CharacterActor).join(Character, Person).filter((CharacterActor.character_id == Character.id) & (CharacterActor.person_id == Person.id)).order_by(Character.name).all():
                 characters.add(character_actor.character)
+            characters = list(characters)
+            characters.sort(key = lambda character: character.name)
             films = Film.query.order_by(Film.title).all()
 
         character_choices.extend([(character.id, f"{character.name} ({character.play.title})") for character in characters])
