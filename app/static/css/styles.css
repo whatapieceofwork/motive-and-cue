@@ -1,4 +1,4 @@
-@import url('http://fonts.cdnfonts.com/css/bardolatry');
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css");
 
 
 #flash-alerts.alert {
@@ -90,4 +90,33 @@ div#index-deck .col-md-4 p {
 
 div#index-deck .card {
     margin: 0px;
+}
+
+div#cast-deck {
+    display: flex;
+    text-align: center;
+    padding-top: 20px;
+    justify-content: center;
+}
+
+div#cast-deck h5 {
+    font-size: 19px;
+    font-weight: bold;
+}
+
+div#cast-deck .card-body {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+div#cast-deck .card-body li {
+    padding-left: 0;
+    padding-right: 0;
+    font-size: 16px;
+
+}
+
+div#film-tabs {
+    padding-left: 11px;
+    padding-right: 11px;
 }

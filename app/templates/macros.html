@@ -15,8 +15,8 @@
 {%- endmacro %}
 
 {% macro as_url(object) -%}
-{% set type = object.__tablename__ %}
-/{{ type }}/{{ object.id }}
+    {% set type = object.__tablename__ %}
+    /{{ type }}/{{ object.id }}
 {%- endmacro %}
 
 {% macro as_title(object) -%}
@@ -45,9 +45,32 @@
 
 
 {% macro format_quote(quote) -%}
-<figure class="quote">
-    <blockquote>{{ quote.text }}</blockquote>
-    <figcaption><cite>{{ macros.as_link(quote.character) }} (<em>{{ macros.as_link(quote.play) }}</em>
-        {{ macros.as_link(quote.scene) }})</cite></figcaption>
-</figure>
+    <figure class="quote">
+        <blockquote>{{ quote.text }}</blockquote>
+        <figcaption><cite>{{ macros.as_link(quote.character) }} (<em>{{ macros.as_link(quote.play) }}</em>
+            {{ macros.as_link(quote.scene) }})</cite></figcaption>
+    </figure>
+{%- endmacro %}
+
+
+{% macro format_date(date) -%}
+    {% set months  =  ({1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June", 7: "July",
+    8: "August", 9: "September", 10: "October", 11: "November", 12: "December"}) %}
+    {{ months[date.month] }} {{ date.day }}, {{ date.year }}
+{%- endmacro %}
+
+
+{% macro as_language(shortname) -%}
+    {% set languages  =  ({"en": "English"}) %}
+    {% if shortname in languages %}{{ languages[shortname] }}{% else %}{{ shortname }}{% endif %}
+{%- endmacro %}
+
+{% macro flag_icon(flag) -%}
+    {% if flag == "danger" %}
+        <button type="button" class="btn btn-danger" data-bs-toggle="tooltip" data-bs-html="true" title="Problematic age difference"><i class="bi bi-exclamation-triangle-fill"></i></button>
+    {% elif flag == "warning" %}
+        <button type="button" class="btn btn-warning" data-bs-toggle="tooltip" data-bs-html="true" title="Doubtful age difference"><i class="bi bi-exclamation-circle-fill"></i></button>
+    {% elif flag == "success" %}
+        <button type="button" class="btn btn-success" data-bs-toggle="tooltip" data-bs-html="true" title="Healthy age difference"><i class="bi bi-check-circle-fill"></i></button>
+    {% endif %}
 {%- endmacro %}
