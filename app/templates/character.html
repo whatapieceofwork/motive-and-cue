@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    {% if current_user.is_admin() and character %}
-        <p><em><a href="/characters/{{character.id}}/">Back to {{ macros.as_link(character.play) }}</em></p>
-    {% endif %}
-    {% if current_user.is_admin() and character %}
-        <p><em><a href="/characters/edit/{{character.id}}/">Edit Character</a></em></p>
+    {% if character %}
+        <p><em><a href="/plays/{{character.play.id}}/">Back to {{ macros.as_link(character.play) }}</em>
+        {% if current_user.is_admin() %}
+            <br/><em><a href="/characters/edit/{{character.id}}/">Edit Character</a></em>
+        {% endif %}
+        </p>
     {% endif %}
 
     <div id="character-metadata">
@@ -39,14 +40,70 @@
                     </ul>
                 </li>
             {% endif %}
+            <div class="container">
+        <div id="people-deck" class="row row-cols-1 row-cols-md-2 g-4">
+            {% for person in people %}
+                <div class="card" style="width: 18rem;">
+                    <a href="/characters/{{ person.id }}">
+                        {% if person.photo_path == "None" %}
+                            <div id="placeholder">
+                                <img class="card-img-top" src="/static/assets/person-placeholder.jpg" alt="{{ person.fname }} {{ person.lname }}">
+                            </div>
+                        {% else %}
+                        <img class="card-img-top" src="{{ person.photo_path }}" alt="{{ person.fname }} {{ person.lname }}">
+                        
+                        {% endif %}
+                    </a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ macros.as_link(person) }}</h5>
+                        <ul class="list-group list-group-flush">
+                            {% for character in person.character_actors %}
+                                <li class="list-group-item">{{ macros.as_link(character.character) }} in {{ macros.as_link(character.film) }}</li>
+                            {% endfor %}
+                            {% for job in person.person_jobs %}
+                                {% if job.job.title != "Actor" %}
+                                    <li class="list-group-item">{{ macros.as_link(job.job) }} - {{ macros.as_link(job.film) }}</li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>  
+            {% endfor %}
+        </div>
+    </div>
             {% if character.played_by.all() %}
-                <li>Played By:
-                    <ul>
-                    {% for part in character.character_actors %}
-                        <li>{{ macros.as_link(part.person) }} - {{ macros.as_link(part.film) }}</li>
+            <h3>Played By</h3>
+            <div class="container">
+                <div id="cast-deck" class="row row-cols-1 row-cols-md-2 g-4">
+                    {% for character_actor in character.character_actors %}
+                    {% set person = character_actor.person %}
+                    {% if person.birthday %}
+                        {% set age = character_actor.age_during_film() %}
+                    {% endif %}
+                        <div class="card" style="width: 14rem;">
+                            <a href="/characters/{{ person.id }}">
+                                {% if person.photo_path == "None" %}
+                                    <div id="placeholder">
+                                        <img class="card-img-top" src="/static/assets/person-placeholder.jpg" alt="{{ person.fname }} {{ person.lname }}">
+                                    </div>
+                                {% else %}
+                                <img class="card-img-top" src="{{ person.photo_path }}" alt="{{ person.fname }} {{ person.lname }}">
+                                
+                                {% endif %}
+                            </a>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ macros.as_link(person) }}</h5>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">{{ macros.as_link(character) }} in {{ macros.as_link(character_actor.film) }}</li>
+                                {% if age %}    
+                                    <li class="list-group-item">Age during film: {{ age }}</li>
+                                {% endif %}
+                                </ul>
+                            </div>
+                        </div>  
                     {% endfor %}
-                    </ul>
-                </li>
+                </div>
+            </div>
             {% endif %}
         </ul>
     </div>
