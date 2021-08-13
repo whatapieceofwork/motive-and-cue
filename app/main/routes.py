@@ -1054,7 +1054,7 @@ def process_film():
 
     character_names = [character.name for character in play.characters]
     character_names.sort()
-    crew_jobs = {"Director", "Cinematographer", "Executive Producer", "Writer"}
+    crew_jobs = {"Director", "Cinematographer", "Executive Producer", "Screenplay", "Writer"}
 
     title = "Verify Film Information"
     return render_template("films-verify.html", details=details, people=people,
@@ -1106,7 +1106,8 @@ def add_film_to_db():
             if part_count:
                 part_count = int(part_count) + 1
                 for j in range(part_count):
-                    person["parts"].append(request.form.get(f"part-{i}-{j}"))
+                    if not request.form.get(f"part-exclude-{i}-{j}"):
+                        person["parts"].append(request.form.get(f"part-{i}-{j}"))
 
             person["jobs"] = []
             job_count = request.form.get(f"job_count-{i}")
@@ -1212,8 +1213,8 @@ def view_jobs(shortname=None, id=None):
 
 #  REMOVE BEFORE LAUNCH!!
 @main.route("/reboot")
-@login_required
-@admin_required
+# @login_required
+# @admin_required
 def test_reboot():
     
     """A wonderfully dangerous route to dump and rebuild the database for testing."""
@@ -1244,6 +1245,7 @@ def test_refresh():
     return redirect("/index/")
 
 
+#  REMOVE BEFORE LAUNCH!!
 @main.route("/upload")
 @login_required
 @admin_required

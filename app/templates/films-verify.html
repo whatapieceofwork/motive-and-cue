@@ -118,6 +118,10 @@
                             {% else %} 
                                 <input type="search" list="parts" name="part-{{ parent_loop.index0 }}-{{ loop.index0 }}" id="part-{{ parent_loop.index0 }}-{{ loop.index0 }}" class="form-control" placeholder="{{ part }}">                     
                             {% endif %}
+                            <div class="form-check col-md-8">
+                                <label for="part-exclude-{{ parent_loop.index0 }}-{{ loop.index0 }}" class="form-check-label">Exclude this part from the database?</label>
+                                <input type="checkbox" name="part-exclude-{{ parent_loop.index0 }}-{{ loop.index0 }}" id="part-exclude-{{ parent_loop.index0 }}-{{ loop.index0 }}" class="form-check-input">
+                            </div>
                             {% if loop.last %}
                                 <input type="hidden" id="part_count-{{ parent_loop.index0 }}" name="part_count-{{ parent_loop.index0 }}" value="{{ loop.index0 }}">
                             {% endif %}
