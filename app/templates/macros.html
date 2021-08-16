@@ -1,7 +1,7 @@
 {% macro as_link(object) -%}
     {% set type = object.__tablename__ %}
     
-    <a href="/{{ type }}/{{ object.id }}">{% if type == "films" %}{{ object.title }} ({{ object.release_date.year }}){% elif type == "scenes" %}Act {{ object.act }}, Scene {{ object.scene }}{% elif type == "people" %}{{ object.fname }} {{ object.lname }}{% elif object.name %}{{ object.name }}{% elif object.title %}{{ object.title }}{% endif %}</a>
+    <a href="/{{ type }}/{{ object.id }}">{% if type == "films" %}{{ object.title }} ({{ object.release_date.year }}){% elif type == "scenes" %}Act {{ object.act }}, Scene {{ object.scene }}{% if object.title %}: {{ object.title}}{% endif %}{% elif type == "people" %}{{ object.fname }} {{ object.lname }}{% elif object.name %}{{ object.name }}{% elif object.title %}{{ object.title }}{% endif %}</a>
 
     {% if object.description %}
           <p>{{ object.description }}</p>
@@ -11,7 +11,7 @@
 {% macro just_link(object) -%}
     {% set type = object.__tablename__ %}
     
-    <a href="/{{ type }}/{{ object.id }}">{% if type == "films" %}{{ object.title }} ({{ object.release_date.year }}){% elif type == "scenes" %}Act {{ object.act }}, Scene {{ object.scene }}{% elif type == "people" %}{{ object.fname }} {{ object.lname }}{% elif object.name %}{{ object.name }}{% elif object.title %}{{ object.title }}{% endif %}</a>
+    <a href="/{{ type }}/{{ object.id }}">{% if type == "films" %}{{ object.title }} ({{ object.release_date.year }}){% elif type == "scenes" %}Act {{ object.act }}, Scene {{ object.scene }}{% if object.title %}: {{ object.title}}{% endif %}{% elif type == "people" %}{{ object.fname }} {{ object.lname }}{% elif object.name %}{{ object.name }}{% elif object.title %}{{ object.title }}{% endif %}</a>
 {%- endmacro %}
 
 
