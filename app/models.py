@@ -218,7 +218,7 @@ class Film(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     moviedb_id = db.Column(db.String, unique=True)
     imdb_id = db.Column(db.String)
-    title = db.Column(db.String(50), nullable=False, default="English")
+    title = db.Column(db.String(250), nullable=False, default="English")
     language = db.Column(db.String(15), nullable=False, default="English")
     length = db.Column(db.Integer)
     overview = db.Column(db.Text)
@@ -285,7 +285,7 @@ class Job(db.Model):
     __searchable__ = ["title"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    title = db.Column(db.String(50), nullable=False, unique=True)
+    title = db.Column(db.String(250), nullable=False, unique=True)
     people = db.relationship("Person", secondary="person_jobs", back_populates="jobs")
     person_jobs = db.relationship("PersonJob", back_populates="job")
 
@@ -332,7 +332,7 @@ class Play(db.Model):
     __searchable__ = ["title"]
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    title = db.Column(db.String(50))
+    title = db.Column(db.String(250))
     shortname = db.Column(db.String(10))
     characters = db.relationship("Character", back_populates="play")
     questions = db.relationship("Question", back_populates="play")
@@ -359,7 +359,7 @@ class Question(db.Model):
     id = db.Column(db.Integer, autoincrement=True, primary_key=True, info={"label": "ID"})
     play_id = db.Column(db.Integer, db.ForeignKey("plays.id"))
     play = db.relationship("Play", back_populates="questions")
-    title = db.Column(db.String(50), nullable=False, info={"label": "Title"})
+    title = db.Column(db.String(1000), nullable=False, info={"label": "Title"})
     description = db.Column(db.Text, info={"label": "Description"})
     # scenes = db.relationship("Scene", secondary="scene_questions", back_populates="questions")
     # characters = db.relationship("Character", secondary="character_questions", back_populates="questions")
@@ -456,8 +456,8 @@ class User(UserMixin, db.Model):
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     email = db.Column(db.String(70), unique=True, index=True)
-    username = db.Column(db.String(50), nullable=False, unique=True)
-    name = db.Column(db.String(150))
+    username = db.Column(db.String(250), nullable=False, unique=True)
+    name = db.Column(db.String(250))
     about = db.Column(db.Text())
     password_hash = db.Column(db.String(10000))
     confirmed = db.Column(db.Boolean, default=False)
@@ -576,7 +576,7 @@ class Role(db.Model):
     __tablename__ = "roles"
 
     id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    name = db.Column(db.String(50), nullable=False, unique=True)
+    name = db.Column(db.String(150), nullable=False, unique=True)
     description = db.Column(db.String(300))
     default = db.Column(db.Boolean, default=False, index=True)
     permissions = db.Column(db.Integer)
