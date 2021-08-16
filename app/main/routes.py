@@ -300,10 +300,10 @@ def edit_scenes(shortname=None, id=None):
         if form.is_submitted():
             scene.title = form.title.data
             scene.description = form.description.data
-            img = request.files["image"]
+            image_file = request.files["image"]
             image_url = form.image_url.data
-            if img:
-                scene.img = cloudinary_preset_url(img, "scenes", filename=f"scene-{to_filename(scene.title)}")
+            if image_file:
+                scene.img = cloudinary_preset_url(image_file, "scenes", filename=f"scene-{to_filename(scene.title)}")
             elif image_url:
                 scene.img = cloudinary_preset_url(image_url, "scenes", filename=f"scene-{to_filename(scene.title)}")
             
@@ -445,10 +445,10 @@ def edit_characters(shortname=None, id=None):
         if form.is_submitted():
             character.name = form.name.data
             character.gender = form.gender.data
-            img = request.files["image"]
+            image_file = request.files["image"]
             image_url = form.image_url.data
-            if img:
-                character.img = cloudinary_preset_url(img, "characters", filename=f"character-{to_filename(character.name)}")
+            if image_file:
+                character.img = cloudinary_preset_url(image_file, "characters", filename=f"character-{to_filename(character.name)}")
             elif image_url:
                 character.img = cloudinary_preset_url(image_url, "characters", filename=f"character-{to_filename(character.name)}")
 
@@ -503,6 +503,11 @@ def view_questions(shortname=None, id=None):
         return render_template("question.html", question=question, title=title)
 
     form = ChoosePlayForm()
+
+    plays = db.session.query(Play).join(Question).filter(Question.play_id == Play.id).order_by(Play.title).all()
+    play_choices = [(play.id, play.title) for play in plays]
+    form.play.choices = play_choices
+
     if form.validate_on_submit():
         shortname = form.play.data
         play = get_play_by_shortname(shortname)
@@ -512,8 +517,9 @@ def view_questions(shortname=None, id=None):
 
         return redirect(f"/questions/{shortname}/")
 
+    questions = Question.query.all()
     title = "Textual Questions"
-    return render_template("questions-view.html", form=form, title=title)
+    return render_template("questions-view.html", form=form, questions=questions, title=title)
 
 
 @main.route("/questions/add/", methods=["GET", "POST"])
@@ -536,12 +542,14 @@ def add_questions(shortname=None):
             description = form.description.data
             db_characters = form.characters.data
             db_scenes = form.scenes.data
-            img = request.files["image"]
+            image_file = request.files["image"]
             image_url = form.image_url.data
-            if img:
-                img = cloudinary_preset_url(img, "questions", filename=f"question-{to_filename(title)}")
+            if image_file:
+                img = cloudinary_preset_url(image_file, "questions", filename=f"question-{to_filename(title)}")
             elif image_url:
                 img = cloudinary_preset_url(image_url, "questions", filename=f"question-{to_filename(title)}")
+            else:
+                img = None
 
             question = add_question(play=play, title=title, description=description, img=img)
             for character in db_characters:
@@ -598,12 +606,14 @@ def edit_questions(shortname=None, id=None):
             description = form.description.data
             db_characters = form.characters.data
             db_scenes = form.scenes.data
-            img = request.files["image"]
+            image_file = request.files["image"]
             image_url = form.image_url.data
-            if img:
-                img = cloudinary_preset_url(img, "questions", filename=f"question-{to_filename(title)}")
+            if image_file:
+                img = cloudinary_preset_url(image_file, "questions", filename=f"question-{to_filename(title)}")
             elif image_url:
                 img = cloudinary_preset_url(image_url, "questions", filename=f"question-{to_filename(title)}")
+            else:
+                img = None
 
             existing_question = Question.query.get(question.id)
             if existing_question:
@@ -703,15 +713,17 @@ def add_interpretations(shortname=None, question_id=None):
             time_start = form.time_start.data
             time_end = form.time_end.data  
             question = form.question.data
-            img = request.files["image"]
+            image_file = request.files["image"]
             image_url = form.image_url.data
-            if img:
-                img = cloudinary_preset_url(img, "interpretation", filename=f"interpretation-{to_filename(title)}")
+            if image_file:
+                img = cloudinary_preset_url(image_file, "interpretations", filename=f"interpretation-{to_filename(title)}")
             elif image_url:
-                img = cloudinary_preset_url(image_url, "interpretation", filename=f"interpretation-{to_filename(title)}")
- 
+                img = cloudinary_preset_url(image_url, "interpretations", filename=f"interpretation-{to_filename(title)}")
+            else:
+                img = None
+
             interpretation = add_interpretation(question=question, play=play, film=film, title=title, 
-                                    description=description, time_start=time_start, time_end=time_end)
+                                    description=description, time_start=time_start, time_end=time_end, img=img)
 
             return redirect(f"/interpretations/{interpretation.id}/")
 
@@ -751,12 +763,14 @@ def edit_interpretations(shortname=None, id=None):
             description = form.description.data
             time_start = form.time_start.data
             time_end = form.time_end.data
-            img = request.files["image"]
+            image_file = request.files["image"]
             image_url = form.image_url.data
-            if img:
-                img = cloudinary_preset_url(img, "questions", filename=f"question-{to_filename(title)}")
+            if image_file:
+                img = cloudinary_preset_url(image_file, "questions", filename=f"question-{to_filename(title)}")
             elif image_url:
                 img = cloudinary_preset_url(image_url, "questions", filename=f"question-{to_filename(title)}")
+            else:
+                img = None
 
             existing_interpretation = Interpretation.query.get(interpretation.id)
             if existing_interpretation:
@@ -897,12 +911,12 @@ def edit_people(id=None):
             person.photo_path = form.photo_path.data
             full_name = f"{person.fname} {person.lname}"
 
-            img = request.files["image"]
+            image_file = request.files["image"]
             image_url = form.image_url.data
-            if img:
-                img = cloudinary_preset_url(img, "people", filename=f"person-{to_filename(full_name)}")
+            if image_file:
+                person.photo_path = cloudinary_preset_url(image_file, "people", filename=f"person-{to_filename(full_name)}")
             elif image_url:
-                img = cloudinary_preset_url(image_url, "people", filename=f"person-{to_filename(full_name)}")
+                person.photo_path = cloudinary_preset_url(image_url, "people", filename=f"person-{to_filename(full_name)}")
 
             db.session.merge(person)
             db.session.commit()
