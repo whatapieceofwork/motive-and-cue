@@ -6,59 +6,76 @@
         {% if play and current_user.is_admin() %}
             <p><em><a href="/questions/add/{{ play.shortname }}/">Add a  question</a></em><br />
             <em><a href="/questions/edit/{{ play.shortname }}/">Edit questions</a></em></p>
-            
         {% endif %}
     {% endif %}
-    {% if form %}    
-        {{ render_form(form) }}
-    {% endif %}
-
-    <div id="questions-metadata">
-
-    {% if questions != none and questions|length > 0 %}
-        {% for question in questions %}
-        <div id="question-metadata">
-            <ul>
-                <li>Title: {{ macros.as_link(question) }}</li>
-                <li>Description: {{ question.desc }}</li>
-                {% if question["quotes"] %}
-                    <li>Quotes
-                        <ul>
-                            {% for quote in question.quotes%}
-                                {{ macros.format_quote(quote) }}
-                            {% endfor %}
-                        <ul>
-                    </li>
-                {% endif %}
-                {% if question['scenes'] %}
-                    <li>Related Scenes: 
-                    <ul>
-                    {% for scene in question['scenes'] %}
-                        <li>{{ macros.as_link(scene) }}</li>
-                    {% endfor %}
-                    </ul>
-                {% endif %}
-                {% if question['characters'] %}
-                    <li>Related Characters: 
-                        <ul>
-                        {% for character in question['characters'] %}
-                            {{ macros.as_link(character) }}</li>
-                        {% endfor %}
-                        </ul>
-                    </li>
-                {% endif %}
-                {% if question['interpretations'] %}
-                <li>Related Interpretations: 
-                    <ul>
-                    {% for interpretation in question['interpretations'] %}
-                        <li>{{ macros.as_link(interpretation) }}</li>
-                    {% endfor %}
-                    </ul>
-                </li>
-                {% endif %}
-            </ul>
+    {% if form %}   
+        <div class="p-3">
+            {{ render_form(form) }}
         </div>
-        {% endfor %}
     {% endif %}
-    </div>
+
+    {% if questions %}
+        <div>
+            <div class="card p-3">
+                <h2>Contents:</h2>
+                <ul>
+                    {% for question in questions %}
+                        <li><a href="#{{ question.id }}">{{ question.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% for question in questions %}
+            <div class="card" id="{{ question.id }}">
+                <div class="card-body">
+                    <div class="row p-1">
+                        <div class="col">
+                            <h3 class="text-center">{{ macros.just_link(question) }}</h3>
+                        </div>
+                    </div>
+                    <div class="row p-1">
+                        <div class="col">
+                            <p><span class="h6">Play:</span> {{ macros.just_link(question.play) }}</p>
+                            <p class="card-text">{{ question.description }}</p>
+                        </div>
+                        <div class="col">
+                            {% if question.scenes %}
+                                    <p class="h6">Scenes:</p>
+                                    <ul>
+                                    {% for scene in question.scenes %}
+                                        <li>{{ macros.just_link(scene) }}</li>
+                                    {% endfor %}
+                                    </ul>
+                            {% endif %}
+                            {% if question.characters %}
+                                <p class="h6">Characters:</p>
+                                <ul>
+                                {% for character in question.characters %}
+                                    <li>{{ macros.just_link(character) }}</li>
+                                {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        {% if question.interpretations %}
+                        <div class="col interpretation-scroll">
+                            {% for interpretation in question.interpretations %}
+                                <div class="card h-100" style="width: 18rem;">
+                                    <div class="card-top">
+                                        <a href="/interpretations/{{ interpretation.id }}"><img src="{{ interpretation.img }}" class="card-img-top" alt="{{ interpretation.title }}"></a>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="card-text">{{ macros.just_link(interpretation) }}</p>
+                                        <p class="card-text">{{ interpretation.description }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+          {% endfor %}
+    {% endif %}
 {% endblock %}

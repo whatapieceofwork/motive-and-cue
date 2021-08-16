@@ -1,211 +1,225 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-<div id="film-page">
-    <div id="film-card">
-        <div>
-            <p><em><a href="/films/{{ film.play.shortname }}">{{ film.play.title }} Films</em></a>
-            <br/><em><a href="/films">All Films</em></a>
-            {% if current_user.is_admin() %}
-                <br><em><a href="/films/edit/{{ film.id }}/">Edit Film</a></em>
-            {% endif %}
-            </p>
-        </div>
-        <div class="card mb-3" style="max-width: 100%;">
-            <div class="row g-0">
-                <div class="col-md-4">
-                    <img src="{{ film.poster_path }}" class="img-fluid rounded-start" style="max-height: 400px" alt="{{ film.title }} poster">
-                </div>
-                <div class="col-md-8">
-                    <div class="card-body">
-                        <h2 class="h3 card-title"><em>{{ film.title }}</em></h5>
-                        <p class="lead">{{ film.overview }}</p>
-                        <div class="row">
-                            <div class="col-6">
-                                <dl>
-                                    <p class="card-text">
-                                        <dt>Released:</dt>
-                                        <dd>{{ macros.format_date(film.release_date) }}</dd>
-                                    </p>
-                                    <p class="card-text">
-                                        <dt>Language:</dt>
-                                        <dd>{{ macros.as_language(film.language) }}</dd>
-                                    </p>
-                                    <p class="card-text">
-                                        <dt>Length:</dt>
-                                        <dd>{{ film.length }} minutes</dd>
-                                    </p>
-                                    <p class="card-text">
-                                        <dt>Directed By:</dt>
-                                        {% for director in film.get_director() %}
-                                            <dd>{{ macros.as_link(director) }}</dd>
-                                        {% endfor %}
-                                    </p>
-                            </div>
-                            <div class="col-6">
-                                <dl>
-                                    <p class="card-text">
-                                        <dt>Adaptation of:</dt>
-                                        <dd>{{ macros.as_link(film.play) }}</dd>
-                                    </p>
-                                    <p class="card-text">
-                                        <dt>MovieDB Page:</dt>
-                                        <dd><a href="https://www.themoviedb.org/movie/{{ film.moviedb_id }}">MovieDB page</a></dd>
-                                    </p>
-                                    <p class="card-text">
-                                        <dt>IMDB Page:</dt>
-                                        <dd><a href="https://www.imdb.com/title/{{ film.imdb_id }}">IMDB page</a></dd>
-                                    </p>
-                                </dl>
+    <div id="film-page">
+        <div id="film-card">
+            <div>
+                <p><em><a href="/films/{{ film.play.shortname }}">{{ film.play.title }} Films</em></a>
+                <br/><em><a href="/films">All Films</em></a>
+                {% if current_user.is_admin() %}
+                    <br><em><a href="/films/edit/{{ film.id }}/">Edit Film</a></em>
+                {% endif %}
+                </p>
+            </div>
+            <div class="card mb-3" style="max-width: 100%;">
+                <div class="row g-0">
+                    <div class="col-md-4">
+                        <img src="{{ film.poster_path }}" class="img-fluid rounded-start" style="max-height: 400px" alt="{{ film.title }} poster">
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body">
+                            <h2 class="h3 card-title"><em>{{ film.title }}</em></h5>
+                            <p class="lead">{{ film.overview }}</p>
+                            <div class="row">
+                                <div class="col-6">
+                                    <dl>
+                                        <p class="card-text">
+                                            <dt>Released:</dt>
+                                            <dd>{{ macros.format_date(film.release_date) }}</dd>
+                                        </p>
+                                        <p class="card-text">
+                                            <dt>Language:</dt>
+                                            <dd>{{ macros.as_language(film.language) }}</dd>
+                                        </p>
+                                        <p class="card-text">
+                                            <dt>Length:</dt>
+                                            <dd>{{ film.length }} minutes</dd>
+                                        </p>
+                                        <p class="card-text">
+                                            <dt>Directed By:</dt>
+                                            {% for director in film.get_director() %}
+                                                <dd>{{ macros.as_link(director) }}</dd>
+                                            {% endfor %}
+                                        </p>
+                                </div>
+                                <div class="col-6">
+                                    <dl>
+                                        <p class="card-text">
+                                            <dt>Adaptation of:</dt>
+                                            <dd>{{ macros.as_link(film.play) }}</dd>
+                                        </p>
+                                        <p class="card-text">
+                                            <dt>MovieDB Page:</dt>
+                                            <dd><a href="https://www.themoviedb.org/movie/{{ film.moviedb_id }}">MovieDB page</a></dd>
+                                        </p>
+                                        <p class="card-text">
+                                            <dt>IMDB Page:</dt>
+                                            <dd><a href="https://www.imdb.com/title/{{ film.imdb_id }}">IMDB page</a></dd>
+                                        </p>
+                                    </dl>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div id="film-tabs">
-        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-            <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="pills-gallery-tab" data-bs-toggle="pill" data-bs-target="#pills-gallery" type="button" role="tab" aria-controls="pills-gallery" aria-selected="true">Cast Gallery</button>
-            </li>
-            <li class="nav-item" role="presentation">
-            <button class="nav-link" id="pills-table-tab" data-bs-toggle="pill" data-bs-target="#pills-table" type="button" role="tab" aria-controls="pills-table" aria-selected="false">Cast Table</button>
-            </li>
-            <li class="nav-item" role="presentation">
-            <button class="nav-link" id="pills-interpretations-tab" data-bs-toggle="pill" data-bs-target="#pills-interpretations" type="button" role="tab" aria-controls="pills-interpretations" aria-selected="false">Interpretations</button>
-            </li>
-        </ul>
-        <div class="tab-content" id="pills-tabContent">
-            <div class="tab-pane fade show active" id="pills-gallery" role="tabpanel" aria-labelledby="pills-gallery-tab">
-                <div id="film-deck">
-                    <div id="cast-deck" class="row row-cols-1 row-cols-md-2 g-4">
-                        {% for castmember in cast %}
-                            {% set person = castmember.person %}
-                            {% set character = castmember.character %}
-                            {% if person.birthday %}
-                                {% set age = castmember.age_during_film() %}
-                                {% if film.play.title == "Hamlet" %}
-                                    {% set age_diff = (age - hamlet_age) %}
-                                    {% if (
-                                        (character.name == "Ophelia" and age_diff and age_diff < -15) or
-                                        (character.name == "Gertrude" and age_diff and age_diff < 10)
-                                        ) %}
-                                            {% set flag = "danger" %}
-                                    {% elif ( 
-                                        (character.name == "Ophelia" and age_diff and age_diff < -11) or
-                                        (character.name == "Gertrude" and age_diff and age_diff < 15)
-                                        ) %}
-                                            {% set flag = "warning" %}
-                                    {% elif ( 
-                                        (character.name == "Ophelia" and age_diff and age_diff >= -8) or
-                                        (character.name == "Gertrude" and age_diff and age_diff > 15 )
-                                        ) %}
-                                            {% set flag = "success" %}
+        <div id="film-tabs">
+            <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pills-gallery-tab" data-bs-toggle="pill" data-bs-target="#pills-gallery" type="button" role="tab" aria-controls="pills-gallery" aria-selected="true">Cast Gallery</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-table-tab" data-bs-toggle="pill" data-bs-target="#pills-table" type="button" role="tab" aria-controls="pills-table" aria-selected="false">Cast Table</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pills-interpretations-tab" data-bs-toggle="pill" data-bs-target="#pills-interpretations" type="button" role="tab" aria-controls="pills-interpretations" aria-selected="false">Interpretations</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="pills-tabContent">
+                <div class="tab-pane fade show active" id="pills-gallery" role="tabpanel" aria-labelledby="pills-gallery-tab">
+                    <div id="film-deck">
+                        <div id="cast-deck" class="row row-cols-1 row-cols-md-2 g-4">
+                            {% for castmember in cast %}
+                                {% set person = castmember.person %}
+                                {% set character = castmember.character %}
+                                {% if person.birthday %}
+                                    {% set age = castmember.age_during_film() %}
+                                    {% if film.play.title == "Hamlet" %}
+                                        {% set age_diff = (age - hamlet_age) %}
+                                        {% if (
+                                            (character.name == "Ophelia" and age_diff and age_diff < -15) or
+                                            (character.name == "Gertrude" and age_diff and age_diff < 10)
+                                            ) %}
+                                                {% set flag = "danger" %}
+                                        {% elif ( 
+                                            (character.name == "Ophelia" and age_diff and age_diff < -11) or
+                                            (character.name == "Gertrude" and age_diff and age_diff < 15)
+                                            ) %}
+                                                {% set flag = "warning" %}
+                                        {% elif ( 
+                                            (character.name == "Ophelia" and age_diff and age_diff >= -8) or
+                                            (character.name == "Gertrude" and age_diff and age_diff > 15 )
+                                            ) %}
+                                                {% set flag = "success" %}
+                                        {% endif %}
                                     {% endif %}
                                 {% endif %}
-                            {% endif %}
-            
-                                <div class="card" class="h-100" style="width: 14rem;">
-                                    <a href="/people/{{ person.id }}">
-                                        {% if person.photo_path == "None" %}
-                                            <div id="placeholder">
-                                                <img class="card-img-top" src="/static/assets/person-placeholder.jpg" alt="{{ person.fname }} {{ person.lname }}">
+                
+                                    <div class="card" class="h-100" style="width: 14rem;">
+                                        <a href="/people/{{ person.id }}">
+                                            {% if person.photo_path == "None" %}
+                                                <div id="placeholder">
+                                                    <img class="card-img-top" src="/static/assets/person-placeholder.jpg" alt="{{ person.fname }} {{ person.lname }}">
+                                                </div>
+                                            {% else %}
+                                                <img class="card-img-top" src="{{ person.photo_path }}" alt="{{ person.fname }} {{ person.lname }}">
+                                            {% endif %}
+                                        </a>
+                                        <div class="card-body">
+                                            <div class="card-title-div">
+                                                <h5 class="card-title">{{ macros.as_link(character) }}</h5>
                                             </div>
-                                        {% else %}
-                                            <img class="card-img-top" src="{{ person.photo_path }}" alt="{{ person.fname }} {{ person.lname }}">
-                                        {% endif %}
-                                    </a>
-                                    <div class="card-body">
-                                        <div class="card-title-div">
-                                            <h5 class="card-title">{{ macros.as_link(character) }}</h5>
-                                        </div>
-                                        <ul class="list-group list-group-flush">
-                                            <li class="list-group-item">Played by {{ macros.as_link(person) }}</li>
-                                            {% if age %}
-                                                <li class="list-group-item">Age during film: {{ age }}</li>
-                                            {% endif %}
-                                            {% if age_diff %}
-                                                <li class="list-group-item">
-                                                {% if flag %}{{ macros.flag_icon(flag) }}{% endif %}
-                                                {% if age_diff > 0 %}
-                                                    {{ age_diff|abs }} years older than Hamet
-                                                {% elif age_diff < 0 %}
-                                                    {{ age_diff|abs }} years younger than Hamet
-                                                {% elif age_diff == 0 and character.name != "Hamlet" %}
-                                                    Same age as Hamlet
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item">Played by {{ macros.as_link(person) }}</li>
+                                                {% if age %}
+                                                    <li class="list-group-item">Age during film: {{ age }}</li>
                                                 {% endif %}
-                                                </li>
-                                            {% endif %}
-                                        </ul>
-                                    </div>
-                            </div>  
-                        {% endfor %}
+                                                {% if age_diff %}
+                                                    <li class="list-group-item">
+                                                    {% if flag %}{{ macros.flag_icon(flag) }}{% endif %}
+                                                    {% if age_diff > 0 %}
+                                                        {{ age_diff|abs }} years older than Hamet
+                                                    {% elif age_diff < 0 %}
+                                                        {{ age_diff|abs }} years younger than Hamet
+                                                    {% elif age_diff == 0 and character.name != "Hamlet" %}
+                                                        Same age as Hamlet
+                                                    {% endif %}
+                                                    </li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                </div>  
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="tab-pane fade" id="pills-table" role="table" aria-labelledby="pills-table-tab">
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th scope="col">Character</th>
-                        <th scope="col">Actor</th>
-                        <th scope="col">Actor's Age on Film Release</th>
-                        {% if film.play.title == "Hamlet" %}
-                            <th scope="col">Age Difference from Hamlet</th>
-                        {% endif %}
-                    </tr>
-                    </thead>
-                    <tbody>
-                        {% for castmember in cast %}
-                            {% set person = castmember.person %}
-                            {% set character = castmember.character %}
-                            {% if person.birthday %}
-                                {% set age = castmember.age_during_film() %}
-                                {% if film.play.title == "Hamlet" %}
-                                    {% set age_diff = (age - hamlet_age) %}
-                                    {% if (
-                                        (character.name == "Ophelia" and age_diff and age_diff < -15) or
-                                        (character.name == "Gertrude" and age_diff and age_diff < 10)
-                                        ) %}
-                                            {% set flag = "danger" %}
-                                    {% elif ( 
-                                        (character.name == "Ophelia" and age_diff and age_diff < -11) or
-                                        (character.name == "Gertrude" and age_diff and age_diff < 15)
-                                        ) %}
-                                            {% set flag = "warning" %}
-                                    {% elif ( 
-                                        (character.name == "Ophelia" and age_diff and age_diff < -7) or
-                                        (character.name == "Gertrude" and age_diff and age_diff >= 18 )
-                                        ) %}
-                                            {% set flag = "success" %}
+                <div class="tab-pane fade" id="pills-table" role="table" aria-labelledby="pills-table-tab">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">Character</th>
+                            <th scope="col">Actor</th>
+                            <th scope="col">Actor's Age on Film Release</th>
+                            {% if film.play.title == "Hamlet" %}
+                                <th scope="col">Age Difference from Hamlet</th>
+                            {% endif %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for castmember in cast %}
+                                {% set person = castmember.person %}
+                                {% set character = castmember.character %}
+                                {% if person.birthday %}
+                                    {% set age = castmember.age_during_film() %}
+                                    {% if film.play.title == "Hamlet" %}
+                                        {% set age_diff = (age - hamlet_age) %}
+                                        {% if (
+                                            (character.name == "Ophelia" and age_diff and age_diff < -15) or
+                                            (character.name == "Gertrude" and age_diff and age_diff < 10)
+                                            ) %}
+                                                {% set flag = "danger" %}
+                                        {% elif ( 
+                                            (character.name == "Ophelia" and age_diff and age_diff < -11) or
+                                            (character.name == "Gertrude" and age_diff and age_diff < 15)
+                                            ) %}
+                                                {% set flag = "warning" %}
+                                        {% elif ( 
+                                            (character.name == "Ophelia" and age_diff and age_diff < -7) or
+                                            (character.name == "Gertrude" and age_diff and age_diff >= 18 )
+                                            ) %}
+                                                {% set flag = "success" %}
+                                        {% endif %}
                                     {% endif %}
                                 {% endif %}
-                            {% endif %}
-                        <tr>
-                            <td>{{ macros.as_link(character) }}</td>
-                            <td>{{ macros.as_link(person) }}</td>
-                            <td>
-                            </td>
-                            {% if flag %}
-                                <td class="table-{{ flag }}">
-                            {% else %}
+                            <tr>
+                                <td>{{ macros.as_link(character) }}</td>
+                                <td>{{ macros.as_link(person) }}</td>
                                 <td>
-                            {% endif %}
-                            {% if age_diff %}
-                                {{ age_diff }}
-                            {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                                </td>
+                                {% if flag %}
+                                    <td class="table-{{ flag }}">
+                                {% else %}
+                                    <td>
+                                {% endif %}
+                                {% if age_diff %}
+                                    {{ age_diff }}
+                                {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            <div class="tab-pane fade" id="pills-interpretations" role="interpretations" aria-labelledby="pills-interpretations-tab">
+                {% if film.interpretations %}
+                    <div class="card-group interpretation-scroll">
+                        {% for interpretation in film.interpretations %}
+                            <div class="card h-100" id="{{ interpretation.id }}" style="max-width: 20rem;">
+                                <div class="card-top">
+                                    <a href="/interpretations/{{ interpretation.id }}"><img src="{{ interpretation.img }}" class="card-img-top" alt="{{ interpretation.title }}"></a>
+                                </div>
+                                <div class="card-body">
+                                    <p class="h6 text-center p-1">Question: {{ macros.just_link(interpretation.question) }}</p>
+                                    <p class="card-text">{{ interpretation.description }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
             </div>
-        <div class="tab-pane fade" id="pills-interpretations" role="interpretations" aria-labelledby="pills-interpretations-tab">...</div>
-      </div>
-    
-
-        
+        </div>
+    </div>
 {% endblock %}
 
 {% block page_scripts %}

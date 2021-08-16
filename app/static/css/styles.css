@@ -1,4 +1,25 @@
 @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css");
+@import url('https://fonts.googleapis.com/css2?family=Aleo&family=Raleway&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Aleo&family=Lato&family=Raleway&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Aleo&family=Lato&family=Raleway&family=Roboto&display=swap');
+
+@font-face {
+    font-family: 'hamlet-cicero';
+    src: url("/static/fonts/hamlet-cicero12-webfont.woff") format("woff"),
+        url("/static/fonts/hamlet-cicero12-webfont.woff2") format("woff2");
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+h1.main-header,
+.navbar-brand {
+    font-family: "hamlet-cicero", cursive;
+}
+
+div.index-header {
+    padding: 1rem 2rem 1rem 2rem;
+}
 
 
 #flash-alerts.alert {
@@ -149,4 +170,20 @@ div#film-tabs {
 form#add-film .col-md-2 {
     display: flex;
     align-items: flex-end;
+}
+
+.interpretation-scroll {
+    display: flex;
+    height: 30rem;
+}
+
+.interpretation-scroll .card-top {
+    height: 50%;
+}
+
+.interpretation-scroll .card-top img {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    object-position: right center;
 }

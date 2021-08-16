@@ -14,11 +14,11 @@
 
     <div id="interpretations-metadata">
 
-    {% if interpretations != none and interpretations|length > 0 %}
+    {% if interpretations %}
         {% for interpretation in interpretations %}
         <div id="interpretation-metadata">
             <ul>
-                <li>Title: {{ interpretation.title }}</li>
+                <li>Title: {{ macros.just_link(interpretation) }}</li>
                 <li>Description: {{ interpretation.description }}</li>
                 <li>Question: {{ macros.as_link(interpretation.question) }}</li>
                 {% if interpretation.quotes %}
