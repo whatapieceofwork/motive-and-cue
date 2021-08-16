@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block main_header %}Hello{% if current_user.is_authenticated %}, {{ current_user.username }}{% endif %}.{% endblock %}
+{% block main_header %}{% endblock %}
 
 {% block page_content %}
     <!-- <div>
@@ -10,6 +10,20 @@
     <!-- {% for option in random_options %}
         {{ macros.as_image(random_options[option]) }}
     {% endfor %} -->
+    <div class="mb-2 text-black rounded bg-light index-header">
+        <div class="col-md-12 px-0">
+          <h1 class="display-4 main-header text-center">Motive and Cue</h1>
+          <p class="lead my-3">A directory of casting, editing, and directorial choices made in film adaptations of Shakespeare.</p>
+          <figure class="text-end index-quote">
+            <blockquote class="blockquote">
+              <p>"What would [the actor] do had he the <strong>motive</strong> and the <strong>cue</strong> for passion that I have?"</p>
+            </blockquote>
+            <figcaption class="blockquote-footer">
+                Hamlet, <cite title="Hamlet"><a href="/plays/1"><em>Hamlet</em> (Act 2, Scene 2)</a></cite>
+            </figcaption>
+          </figure>
+        </div>
+      </div>
     <div class="row row-cols-2 row-cols-md-3 g-4" id="index-deck">
         <div class="col">
             {% set play = random_options["plays"] %}
