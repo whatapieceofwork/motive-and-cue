@@ -205,7 +205,7 @@
                 {% if film.interpretations %}
                     <div class="card-group interpretation-scroll">
                         {% for interpretation in film.interpretations %}
-                            <div class="card h-100" id="{{ interpretation.id }}" style="max-width: 20rem;">
+                            <div class="card h-100" id="{{ interpretation.id }}" style="max-width: 25rem;">
                                 <div class="card-top">
                                     <a href="/interpretations/{{ interpretation.id }}"><img src="{{ interpretation.img }}" class="card-img-top" alt="{{ interpretation.title }}"></a>
                                 </div>

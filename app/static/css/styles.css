@@ -178,7 +178,11 @@ form#add-film .col-md-2 {
 }
 
 .interpretation-scroll .card-top {
-    height: 50%;
+    height: 45%;
+}
+
+.interpretation-scroll .card-body {
+    height: 55%;
 }
 
 .interpretation-scroll .card-top img {

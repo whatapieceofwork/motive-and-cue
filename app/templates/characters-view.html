@@ -17,7 +17,6 @@
         {% for character in characters %}
         <div id="character-metadata">
             <ul>
-                <li>ID: {{character.id}}</li>
                 <li>Name: {{ macros.as_link(character) }}</li>
                 <li>Canonical Gender:
                     {% if character.gender|int == 2 %}Male
@@ -29,7 +28,7 @@
                 <li>Related Questions: 
                     <ul>
                     {% for question in character['questions'] %}
-                        <li>{{ macros.as_link(question) }}</li>
+                        <li>{{ macros.just_link(question) }}</li>
                     {% endfor %}
                     </ul>
                 </li>

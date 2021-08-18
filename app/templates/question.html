@@ -48,12 +48,13 @@
                 {% if question.interpretations %}
                 <div class="col interpretation-scroll">
                     {% for interpretation in question.interpretations %}
-                        <div class="card h-100" style="width: 18rem;">
+                        <div class="card h-100" style="width: 25rem;">
                             <div class="card-top">
                                 <a href="/interpretations/{{ interpretation.id }}"><img src="{{ interpretation.img }}" class="card-img-top" alt="{{ interpretation.title }}"></a>
                             </div>
                             <div class="card-body">
-                                <p class="card-text">{{ macros.just_link(interpretation) }}</p>
+                                <p class="card-text">{{ macros.just_link(interpretation) }}<br/>
+                                    <em>{{ macros.just_link(interpretation.film) }}</em></p>
                                 <p class="card-text">{{ interpretation.description }}</p>
                             </div>
                         </div>
