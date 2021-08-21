@@ -1227,8 +1227,8 @@ def view_jobs(shortname=None, id=None):
 
 #  REMOVE BEFORE LAUNCH!!
 @main.route("/reboot")
-# @login_required
-# @admin_required
+@login_required
+@admin_required
 def test_reboot():
     
     """A wonderfully dangerous route to dump and rebuild the database for testing."""
