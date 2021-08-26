@@ -13,10 +13,10 @@ Currently in alpha: http://motiveandcue.com/
 
 Motive and Cue relies on the following major dependencies:
 
-[Flask](https://flask.palletsprojects.com/en/2.0.x/): Minimalist web framework for Python
-[SQLAlchemy](https://sqlalche.me/): Python SQL toolkit and Object Relational Mapper
-[Jinja](https://jinja.palletsprojects.com/): HTML templating system
-[Whoosh](https://whoosh.readthedocs.io/): Python search engine library
+* [Flask](https://flask.palletsprojects.com/en/2.0.x/): Minimalist web framework for Python
+* [SQLAlchemy](https://sqlalche.me/): Python SQL toolkit and Object Relational Mapper
+* [Jinja](https://jinja.palletsprojects.com/): HTML templating system
+* [Whoosh](https://whoosh.readthedocs.io/): Python search engine library
 
 See the requirements.txt file for more details on requirements.
 
@@ -25,16 +25,18 @@ See the requirements.txt file for more details on requirements.
 
 Motive and Cue is made possible due to these excellent APIs:
 
-[The Movie Database API](https://developers.themoviedb.org/3): Film metadata, posters, and cast and crew images
-[The Folger Shakespeare API](https://www.folgerdigitaltexts.org/api): Shakespeare play data
+* [The Movie Database API](https://developers.themoviedb.org/3): Film metadata, posters, and cast and crew images
+* [The Folger Shakespeare API](https://www.folgerdigitaltexts.org/api): Shakespeare play data\
 (Special thanks to the Folger API team for adding the Scenes and Synopsis functions for me!)
-[Cloudinary](https://cloudinary.com/): Cloud storage and image and video APIs
+* [Cloudinary](https://cloudinary.com/): Cloud storage and image and video APIs\
 
 
 ## Installation
 
 Create a Python project.
+
 Install all requirements in requirements.txt.
+
 Either export local variables or create a secrets.sh file (PRIVATE AND .GITIGNORED!) including the following information:
 
 ```
@@ -63,9 +65,10 @@ export ADMIN_ABOUT=[admin about section for profile]
 ```
 
 ## Using and Contributing
+
 Bug reports and issues are welcome. 
 
-This project is my first real foray into development, and while I would love the code to be useful for someone, I make no promises!
+This project is my first real foray into development, and was a personal project made under a class deadline. I would love for this code to be useful for someone, and I intend to maintain and improve on it, but I make no promises as to its long-term upkeep, usability, etc.
 
 
 ## License
