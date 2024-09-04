@@ -1,12 +1,19 @@
-Documentation currently under development!
+[![Frame of Motive and Cue demo video](http://img.youtube.com/vi/7QBUfK2O5jo/0.jpg)](http://www.youtube.com/watch?v=7QBUfK2O5jo "Motive and Cue")
 
-See project demo video here: https://www.youtube.com/watch?v=7QBUfK2O5jo
+Watch project demo video here: https://www.youtube.com/watch?v=7QBUfK2O5jo
 
 # Motive and Cue
 
 Motive and Cue (MaC) is a full-stack Python application for tracking interpretations made in film adaptations of Shakespeare plays. It was created by Alison Bain as the capstone project for the Hackbright Software Engineering course of September 2021.
 
-Currently in alpha: http://motiveandcue.com/
+Currently ~~in alpha~~ down, but not forgotten: http://motiveandcue.com/
+
+
+# Project Demo Screenshots
+<img width="500" alt="Main site landing page" src="https://github.com/user-attachments/assets/55bdbcb3-768a-4a05-82b6-4c64e71ab918">
+<img width="500" alt="Textual Questions page, with screenshots from films " src="https://github.com/user-attachments/assets/fc9dac4e-6fb4-4575-bbcd-00afb774e41d">
+<img width="500" alt="Verify Film Information page, with ingested data" src="https://github.com/user-attachments/assets/1d63e40b-0e2e-49ab-863a-6fc87aeca0d6">
+<img width="500" alt="Database structure diagram" src="https://github.com/user-attachments/assets/b822f1ce-1e3d-41ba-95e6-27b72d67996f">
 
 
 ## Major Dependencies
