@@ -4,9 +4,23 @@ Watch project demo video here: https://www.youtube.com/watch?v=7QBUfK2O5jo
 
 # Motive and Cue
 
-Motive and Cue (MaC) is a full-stack Python application for tracking interpretations made in film adaptations of Shakespeare plays. It was created by Alison Bain as the capstone project for the Hackbright Software Engineering course of September 2021.
+Motive and Cue is a full-stack Python Flask application to track casting, editing, and directorial decisions made in film adaptations of Shakespeare. It was created by Alison Bain as the capstone project for the Hackbright Software Engineering course of September 2021.
 
 Currently ~~in alpha~~ down, but not forgotten: http://motiveandcue.com/
+
+# Functionality
+
+Motive and Cue has four main branches of functionality; the three which affect the database are gated behind a user authentication system with tiered user permissions.
+
+The first branch is an interface to import Shakespeare character and scene information from the Folger Shakespeare API. I use the Python requests library to query the Folger site, and then regex and the Beautiful Soup HTML parsing library to scrape the appropriate data from the returned HTML.
+
+The second branch of the site is a film import tool. A request for film information is made to the Movie Database API, followed by additional queries for each cast and crew member. All of that information is collated and passed to the user in a single pre-populated form for verification. Older films may have missing data to add, and some credited parts may not be canonical Shakespeare characters; those can be marked for exclusion, which will prevent database entries from being created for them.
+
+The third branch is the question and interpretation tracking system. Questions -- elements of textual ambiguity from the plays -- can be added with a simple form, as can interpretations, the decisions made by films on how to address those ambiguities. Related images can be uploaded using the Cloudinary storage API.
+
+The Motive and Cue database is rich and interconnected, with 22 different tables including 10 association objects. I use the Marshmallow serialization library to export data in JSON format through the Motive and Cue API. Users with the appropriate permissions can request an API token that will allow them to post data to the site as well as query it.
+
+The fourth and last branch is the front-end browsing experience. The site includes dynamic text search with optional search facets and a simple and responsive interface made with Jinja, Bootstrap, JavaScript, HTML, and CSS.
 
 
 # Project Demo Screenshots
